@@ -49,9 +49,9 @@
     <!-- Minimal Header -->
     <header class="sticky top-0 z-30 px-4 py-3 max-w-md mx-auto flex items-center justify-between bg-[#0d1117]">
         <div class="flex space-x-1">
-            <button @click="setViewMode('week')" :class="viewMode === 'week' ? 'bg-[#21262d] text-white' : 'text-zinc-500'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition">Неделя</button>
-            <button @click="setViewMode('month')" :class="viewMode === 'month' ? 'bg-[#21262d] text-white' : 'text-zinc-500'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition">Месяц</button>
-            <button @click="setViewMode('year')" :class="viewMode === 'year' ? 'bg-[#21262d] text-white' : 'text-zinc-500'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition">Год</button>
+            <button @click="setViewMode('week')" :class="viewMode === 'week' ? 'bg-[#21262d] text-white' : 'text-zinc-500'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition">Week</button>
+            <button @click="setViewMode('month')" :class="viewMode === 'month' ? 'bg-[#21262d] text-white' : 'text-zinc-500'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition">Month</button>
+            <button @click="setViewMode('year')" :class="viewMode === 'year' ? 'bg-[#21262d] text-white' : 'text-zinc-500'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition">Year</button>
         </div>
         
         <div class="flex items-center space-x-2">
@@ -79,7 +79,7 @@
         <!-- UNIFORM HEATMAP CONTAINER (Exact same 12-column or uniform square size across all views) -->
         <div class="px-2 space-y-3" id="heatmap-container">
             
-            <!-- WEEK VIEW (Uniform size grid) -->
+            <!-- WEEK VIEW -->
             <template x-if="viewMode === 'week'">
                 <div class="grid grid-cols-12 gap-1.5">
                     <template x-for="day in currentWeekDays" :key="day.dateStr">
@@ -93,7 +93,7 @@
                 </div>
             </template>
 
-            <!-- MONTH VIEW (Uniform size grid) -->
+            <!-- MONTH VIEW -->
             <template x-if="viewMode === 'month'">
                 <div class="grid grid-cols-12 gap-1.5">
                     <template x-for="cell in currentMonthGrid" :key="cell.dateStr || Math.random()">
@@ -114,7 +114,6 @@
                         <div @click="selectDay(day.dateStr)"
                              class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
                              :id="isToday(day.dateStr) ? 'today-square' : ''"
-                             :class="[getColorClass(cell.intensity), isToday(day.dateStr) ? 'ring-1 ring-white' : '']"
                              :class="[getColorClass(day.intensity), isToday(day.dateStr) ? 'ring-1 ring-white' : '']"
                              :title="day.dateStr">
                         </div>
@@ -304,7 +303,7 @@
                 
                 githubToken: '',
                 gistId: '',
-                syncStatus: 'local', // 'local', 'syncing', 'synced', 'error'
+                syncStatus: 'local',
 
                 pickerExIndex: null,
                 pickerSetIndex: null,
@@ -315,14 +314,15 @@
                 animatingPop: false,
 
                 initApp() {
-                    // Load local data
                     const saved = localStorage.getItem('gym_streak_data_v7');
                     if (saved) {
                         try { this.workouts = JSON.parse(saved); } catch (e) {}
                     }
 
-                    const savedView = localStorage.getItem('gym_view_mode_v4');
-                    if (savedView) this.viewMode = savedView;
+                    const savedView = localStorage.getItem('gym_view_mode_v3');
+                    if (savedView) {
+                        this.viewMode = savedView;
+                    }
 
                     this.githubToken = localStorage.getItem('gym_github_token') || '';
                     this.gistId = localStorage.getItem('gym_gist_id') || '';
@@ -343,7 +343,6 @@
                         });
                     });
 
-                    // Auto sync with Gist if token exists
                     if (this.githubToken) {
                         this.syncWithGist();
                     }
@@ -386,9 +385,7 @@
                     if (!this.githubToken) return;
                     this.syncStatus = 'syncing';
                     try {
-                        // If no Gist ID, try to find or create one
                         if (!this.gistId) {
-                            // Search gists
                             let res = await fetch('https://api.github.com/gists', {
                                 headers: { 'Authorization': `token ${this.githubToken}` }
                             });
@@ -403,7 +400,6 @@
                         }
 
                         if (this.gistId) {
-                            // Fetch from Gist
                             let res = await fetch(`https://api.github.com/gists/${this.gistId}`, {
                                 headers: { 'Authorization': `token ${this.githubToken}` }
                             });
@@ -411,7 +407,6 @@
                                 let data = await res.json();
                                 if (data.files && data.files['workouts.json']) {
                                     let remoteWorkouts = JSON.parse(data.files['workouts.json'].content);
-                                    // Merge or take remote if newer/non-empty
                                     if (Object.keys(remoteWorkouts).length > 0) {
                                         this.workouts = remoteWorkouts;
                                         this.saveToStorageLocally();
@@ -419,7 +414,6 @@
                                 }
                             }
                         } else {
-                            // Create new Gist
                             let res = await fetch('https://api.github.com/gists', {
                                 method: 'POST',
                                 headers: {
@@ -586,12 +580,12 @@
                 get dateRangeTitle() {
                     const y = this.currentDate.getFullYear();
                     const m = this.currentDate.getMonth();
-                    if (this.viewMode === 'week') return `Неделя (${y})`;
+                    if (this.viewMode === 'week') return `Week (${y})`;
                     if (this.viewMode === 'month') {
-                        const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+                        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
                         return `${months[m]} ${y}`;
                     }
-                    return `${y} год`;
+                    return `${y}`;
                 },
 
                 shiftDate(direction) {
@@ -645,6 +639,7 @@
                     let curr = new Date(startDate);
                     while (curr <= endDate) {
                         let dateStr = this.formatDateIso(curr);
+                        list.png ? null : null;
                         list.push({
                             dateStr: dateStr,
                             intensity: this.getIntensity(dateStr)
@@ -675,6 +670,7 @@
                 },
 
                 removeExercise(index) {
+                    this.activeDayExercises.push ? null : null;
                     this.activeDayExercises.splice(index, 1);
                 },
 
@@ -708,6 +704,7 @@
 
                 exportData() {
                     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.workouts, null, 2));
+                    constdlAnchorElem = document.createElement('a');
                     const dlAnchorElem = document.createElement('a');
                     dlAnchorElem.setAttribute("href", dataStr);
                     dlAnchorElem.setAttribute("download", `gym_backup.json`);

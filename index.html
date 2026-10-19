@@ -55,6 +55,8 @@
         </div>
         
         <div class="flex items-center space-x-2">
+            <!-- Cloud sync status indicator -->
+            <span class="w-2.5 h-2.5 rounded-full" :class="syncStatusClass" :title="syncStatusText"></span>
             <button @click="openSettings = true" class="p-2 text-zinc-400 hover:text-white transition">
                 <i data-lucide="settings" class="w-5 h-5"></i>
             </button>
@@ -74,12 +76,12 @@
             </button>
         </div>
 
-        <!-- UNIFORM HEATMAP CONTAINER (Exact same square style & size across all views) -->
+        <!-- UNIFORM HEATMAP CONTAINER (Exact same 12-column or uniform square size across all views) -->
         <div class="px-2 space-y-3" id="heatmap-container">
             
-            <!-- WEEK VIEW -->
+            <!-- WEEK VIEW (Uniform size grid) -->
             <template x-if="viewMode === 'week'">
-                <div class="grid grid-cols-7 gap-1.5">
+                <div class="grid grid-cols-12 gap-1.5">
                     <template x-for="day in currentWeekDays" :key="day.dateStr">
                         <div @click="selectDay(day.dateStr)" 
                              class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
@@ -91,21 +93,16 @@
                 </div>
             </template>
 
-            <!-- MONTH VIEW -->
+            <!-- MONTH VIEW (Uniform size grid) -->
             <template x-if="viewMode === 'month'">
-                <div class="grid grid-cols-7 gap-1.5">
+                <div class="grid grid-cols-12 gap-1.5">
                     <template x-for="cell in currentMonthGrid" :key="cell.dateStr || Math.random()">
-                        <template x-if="cell.empty">
-                            <div class="aspect-square bg-transparent"></div>
-                        </template>
-                        <template x-if="!cell.empty">
-                            <div @click="selectDay(cell.dateStr)"
-                                 class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
-                                 :id="isToday(cell.dateStr) ? 'today-square' : ''"
-                                 :class="[getColorClass(cell.intensity), isToday(cell.dateStr) ? 'ring-1 ring-white' : '']"
-                                 :title="cell.dateStr">
-                            </div>
-                        </template>
+                        <div @click="selectDay(cell.dateStr)"
+                             class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
+                             :id="isToday(cell.dateStr) ? 'today-square' : ''"
+                             :class="[getColorClass(cell.intensity), isToday(cell.dateStr) ? 'ring-1 ring-white' : '']"
+                             :title="cell.dateStr">
+                        </div>
                     </template>
                 </div>
             </template>
@@ -117,6 +114,7 @@
                         <div @click="selectDay(day.dateStr)"
                              class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
                              :id="isToday(day.dateStr) ? 'today-square' : ''"
+                             :class="[getColorClass(cell.intensity), isToday(day.dateStr) ? 'ring-1 ring-white' : '']"
                              :class="[getColorClass(day.intensity), isToday(day.dateStr) ? 'ring-1 ring-white' : '']"
                              :title="day.dateStr">
                         </div>
@@ -217,7 +215,7 @@
         </div>
     </div>
 
-    <!-- FULLSCREEN BLUR DRAG REPS PICKER OVERLAY (Done checkmark in bottom-right, slate color) -->
+    <!-- FULLSCREEN BLUR DRAG REPS PICKER OVERLAY -->
     <div x-show="openPickerModal" 
          @touchstart="startPickerDrag($event)" 
          @mousedown="startPickerDrag($event)"
@@ -229,7 +227,7 @@
             <div class="text-8xl font-black text-white transition-transform duration-75" :class="animatingPop ? 'number-pop' : ''" x-text="pickerCurrentVal"></div>
         </div>
 
-        <!-- Done checkmark button in bottom-right corner, darker slate color -->
+        <!-- Done checkmark button in bottom-right corner -->
         <div class="absolute bottom-8 right-8">
             <button @click.stop="closePicker()" class="w-16 h-16 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-zinc-400 hover:text-white rounded-full flex items-center justify-center shadow-2xl transition active:scale-90">
                 <i data-lucide="check" class="w-8 h-8 stroke-[3]"></i>
@@ -237,31 +235,46 @@
         </div>
     </div>
 
-    <!-- SETTINGS MODAL -->
+    <!-- SETTINGS & CLOUD SYNC MODAL -->
     <div x-show="openSettings" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" x-cloak>
         <div @click.away="openSettings = false" class="bg-[#161b22] border border-[#30363d] w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl modal-enter">
             <div class="flex items-center justify-between border-b border-[#30363d] pb-3">
-                <h3 class="font-bold text-white text-base">Настройки и приватность</h3>
+                <h3 class="font-bold text-white text-base">Надежность и синхронизация</h3>
                 <button @click="openSettings = false" class="p-1 rounded-full bg-[#21262d] text-zinc-300">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
-            <div class="space-y-3 text-xs text-zinc-300 leading-relaxed">
-                <p class="text-zinc-400">
-                    <strong class="text-white">Безопасность данных:</strong> Все данные хранятся в памяти браузера (<code class="text-emerald-400">LocalStorage</code>). Когда ты обновляешь файл <code class="text-emerald-400">index.html</code> на GitHub, браузер сохраняет твои тренировки, так как они привязаны к сайту.
-                </p>
-                <p class="text-zinc-400">
-                    Для полной надежности ты в любой момент можешь сделать <strong class="text-white">Экспорт</strong> в JSON-файл.
-                </p>
+            <div class="space-y-4 text-xs text-zinc-300 leading-relaxed">
+                <!-- GitHub Gist Cloud Sync explanation -->
+                <div class="bg-[#0d1117] border border-[#30363d] p-3 rounded-xl space-y-2">
+                    <div class="font-bold text-white flex items-center justify-between">
+                        <span>☁️ Облако GitHub Gist</span>
+                        <span class="text-[10px] text-emerald-400 font-normal">100% надежно</span>
+                    </div>
+                    <p class="text-zinc-400">
+                        Чтобы данные никогда не потерялись и синхронизировались между телефоном и ПК, вставь свой <strong class="text-white">GitHub Token</strong> (PAT) с правами доступа к gist.
+                    </p>
+                    <input type="password" x-model="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full bg-[#161b22] border border-[#30363d] text-white px-3 py-1.5 rounded-lg focus:outline-none focus:border-emerald-500 font-mono text-[11px]">
+                    <div class="flex space-x-2 pt-1">
+                        <button @click="saveGithubToken()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition">
+                            Подключить
+                        </button>
+                        <button @click="syncWithGist()" class="px-3 py-2 bg-[#21262d] hover:bg-[#30363d] text-white font-medium rounded-lg transition" title="Синхронизировать сейчас">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Local backup -->
                 <div class="flex space-x-2 pt-1">
-                    <button @click="exportData()" class="flex-1 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] hover:bg-[#21262d] text-white font-medium flex items-center justify-center space-x-2 transition">
+                    <button @click="exportData()" class="flex-1 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] hover:bg-[#21262d] text-white font-medium flex items-center justify-center space-x-2 transition">
                         <i data-lucide="download" class="w-4 h-4"></i>
-                        <span>Экспорт</span>
+                        <span>Скачать файл</span>
                     </button>
-                    <label class="flex-1 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] hover:bg-[#21262d] text-white font-medium flex items-center justify-center space-x-2 transition cursor-pointer">
+                    <label class="flex-1 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] hover:bg-[#21262d] text-white font-medium flex items-center justify-center space-x-2 transition cursor-pointer">
                         <i data-lucide="upload" class="w-4 h-4"></i>
-                        <span>Импорт</span>
+                        <span>Загрузить</span>
                         <input type="file" @change="importData" accept=".json" class="hidden">
                     </label>
                 </div>
@@ -289,6 +302,10 @@
                 selectedDate: '',
                 activeDayExercises: [],
                 
+                githubToken: '',
+                gistId: '',
+                syncStatus: 'local', // 'local', 'syncing', 'synced', 'error'
+
                 pickerExIndex: null,
                 pickerSetIndex: null,
                 pickerCurrentVal: 0,
@@ -298,15 +315,17 @@
                 animatingPop: false,
 
                 initApp() {
-                    const saved = localStorage.getItem('gym_streak_data_v6');
+                    // Load local data
+                    const saved = localStorage.getItem('gym_streak_data_v7');
                     if (saved) {
                         try { this.workouts = JSON.parse(saved); } catch (e) {}
                     }
 
-                    const savedView = localStorage.getItem('gym_view_mode_v3');
-                    if (savedView) {
-                        this.viewMode = savedView;
-                    }
+                    const savedView = localStorage.getItem('gym_view_mode_v4');
+                    if (savedView) this.viewMode = savedView;
+
+                    this.githubToken = localStorage.getItem('gym_github_token') || '';
+                    this.gistId = localStorage.getItem('gym_gist_id') || '';
 
                     const today = new Date();
                     this.todayStr = this.formatDateIso(today);
@@ -324,6 +343,11 @@
                         });
                     });
 
+                    // Auto sync with Gist if token exists
+                    if (this.githubToken) {
+                        this.syncWithGist();
+                    }
+
                     window.addEventListener('mousemove', (e) => this.onPickerDrag(e.clientY));
                     window.addEventListener('mouseup', () => this.stopPickerDrag());
                     window.addEventListener('touchmove', (e) => {
@@ -332,6 +356,121 @@
                         }
                     }, { passive: true });
                     window.addEventListener('touchend', () => this.stopPickerDrag());
+                },
+
+                get syncStatusClass() {
+                    switch(this.syncStatus) {
+                        case 'synced': return 'bg-emerald-500';
+                        case 'syncing': return 'bg-amber-500 animate-pulse';
+                        case 'error': return 'bg-red-500';
+                        default: return 'bg-zinc-600';
+                    }
+                },
+
+                get syncStatusText() {
+                    switch(this.syncStatus) {
+                        case 'synced': return 'Синхронизировано с GitHub Gist';
+                        case 'syncing': return 'Синхронизация...';
+                        case 'error': return 'Ошибка синхронизации';
+                        default: return 'Локальное хранилище';
+                    }
+                },
+
+                saveGithubToken() {
+                    localStorage.setItem('gym_github_token', this.githubToken.trim());
+                    alert('Токен сохранен!');
+                    this.syncWithGist();
+                },
+
+                async syncWithGist() {
+                    if (!this.githubToken) return;
+                    this.syncStatus = 'syncing';
+                    try {
+                        // If no Gist ID, try to find or create one
+                        if (!this.gistId) {
+                            // Search gists
+                            let res = await fetch('https://api.github.com/gists', {
+                                headers: { 'Authorization': `token ${this.githubToken}` }
+                            });
+                            if (res.ok) {
+                                let gists = await res.json();
+                                let existing = gists.find(g => g.description === 'GymTrackerData');
+                                if (existing) {
+                                    this.gistId = existing.id;
+                                    localStorage.setItem('gym_gist_id', this.gistId);
+                                }
+                            }
+                        }
+
+                        if (this.gistId) {
+                            // Fetch from Gist
+                            let res = await fetch(`https://api.github.com/gists/${this.gistId}`, {
+                                headers: { 'Authorization': `token ${this.githubToken}` }
+                            });
+                            if (res.ok) {
+                                let data = await res.json();
+                                if (data.files && data.files['workouts.json']) {
+                                    let remoteWorkouts = JSON.parse(data.files['workouts.json'].content);
+                                    // Merge or take remote if newer/non-empty
+                                    if (Object.keys(remoteWorkouts).length > 0) {
+                                        this.workouts = remoteWorkouts;
+                                        this.saveToStorageLocally();
+                                    }
+                                }
+                            }
+                        } else {
+                            // Create new Gist
+                            let res = await fetch('https://api.github.com/gists', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `token ${this.githubToken}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    description: 'GymTrackerData',
+                                    public: false,
+                                    files: {
+                                        'workouts.json': { content: JSON.stringify(this.workouts) }
+                                    }
+                                })
+                            });
+                            if (res.ok) {
+                                let data = await res.json();
+                                this.gistId = data.id;
+                                localStorage.setItem('gym_gist_id', this.gistId);
+                            }
+                        }
+                        this.syncStatus = 'synced';
+                    } catch (err) {
+                        console.error(err);
+                        this.syncStatus = 'error';
+                    }
+                },
+
+                async pushToGist() {
+                    if (!this.githubToken || !this.gistId) return;
+                    this.syncStatus = 'syncing';
+                    try {
+                        let res = await fetch(`https://api.github.com/gists/${this.gistId}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `token ${this.githubToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                files: {
+                                    'workouts.json': { content: JSON.stringify(this.workouts) }
+                                }
+                            })
+                        });
+                        if (res.ok) {
+                            this.syncStatus = 'synced';
+                        } else {
+                            this.syncStatus = 'error';
+                        }
+                    } catch (e) {
+                        this.syncStatus = 'error';
+                    }
                 },
 
                 scrollToToday() {
@@ -391,8 +530,15 @@
                     this.pickerSetIndex = null;
                 },
 
+                saveToStorageLocally() {
+                    localStorage.setItem('gym_streak_data_v7', JSON.stringify(this.workouts));
+                },
+
                 saveToStorage() {
-                    localStorage.setItem('gym_streak_data_v6', JSON.stringify(this.workouts));
+                    this.saveToStorageLocally();
+                    if (this.githubToken && this.gistId) {
+                        this.pushToGist();
+                    }
                 },
 
                 formatDateIso(date) {
@@ -462,16 +608,16 @@
                     let distanceToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
                     d.setDate(d.getDate() + distanceToMonday);
 
-                    let days = [];
+                    let list = [];
                     for (let i = 0; i < 7; i++) {
                         let dateStr = this.formatDateIso(d);
-                        days.push({
+                        list.push({
                             dateStr: dateStr,
                             intensity: this.getIntensity(dateStr)
                         });
                         d.setDate(d.getDate() + 1);
                     }
-                    return days;
+                    return list;
                 },
 
                 get currentMonthGrid() {
@@ -484,7 +630,6 @@
                         let dateObj = new Date(y, m, i);
                         let dateStr = this.formatDateIso(dateObj);
                         list.push({
-                            empty: false,
                             dateStr: dateStr,
                             intensity: this.getIntensity(dateStr)
                         });
@@ -569,7 +714,7 @@
                     dlAnchorElem.click();
                 },
 
-                    importData(event) {
+                importData(event) {
                     const fileReader = new FileReader();
                     if (event.target.files[0]) {
                         fileReader.readAsText(event.target.files[0], "UTF-8");

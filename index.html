@@ -74,10 +74,10 @@
             </button>
         </div>
 
-        <!-- UNIFORM HEATMAP CONTAINER (Exact same square style for week, month, year) -->
+        <!-- UNIFORM HEATMAP CONTAINER (Exact same square style & size across all views) -->
         <div class="px-2 space-y-3" id="heatmap-container">
             
-            <!-- WEEK VIEW (Exact same grid squares format) -->
+            <!-- WEEK VIEW -->
             <template x-if="viewMode === 'week'">
                 <div class="grid grid-cols-7 gap-1.5">
                     <template x-for="day in currentWeekDays" :key="day.dateStr">
@@ -91,7 +91,7 @@
                 </div>
             </template>
 
-            <!-- MONTH VIEW (Exact same grid squares format) -->
+            <!-- MONTH VIEW -->
             <template x-if="viewMode === 'month'">
                 <div class="grid grid-cols-7 gap-1.5">
                     <template x-for="cell in currentMonthGrid" :key="cell.dateStr || Math.random()">
@@ -173,7 +173,7 @@
                                     <span class="text-xs text-zinc-400 font-medium">Подход <span x-text="setIndex + 1"></span></span>
                                     
                                     <div class="flex items-center space-x-3">
-                                        <!-- Clean number without borders/background frames -->
+                                        <!-- Clean number without borders -->
                                         <div @click="openPicker(exIndex, setIndex)"
                                              class="cursor-pointer text-base font-bold text-white hover:text-emerald-400 transition select-none px-2 py-1"
                                              title="Нажми для изменения">
@@ -217,7 +217,7 @@
         </div>
     </div>
 
-    <!-- FULLSCREEN BLUR DRAG REPS PICKER OVERLAY (Stiffer drag, white number, checkmark in bottom left) -->
+    <!-- FULLSCREEN BLUR DRAG REPS PICKER OVERLAY (Done checkmark in bottom-right, slate color) -->
     <div x-show="openPickerModal" 
          @touchstart="startPickerDrag($event)" 
          @mousedown="startPickerDrag($event)"
@@ -229,9 +229,9 @@
             <div class="text-8xl font-black text-white transition-transform duration-75" :class="animatingPop ? 'number-pop' : ''" x-text="pickerCurrentVal"></div>
         </div>
 
-        <!-- Done checkmark button in bottom-left corner -->
-        <div class="absolute bottom-8 left-8">
-            <button @click.stop="closePicker()" class="w-16 h-16 bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-white rounded-full flex items-center justify-center shadow-2xl transition active:scale-90">
+        <!-- Done checkmark button in bottom-right corner, darker slate color -->
+        <div class="absolute bottom-8 right-8">
+            <button @click.stop="closePicker()" class="w-16 h-16 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-zinc-400 hover:text-white rounded-full flex items-center justify-center shadow-2xl transition active:scale-90">
                 <i data-lucide="check" class="w-8 h-8 stroke-[3]"></i>
             </button>
         </div>
@@ -249,7 +249,10 @@
 
             <div class="space-y-3 text-xs text-zinc-300 leading-relaxed">
                 <p class="text-zinc-400">
-                    <strong class="text-white">Приватность:</strong> Все данные хранятся только в твоем браузере (LocalStorage). Никаких серверов.
+                    <strong class="text-white">Безопасность данных:</strong> Все данные хранятся в памяти браузера (<code class="text-emerald-400">LocalStorage</code>). Когда ты обновляешь файл <code class="text-emerald-400">index.html</code> на GitHub, браузер сохраняет твои тренировки, так как они привязаны к сайту.
+                </p>
+                <p class="text-zinc-400">
+                    Для полной надежности ты в любой момент можешь сделать <strong class="text-white">Экспорт</strong> в JSON-файл.
                 </p>
                 <div class="flex space-x-2 pt-1">
                     <button @click="exportData()" class="flex-1 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] hover:bg-[#21262d] text-white font-medium flex items-center justify-center space-x-2 transition">
@@ -286,7 +289,6 @@
                 selectedDate: '',
                 activeDayExercises: [],
                 
-                // Reps Picker state (stiffer sensitivity: 40px per unit)
                 pickerExIndex: null,
                 pickerSetIndex: null,
                 pickerCurrentVal: 0,
@@ -322,7 +324,6 @@
                         });
                     });
 
-                    // Global listeners for vertical drag picker
                     window.addEventListener('mousemove', (e) => this.onPickerDrag(e.clientY));
                     window.addEventListener('mouseup', () => this.stopPickerDrag());
                     window.addEventListener('touchmove', (e) => {
@@ -364,7 +365,6 @@
 
                 onPickerDrag(clientY) {
                     if (!this.pickerDragging) return;
-                    // Stiffer sensitivity: 35px per increment
                     let diff = Math.floor((this.pickerStartY - clientY) / 35); 
                     let newVal = this.pickerStartVal + diff;
                     if (newVal < 0) newVal = 0;
@@ -477,24 +477,19 @@
                 get currentMonthGrid() {
                     let y = this.currentDate.getFullYear();
                     let m = this.currentDate.getMonth();
-                    let firstDayOfMonth = new Date(y, m, 1);
                     let lastDayOfMonth = new Date(y, m + 1, 0);
-                    let startingDayOfWeek = firstDayOfMonth.getDay();
-                    let startIndex = startingDayOfWeek === 0 ? 6 : startingDayOfWeek - 1;
                     
-                    let grid = [];
-                    for (let i = 0; i < startIndex; i++) grid.push({ empty: true });
-
+                    let list = [];
                     for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
                         let dateObj = new Date(y, m, i);
                         let dateStr = this.formatDateIso(dateObj);
-                        grid.push({
+                        list.push({
                             empty: false,
                             dateStr: dateStr,
                             intensity: this.getIntensity(dateStr)
                         });
                     }
-                    return grid;
+                    return list;
                 },
 
                 get yearDaysList() {
@@ -574,7 +569,7 @@
                     dlAnchorElem.click();
                 },
 
-                importData(event) {
+                    importData(event) {
                     const fileReader = new FileReader();
                     if (event.target.files[0]) {
                         fileReader.readAsText(event.target.files[0], "UTF-8");

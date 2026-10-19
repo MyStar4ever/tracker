@@ -2,7 +2,7 @@
 <html lang="ru" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Трекер</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,22 +30,23 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         [x-cloak] { display: none !important; }
-        /* Hide scrollbars for clean iOS feel */
+        /* Disable pull-to-refresh and selection for smooth touch drag */
+        body { touch-action: pan-x pan-y; user-select: none; -webkit-user-select: none; }
         ::-webkit-scrollbar { width: 0px; height: 0px; display: none; }
     </style>
 </head>
-<body class="bg-[#0d1117] text-[#c9d1d9] min-h-screen font-sans antialiased selection:bg-emerald-500 selection:text-white pb-24" x-data="trackerApp()">
+<body class="bg-[#0d1117] text-[#c9d1d9] min-h-screen font-sans antialiased pb-24" x-data="trackerApp()">
 
     <!-- Minimal Header -->
     <header class="bg-[#0d1117] sticky top-0 z-30 px-4 py-4 max-w-md mx-auto flex items-center justify-between">
-        <div class="flex bg-[#161b22] p-1 rounded-xl">
+        <div class="flex bg-[#161b22] p-1 rounded-xl border border-[#30363d]">
             <button @click="viewMode = 'week'" :class="viewMode === 'week' ? 'bg-[#30363d] text-white' : 'text-zinc-400'" class="px-3 py-1 rounded-lg text-xs font-medium transition">Неделя</button>
             <button @click="viewMode = 'month'" :class="viewMode === 'month' ? 'bg-[#30363d] text-white' : 'text-zinc-400'" class="px-3 py-1 rounded-lg text-xs font-medium transition">Месяц</button>
             <button @click="viewMode = 'year'" :class="viewMode === 'year' ? 'bg-[#30363d] text-white' : 'text-zinc-400'" class="px-3 py-1 rounded-lg text-xs font-medium transition">Год</button>
         </div>
         
         <div class="flex items-center space-x-2">
-            <button @click="openSettings = true" class="p-2 rounded-xl bg-[#161b22] text-zinc-400 hover:text-white transition">
+            <button @click="openSettings = true" class="p-2 rounded-xl bg-[#161b22] border border-[#30363d] text-zinc-400 hover:text-white transition">
                 <i data-lucide="settings" class="w-5 h-5"></i>
             </button>
         </div>
@@ -54,7 +55,7 @@
     <main class="max-w-md mx-auto px-4 space-y-4">
 
         <!-- Date Navigation Bar -->
-        <div class="flex items-center justify-between bg-[#161b22] px-4 py-2.5 rounded-2xl">
+        <div class="flex items-center justify-between bg-[#161b22] border border-[#30363d] px-4 py-2.5 rounded-2xl">
             <button @click="shiftDate(-1)" class="text-zinc-400 hover:text-white p-1">
                 <i data-lucide="chevron-left" class="w-5 h-5"></i>
             </button>
@@ -64,8 +65,8 @@
             </button>
         </div>
 
-        <!-- HEATMAP CONTAINER (Clean, no borders, fits screen) -->
-        <div class="bg-[#161b22] p-4 rounded-2xl space-y-3">
+        <!-- HEATMAP CONTAINER -->
+        <div class="bg-[#161b22] border border-[#30363d] p-4 rounded-2xl space-y-3">
             
             <!-- WEEK VIEW -->
             <template x-if="viewMode === 'week'">
@@ -73,10 +74,10 @@
                     <template x-for="day in currentWeekDays" :key="day.dateStr">
                         <div @click="selectDay(day.dateStr)" 
                              class="flex flex-col items-center justify-between p-2.5 rounded-xl cursor-pointer transition active:scale-95"
-                             :class="isToday(day.dateStr) ? 'bg-[#30363d]' : 'bg-[#0d1117]'">
+                             :class="isToday(day.dateStr) ? 'bg-[#30363d] border border-zinc-500' : 'bg-[#0d1117] border border-[#30363d]'">
                             <span class="text-[10px] text-zinc-500 uppercase" x-text="day.dayName"></span>
                             <span class="text-sm font-bold text-white my-1.5" x-text="day.dayNum"></span>
-                            <div class="w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold"
+                            <div class="w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold text-white"
                                  :class="getColorClass(day.intensity)">
                                 <span x-text="day.totalReps > 0 ? day.totalReps : ''"></span>
                             </div>
@@ -85,7 +86,7 @@
                 </div>
             </template>
 
-            <!-- MONTH VIEW (All days visible, no borders) -->
+            <!-- MONTH VIEW -->
             <template x-if="viewMode === 'month'">
                 <div>
                     <div class="grid grid-cols-7 gap-1 mb-2 text-center text-[10px] text-zinc-500 font-medium">
@@ -98,9 +99,9 @@
                             </template>
                             <template x-if="!cell.empty">
                                 <div @click="selectDay(cell.dateStr)"
-                                     class="aspect-square rounded-lg p-1 flex flex-col justify-between items-center cursor-pointer transition active:scale-95 relative"
-                                     :class="[getColorClass(cell.intensity), isToday(cell.dateStr) ? 'ring-1 ring-emerald-400' : '']">
-                                    <span class="text-[10px] font-medium" :class="isToday(cell.dateStr) ? 'text-emerald-400 font-bold' : 'text-zinc-400'" x-text="cell.dayNum"></span>
+                                     class="aspect-square rounded-lg p-1 flex flex-col justify-between items-center cursor-pointer transition active:scale-95 border border-[#30363d]"
+                                     :class="[getColorClass(cell.intensity), isToday(cell.dateStr) ? 'ring-1 ring-white' : '']">
+                                    <span class="text-[10px] font-medium text-zinc-300" x-text="cell.dayNum"></span>
                                     <div class="w-1.5 h-1.5 rounded-full" :class="cell.intensity > 0 ? 'bg-white/90' : 'bg-transparent'"></div>
                                 </div>
                             </template>
@@ -109,12 +110,12 @@
                 </div>
             </template>
 
-            <!-- YEAR VIEW (Compact grid for phone) -->
+            <!-- YEAR VIEW -->
             <template x-if="viewMode === 'year'">
                 <div class="grid grid-cols-12 gap-1.5">
                     <template x-for="day in yearDaysList" :key="day.dateStr">
                         <div @click="selectDay(day.dateStr)"
-                             class="aspect-square rounded-[4px] cursor-pointer transition active:scale-90 relative"
+                             class="aspect-square rounded-[4px] cursor-pointer transition active:scale-90 border border-[#30363d]"
                              :class="[getColorClass(day.intensity), isToday(day.dateStr) ? 'ring-1 ring-white' : '']"
                              :title="day.dateStr">
                         </div>
@@ -126,21 +127,21 @@
 
     </main>
 
-    <!-- FLOATING ACTION BUTTON (FAB) in bottom right corner -->
+    <!-- FLOATING ACTION BUTTON (FAB) -->
     <div class="fixed bottom-6 right-6 z-40">
-        <button @click="selectDay(todayStr)" class="w-14 h-14 bg-emerald-500 hover:bg-emerald-400 text-black rounded-full flex items-center justify-center shadow-xl shadow-emerald-950/60 transition active:scale-90">
-            <i data-lucide="plus" class="w-8 h-8 stroke-[2.5]"></i>
+        <button @click="selectDay(todayStr)" class="w-14 h-14 bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-white rounded-full flex items-center justify-center shadow-2xl transition active:scale-90">
+            <i data-lucide="plus" class="w-7 h-7 stroke-[2.5]"></i>
         </button>
     </div>
 
-    <!-- DAY DETAIL MODAL (iOS Timer / Stepper style) -->
+    <!-- DAY DETAIL MODAL -->
     <div x-show="openModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/70 backdrop-blur-sm" x-cloak>
-        <div @click.away="openModal = false" class="bg-[#161b22] w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+        <div @click.away="openModal = false" class="bg-[#161b22] border border-[#30363d] w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
             
             <!-- Modal Header -->
             <div class="flex items-center justify-between pb-2 border-b border-[#30363d]">
                 <h3 class="font-bold text-white text-base" x-text="formatDateHuman(selectedDate)"></h3>
-                <button @click="openModal = false" class="p-1 rounded-full bg-[#30363d] text-zinc-300">
+                <button @click="openModal = false" class="p-1.5 rounded-xl bg-[#21262d] text-zinc-300">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -148,36 +149,37 @@
             <!-- Exercises List -->
             <div class="space-y-4 overflow-y-auto pr-1 flex-1 py-1">
                 <template x-for="(ex, exIndex) in activeDayExercises" :key="exIndex">
-                    <div class="bg-[#0d1117] p-3.5 rounded-2xl space-y-3">
+                    <div class="bg-[#0d1117] border border-[#30363d] p-3.5 rounded-2xl space-y-3">
                         
                         <!-- Exercise Header / Select -->
                         <div class="flex items-center justify-between">
-                            <select x-model="ex.name" class="bg-[#161b22] text-white text-sm font-semibold rounded-xl px-3 py-1.5 focus:outline-none w-2/3">
+                            <select x-model="ex.name" class="bg-[#161b22] border border-[#30363d] text-white text-sm font-semibold rounded-xl px-3 py-1.5 focus:outline-none w-2/3">
                                 <option value="Отжимания">Отжимания</option>
                                 <option value="Подтягивания">Подтягивания</option>
                                 <option value="Приседания">Приседания</option>
                                 <option value="Пресс">Пресс</option>
-                                <option value="Планка (сек)">Планка (сек)</option>
-                                <option value="Брусья">Брусья</option>
                                 <option value="Другое">Другое</option>
                             </select>
-                            <button @click="removeExercise(exIndex)" class="text-zinc-500 hover:text-red-400 p-1">
+                            <button @click="removeExercise(exIndex)" class="text-zinc-500 hover:text-red-400 p-1.5 rounded-xl bg-[#161b22] border border-[#30363d]">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
 
-                        <!-- Sets & Reps iOS Wheel / Stepper Style -->
+                        <!-- Sets List with touch drag / swipe vertical rep changer -->
                         <div class="space-y-2 pt-1">
                             <template x-for="(set, setIndex) in ex.setsList" :key="setIndex">
-                                <div class="flex items-center justify-between bg-[#161b22] px-3 py-2 rounded-xl">
+                                <div class="flex items-center justify-between bg-[#161b22] border border-[#30363d] px-3 py-2 rounded-xl">
                                     <span class="text-xs text-zinc-400 font-medium">Подход <span x-text="setIndex + 1"></span></span>
                                     
                                     <div class="flex items-center space-x-3">
-                                        <!-- Reps Stepper (iPhone timer style buttons) -->
-                                        <div class="flex items-center space-x-2 bg-[#0d1117] px-2 py-1 rounded-lg">
-                                            <button @click="adjustReps(exIndex, setIndex, -1)" class="w-7 h-7 bg-[#21262d] hover:bg-[#30363d] text-white rounded-md flex items-center justify-center font-bold text-sm transition active:scale-95">-</button>
-                                            <span class="w-8 text-center text-sm font-bold text-emerald-400" x-text="set.reps"></span>
-                                            <button @click="adjustReps(exIndex, setIndex, 1)" class="w-7 h-7 bg-[#21262d] hover:bg-[#30363d] text-white rounded-md flex items-center justify-center font-bold text-sm transition active:scale-95">+</button>
+                                        <!-- Swipe/Drag Reps Box (Drag up/down with finger or mouse) -->
+                                        <div @touchstart="startDrag($event, exIndex, setIndex)"
+                                             @mousedown="startDrag($event, exIndex, setIndex)"
+                                             class="flex items-center space-x-2 bg-[#0d1117] border border-[#30363d] px-3 py-1 rounded-lg cursor-ns-resize select-none"
+                                             title="Тяни вверх/вниз для изменения">
+                                            <button @click.stop="adjustReps(exIndex, setIndex, -1)" class="text-zinc-400 hover:text-white px-1 text-sm font-bold">-</button>
+                                            <span class="w-8 text-center text-sm font-bold text-white" x-text="set.reps"></span>
+                                            <button @click.stop="adjustReps(exIndex, setIndex, 1)" class="text-zinc-400 hover:text-white px-1 text-sm font-bold">+</button>
                                         </div>
 
                                         <!-- Delete set -->
@@ -188,10 +190,9 @@
                                 </div>
                             </template>
 
-                            <!-- Add Set Quick Button (+) -->
-                            <button @click="addSet(exIndex)" class="w-full py-2 bg-emerald-950/30 hover:bg-emerald-900/30 border border-emerald-500/20 rounded-xl text-xs font-semibold text-emerald-400 flex items-center justify-center space-x-1 transition active:scale-95">
+                            <!-- Add Set Button (+) without text -->
+                            <button @click="addSet(exIndex)" class="w-full py-2 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] rounded-xl text-zinc-300 flex items-center justify-center transition active:scale-95">
                                 <i data-lucide="plus" class="w-4 h-4"></i>
-                                <span>Добавить подход</span>
                             </button>
                         </div>
 
@@ -199,18 +200,18 @@
                 </template>
 
                 <!-- Add Exercise Button -->
-                <button @click="addExerciseRow()" class="w-full py-3 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-xs font-semibold text-white flex items-center justify-center space-x-2 transition active:scale-95">
-                    <i data-lucide="plus" class="w-4 h-4 text-emerald-400"></i>
+                <button @click="addExerciseRow()" class="w-full py-3 bg-[#161b22] border border-[#30363d] hover:bg-[#21262d] rounded-2xl text-xs font-semibold text-white flex items-center justify-center space-x-2 transition active:scale-95">
+                    <i data-lucide="plus" class="w-4 h-4 text-zinc-400"></i>
                     <span>Новое упражнение</span>
                 </button>
             </div>
 
             <!-- Modal Footer -->
             <div class="pt-2 flex space-x-2">
-                <button @click="clearDayData()" class="px-4 py-2.5 rounded-xl bg-red-500/10 text-red-400 text-xs font-semibold hover:bg-red-500/20 transition">
+                <button @click="clearDayData()" class="px-4 py-2.5 rounded-xl bg-[#21262d] border border-[#30363d] text-red-400 text-xs font-semibold hover:bg-red-500/10 transition">
                     Очистить
                 </button>
-                <button @click="saveDayData()" class="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold transition shadow-lg shadow-emerald-950">
+                <button @click="saveDayData()" class="flex-1 py-2.5 rounded-xl bg-[#21262d] border border-[#30363d] hover:bg-[#30363d] text-white text-xs font-bold transition">
                     Сохранить
                 </button>
             </div>
@@ -220,22 +221,22 @@
 
     <!-- SETTINGS MODAL -->
     <div x-show="openSettings" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" x-cloak>
-        <div @click.away="openSettings = false" class="bg-[#161b22] w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl">
+        <div @click.away="openSettings = false" class="bg-[#161b22] border border-[#30363d] w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-[#30363d] pb-3">
                 <h3 class="font-bold text-white text-base">Настройки</h3>
-                <button @click="openSettings = false" class="p-1 rounded-full bg-[#30363d] text-zinc-300">
+                <button @click="openSettings = false" class="p-1 rounded-full bg-[#21262d] text-zinc-300">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
             <div class="space-y-3 text-xs text-zinc-300">
-                <p class="text-zinc-400">Резервное копирование данных (сохранение в файл и восстановление).</p>
+                <p class="text-zinc-400">Экспорт / импорт данных.</p>
                 <div class="flex space-x-2 pt-1">
-                    <button @click="exportData()" class="flex-1 py-2.5 rounded-xl bg-[#0d1117] hover:bg-[#21262d] text-white font-medium flex items-center justify-center space-x-2 transition">
+                    <button @click="exportData()" class="flex-1 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] hover:bg-[#21262d] text-white font-medium flex items-center justify-center space-x-2 transition">
                         <i data-lucide="download" class="w-4 h-4"></i>
                         <span>Экспорт</span>
                     </button>
-                    <label class="flex-1 py-2.5 rounded-xl bg-[#0d1117] hover:bg-[#21262d] text-white font-medium flex items-center justify-center space-x-2 transition cursor-pointer">
+                    <label class="flex-1 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] hover:bg-[#21262d] text-white font-medium flex items-center justify-center space-x-2 transition cursor-pointer">
                         <i data-lucide="upload" class="w-4 h-4"></i>
                         <span>Импорт</span>
                         <input type="file" @change="importData" accept=".json" class="hidden">
@@ -244,7 +245,7 @@
             </div>
 
             <div class="border-t border-[#30363d] pt-3 flex justify-end">
-                <button @click="openSettings = false" class="px-4 py-2 rounded-xl bg-emerald-500 text-black text-xs font-bold">
+                <button @click="openSettings = false" class="px-4 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs font-bold">
                     Готово
                 </button>
             </div>
@@ -255,41 +256,28 @@
     <script>
         function trackerApp() {
             return {
-                workouts: {}, // format: { 'YYYY-MM-DD': [{name: 'Отжимания', setsList: [{reps: 20}, {reps: 25}] }] }
-                viewMode: 'month', // 'week', 'month', 'year'
+                workouts: {},
+                viewMode: 'month',
                 currentDate: new Date(),
                 todayStr: '',
                 openModal: false,
                 openSettings: false,
                 selectedDate: '',
                 activeDayExercises: [],
+                
+                // Drag state for vertical rep changing
+                dragging: false,
+                dragStartY: 0,
+                dragStartVal: 0,
+                dragExIndex: null,
+                dragSetIndex: null,
 
                 init() {
-                    const saved = localStorage.getItem('gym_streak_data_v2');
+                    const saved = localStorage.getItem('gym_streak_data_v3');
                     if (saved) {
                         try {
                             this.workouts = JSON.parse(saved);
-                        } catch (e) {
-                            console.error(e);
-                        }
-                    } else {
-                        // Migrate or default demo
-                        const oldSaved = localStorage.getItem('gym_streak_data');
-                        if (oldSaved) {
-                            try {
-                                const oldData = JSON.parse(oldSaved);
-                                // Convert old format to new setsList format
-                                for (let date in oldData) {
-                                    this.workouts[date] = oldData[date].map(ex => ({
-                                        name: ex.name,
-                                        setsList: Array.from({length: ex.sets || 3}, () => ({ reps: Math.round((ex.reps || 20) / (ex.sets || 3)) }))
-                                    }));
-                                }
-                                this.saveToStorage();
-                            } catch(err) {}
-                        } else {
-                            this.loadDemoData();
-                        }
+                        } catch (e) {}
                     }
 
                     const today = new Date();
@@ -299,20 +287,43 @@
                     this.$nextTick(() => lucide.createIcons());
                     this.$watch('viewMode', () => this.$nextTick(() => lucide.createIcons()));
                     this.$watch('openModal', () => this.$nextTick(() => lucide.createIcons()));
+
+                    // Global drag listeners for vertical scrolling rep changer
+                    window.addEventListener('mousemove', (e) => this.onDrag(e.clientY));
+                    window.addEventListener('mouseup', () => this.stopDrag());
+                    window.addEventListener('touchmove', (e) => {
+                        if (this.dragging && e.touches.length > 0) {
+                            this.onDrag(e.touches[0].clientY);
+                        }
+                    }, { passive: true });
+                    window.addEventListener('touchend', () => this.stopDrag());
                 },
 
-                loadDemoData() {
-                    const today = new Date();
-                    const dStr = this.formatDateIso(today);
-                    this.workouts[dStr] = [
-                        { name: 'Отжимания', setsList: [{reps: 25}, {reps: 20}, {reps: 15}] },
-                        { name: 'Пресс', setsList: [{reps: 30}, {reps: 30}] }
-                    ];
-                    this.saveToStorage();
+                startDrag(e, exIdx, setIdx) {
+                    this.dragging = true;
+                    this.dragStartY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+                    this.dragStartVal = Number(this.activeDayExercises[exIdx].setsList[setIdx].reps || 0);
+                    this.dragExIndex = exIdx;
+                    this.dragSetIndex = setIdx;
+                },
+
+                onDrag(clientY) {
+                    if (!this.dragging || this.dragExIndex === null || this.dragSetIndex === null) return;
+                    let diff = Math.floor((this.dragStartY - clientY) / 10); // drag up increases, down decreases
+                    let newVal = this.dragStartVal + diff;
+                    if (newVal < 0) newVal = 0;
+                    if (newVal > 999) newVal = 999;
+                    this.activeDayExercises[this.dragExIndex].setsList[this.dragSetIndex].reps = newVal;
+                },
+
+                stopDrag() {
+                    this.dragging = false;
+                    this.dragExIndex = null;
+                    this.dragSetIndex = null;
                 },
 
                 saveToStorage() {
-                    localStorage.setItem('gym_streak_data_v2', JSON.stringify(this.workouts));
+                    localStorage.setItem('gym_streak_data_v3', JSON.stringify(this.workouts));
                 },
 
                 formatDateIso(date) {
@@ -333,6 +344,12 @@
                     return dateStr === this.todayStr;
                 },
 
+                // COLOR LOGIC:
+                // 0 reps = Level 0 (dark neutral gray #161b22)
+                // 1-25 reps = Level 1 (soft green)
+                // 26-60 reps = Level 2 (medium green)
+                // 61-100 reps = Level 3 (bright green)
+                // 101+ reps = Level 4 (vibrant green)
                 getIntensity(dateStr) {
                     const dayExs = this.workouts[dateStr];
                     if (!dayExs || !dayExs.length) return 0;
@@ -345,9 +362,9 @@
                     });
 
                     if (totalReps === 0) return 0;
-                    if (totalReps < 30) return 1;
-                    if (totalReps < 70) return 2;
-                    if (totalReps < 150) return 3;
+                    if (totalReps <= 25) return 1;
+                    if (totalReps <= 60) return 2;
+                    if (totalReps <= 100) return 3;
                     return 4;
                 },
 
@@ -357,7 +374,7 @@
                         case 2: return 'bg-github-2';
                         case 3: return 'bg-github-3';
                         case 4: return 'bg-github-4';
-                        default: return 'bg-github-0';
+                        default: return 'bg-github-0'; // dark gray for 0 / rest days
                     }
                 },
 
@@ -433,10 +450,10 @@
                 get yearDaysList() {
                     let y = this.currentDate.getFullYear();
                     let startDate = new Date(y, 0, 1);
-                    let endDate = new Date(y, 11, 31);
+                    let letEndDate = new Date(y, 11, 31);
                     let list = [];
                     let curr = new Date(startDate);
-                    while (curr <= endDate) {
+                    while (curr <= letEndDate) {
                         let dateStr = this.formatDateIso(curr);
                         list.push({
                             dateStr: dateStr,
@@ -454,15 +471,16 @@
                     if (existing && existing.length > 0) {
                         this.activeDayExercises = JSON.parse(JSON.stringify(existing));
                     } else {
+                        // Clean, empty by default, no prefilled 20 reps
                         this.activeDayExercises = [
-                            { name: 'Отжимания', setsList: [{reps: 20}] }
+                            { name: 'Отжимания', setsList: [{reps: 0}] }
                         ];
                     }
                     this.openModal = true;
                 },
 
                 addExerciseRow() {
-                    this.activeDayExercises.push({ name: 'Приседания', setsList: [{reps: 20}] });
+                    this.activeDayExercises.push({ name: 'Приседания', setsList: [{reps: 0}] });
                 },
 
                 removeExercise(index) {
@@ -470,8 +488,7 @@
                 },
 
                 addSet(exIndex) {
-                    const lastRep = this.activeDayExercises[exIndex].setsList.slice(-1)[0]?.reps || 20;
-                    this.activeDayExercises[exIndex].setsList.push({ reps: lastRep });
+                    this.activeDayExercises[exIndex].setsList.push({ reps: 0 });
                 },
 
                 removeSet(exIndex, setIndex) {
@@ -484,7 +501,7 @@
                 adjustReps(exIndex, setIndex, delta) {
                     let current = Number(this.activeDayExercises[exIndex].setsList[setIndex].reps || 0);
                     current += delta;
-                    if (current < 1) current = 1;
+                    if (current < 0) current = 0;
                     if (current > 999) current = 999;
                     this.activeDayExercises[exIndex].setsList[setIndex].reps = current;
                 },
@@ -496,7 +513,6 @@
                 },
 
                 saveDayData() {
-                    // Filter out empty
                     this.activeDayExercises = this.activeDayExercises.filter(ex => ex.setsList && ex.setsList.length > 0);
                     if (this.activeDayExercises.length > 0) {
                         this.workouts[this.selectedDate] = JSON.parse(JSON.stringify(this.activeDayExercises));

@@ -37,6 +37,11 @@
             from { opacity: 0; transform: scale(0.96); }
             to { opacity: 1; transform: scale(1); }
         }
+        .number-pop { animation: popNum 0.1s ease-out; }
+        @keyframes popNum {
+            0% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
 <body class="min-h-screen font-sans antialiased pb-24" x-data="trackerApp()" x-init="initApp()">
@@ -69,45 +74,39 @@
             </button>
         </div>
 
-        <!-- UNIFORM HEATMAP CONTAINER (Compact GitHub style squares everywhere) -->
+        <!-- UNIFORM HEATMAP CONTAINER (Exact same square style for week, month, year) -->
         <div class="px-2 space-y-3" id="heatmap-container">
             
-            <!-- WEEK VIEW -->
+            <!-- WEEK VIEW (Exact same grid squares format) -->
             <template x-if="viewMode === 'week'">
-                <div class="flex justify-between gap-1.5">
+                <div class="grid grid-cols-7 gap-1.5">
                     <template x-for="day in currentWeekDays" :key="day.dateStr">
                         <div @click="selectDay(day.dateStr)" 
-                             class="flex-1 flex flex-col items-center justify-center py-3 rounded-md cursor-pointer transition active:scale-95"
+                             class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
+                             :id="isToday(day.dateStr) ? 'today-square' : ''"
                              :class="[getColorClass(day.intensity), isToday(day.dateStr) ? 'ring-1 ring-white' : '']"
                              :title="day.dateStr">
-                            <span class="text-[9px] text-zinc-400 uppercase mb-1" x-text="day.dayName"></span>
-                            <span class="text-xs font-bold text-white" x-text="day.dayNum"></span>
                         </div>
                     </template>
                 </div>
             </template>
 
-            <!-- MONTH VIEW -->
+            <!-- MONTH VIEW (Exact same grid squares format) -->
             <template x-if="viewMode === 'month'">
-                <div>
-                    <div class="grid grid-cols-7 gap-1.5 mb-2 text-center text-[10px] text-zinc-500 font-medium">
-                        <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
-                    </div>
-                    <div class="grid grid-cols-7 gap-1.5">
-                        <template x-for="cell in currentMonthGrid" :key="cell.dateStr || Math.random()">
-                            <template x-if="cell.empty">
-                                <div class="aspect-square bg-transparent"></div>
-                            </template>
-                            <template x-if="!cell.empty">
-                                <div @click="selectDay(cell.dateStr)"
-                                     class="aspect-square rounded-[3px] flex items-center justify-center cursor-pointer transition active:scale-95 text-[9px] font-medium text-zinc-300"
-                                     :class="[getColorClass(cell.intensity), isToday(cell.dateStr) ? 'ring-1 ring-white' : '']"
-                                     :title="cell.dateStr"
-                                     x-text="cell.dayNum">
-                                </div>
-                            </template>
+                <div class="grid grid-cols-7 gap-1.5">
+                    <template x-for="cell in currentMonthGrid" :key="cell.dateStr || Math.random()">
+                        <template x-if="cell.empty">
+                            <div class="aspect-square bg-transparent"></div>
                         </template>
-                    </div>
+                        <template x-if="!cell.empty">
+                            <div @click="selectDay(cell.dateStr)"
+                                 class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
+                                 :id="isToday(cell.dateStr) ? 'today-square' : ''"
+                                 :class="[getColorClass(cell.intensity), isToday(cell.dateStr) ? 'ring-1 ring-white' : '']"
+                                 :title="cell.dateStr">
+                            </div>
+                        </template>
+                    </template>
                 </div>
             </template>
 
@@ -174,10 +173,10 @@
                                     <span class="text-xs text-zinc-400 font-medium">Подход <span x-text="setIndex + 1"></span></span>
                                     
                                     <div class="flex items-center space-x-3">
-                                        <!-- Click on number to open vertical swipe drag picker -->
+                                        <!-- Clean number without borders/background frames -->
                                         <div @click="openPicker(exIndex, setIndex)"
-                                             class="bg-[#0d1117] border border-[#30363d] px-4 py-1.5 rounded-lg cursor-pointer text-sm font-bold text-white hover:border-emerald-500 transition select-none"
-                                             title="Нажми чтобы изменить">
+                                             class="cursor-pointer text-base font-bold text-white hover:text-emerald-400 transition select-none px-2 py-1"
+                                             title="Нажми для изменения">
                                             <span x-text="set.reps"></span> пов.
                                         </div>
 
@@ -218,20 +217,24 @@
         </div>
     </div>
 
-    <!-- FULLSCREEN BLUR DRAG REPS PICKER OVERLAY -->
+    <!-- FULLSCREEN BLUR DRAG REPS PICKER OVERLAY (Stiffer drag, white number, checkmark in bottom left) -->
     <div x-show="openPickerModal" 
          @touchstart="startPickerDrag($event)" 
          @mousedown="startPickerDrag($event)"
-         class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md select-none cursor-ns-resize" 
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md select-none cursor-ns-resize" 
          x-cloak>
-        <div class="text-center space-y-2 pointer-events-none">
-            <p class="text-xs text-zinc-400 uppercase tracking-widest">Тяни вверх или вниз</p>
-            <div class="text-7xl font-black text-emerald-400 transition-transform duration-75" x-text="pickerCurrentVal"></div>
-            <p class="text-xs text-zinc-500">повторений</p>
+        
+        <!-- Big white number with pop animation -->
+        <div class="text-center">
+            <div class="text-8xl font-black text-white transition-transform duration-75" :class="animatingPop ? 'number-pop' : ''" x-text="pickerCurrentVal"></div>
         </div>
-        <button @click.stop="closePicker()" class="mt-8 px-6 py-2.5 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs font-bold transition active:scale-95 pointer-events-auto">
-            Готово
-        </button>
+
+        <!-- Done checkmark button in bottom-left corner -->
+        <div class="absolute bottom-8 left-8">
+            <button @click.stop="closePicker()" class="w-16 h-16 bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-white rounded-full flex items-center justify-center shadow-2xl transition active:scale-90">
+                <i data-lucide="check" class="w-8 h-8 stroke-[3]"></i>
+            </button>
+        </div>
     </div>
 
     <!-- SETTINGS MODAL -->
@@ -283,21 +286,22 @@
                 selectedDate: '',
                 activeDayExercises: [],
                 
-                // Reps Picker state
+                // Reps Picker state (stiffer sensitivity: 40px per unit)
                 pickerExIndex: null,
                 pickerSetIndex: null,
                 pickerCurrentVal: 0,
                 pickerStartY: 0,
                 pickerStartVal: 0,
                 pickerDragging: false,
+                animatingPop: false,
 
                 initApp() {
-                    const saved = localStorage.getItem('gym_streak_data_v5');
+                    const saved = localStorage.getItem('gym_streak_data_v6');
                     if (saved) {
                         try { this.workouts = JSON.parse(saved); } catch (e) {}
                     }
 
-                    const savedView = localStorage.getItem('gym_view_mode_v2');
+                    const savedView = localStorage.getItem('gym_view_mode_v3');
                     if (savedView) {
                         this.viewMode = savedView;
                     }
@@ -318,7 +322,7 @@
                         });
                     });
 
-                    // Global listeners for fullscreen vertical drag picker
+                    // Global listeners for vertical drag picker
                     window.addEventListener('mousemove', (e) => this.onPickerDrag(e.clientY));
                     window.addEventListener('mouseup', () => this.stopPickerDrag());
                     window.addEventListener('touchmove', (e) => {
@@ -340,8 +344,8 @@
 
                 setViewMode(mode) {
                     this.viewMode = mode;
-                    localStorage.setItem('gym_view_mode_v2', mode);
-                    this.currentDate = new Date(); // Reset to current year/month/week
+                    localStorage.setItem('gym_view_mode_v3', mode);
+                    this.currentDate = new Date();
                 },
 
                 openPicker(exIdx, setIdx) {
@@ -349,6 +353,7 @@
                     this.pickerSetIndex = setIdx;
                     this.pickerCurrentVal = Number(this.activeDayExercises[exIdx].setsList[setIdx].reps || 0);
                     this.openPickerModal = true;
+                    this.$nextTick(() => lucide.createIcons());
                 },
 
                 startPickerDrag(e) {
@@ -359,12 +364,18 @@
 
                 onPickerDrag(clientY) {
                     if (!this.pickerDragging) return;
-                    let diff = Math.floor((this.pickerStartY - clientY) / 8); // Dragging up increases, down decreases
+                    // Stiffer sensitivity: 35px per increment
+                    let diff = Math.floor((this.pickerStartY - clientY) / 35); 
                     let newVal = this.pickerStartVal + diff;
                     if (newVal < 0) newVal = 0;
                     if (newVal > 999) newVal = 999;
-                    this.pickerCurrentVal = newVal;
-                    // Live update
+                    
+                    if (newVal !== this.pickerCurrentVal) {
+                        this.pickerCurrentVal = newVal;
+                        this.animatingPop = true;
+                        setTimeout(() => this.animatingPop = false, 100);
+                    }
+
                     if (this.pickerExIndex !== null && this.pickerSetIndex !== null) {
                         this.activeDayExercises[this.pickerExIndex].setsList[this.pickerSetIndex].reps = newVal;
                     }
@@ -381,7 +392,7 @@
                 },
 
                 saveToStorage() {
-                    localStorage.setItem('gym_streak_data_v5', JSON.stringify(this.workouts));
+                    localStorage.setItem('gym_streak_data_v6', JSON.stringify(this.workouts));
                 },
 
                 formatDateIso(date) {
@@ -452,13 +463,10 @@
                     d.setDate(d.getDate() + distanceToMonday);
 
                     let days = [];
-                    const names = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
                     for (let i = 0; i < 7; i++) {
                         let dateStr = this.formatDateIso(d);
                         days.push({
                             dateStr: dateStr,
-                            dayName: names[i],
-                            dayNum: d.getDate(),
                             intensity: this.getIntensity(dateStr)
                         });
                         d.setDate(d.getDate() + 1);
@@ -483,7 +491,6 @@
                         grid.push({
                             empty: false,
                             dateStr: dateStr,
-                            dayNum: i,
                             intensity: this.getIntensity(dateStr)
                         });
                     }
@@ -519,10 +526,12 @@
                         ];
                     }
                     this.openModal = true;
+                    this.$nextTick(() => lucide.createIcons());
                 },
 
                 addExerciseRow() {
                     this.activeDayExercises.push({ name: 'Приседания', setsList: [{reps: 0}] });
+                    this.$nextTick(() => lucide.createIcons());
                 },
 
                 removeExercise(index) {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymStreak — Трекер тренировок</title>
+    <title>Трекер</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -24,211 +24,135 @@
             }
         }
     </script>
-    <!-- Alpine.js for reactivity -->
+    <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         [x-cloak] { display: none !important; }
-        /* Custom scrollbar for mobile */
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: #0d1117; }
-        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
+        /* Hide scrollbars for clean iOS feel */
+        ::-webkit-scrollbar { width: 0px; height: 0px; display: none; }
     </style>
 </head>
-<body class="bg-[#0d1117] text-[#c9d1d9] min-h-screen font-sans antialiased selection:bg-emerald-500 selection:text-white pb-12" x-data="trackerApp()">
+<body class="bg-[#0d1117] text-[#c9d1d9] min-h-screen font-sans antialiased selection:bg-emerald-500 selection:text-white pb-24" x-data="trackerApp()">
 
-    <!-- Header -->
-    <header class="border-b border-[#30363d] bg-[#161b22]/80 backdrop-blur sticky top-0 z-30">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="bg-emerald-600/20 p-2 rounded-xl border border-emerald-500/30 text-emerald-400">
-                    <i data-lucide="dumbbell" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg text-white leading-tight">GymStreak</h1>
-                    <p class="text-xs text-zinc-400">Твой личный спорт-трекер</p>
-                </div>
-            </div>
-            
-            <div class="flex items-center space-x-2">
-                <button @click="openSettings = true" class="p-2 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-zinc-300 transition border border-[#30363d]" title="Настройки / Синхронизация">
-                    <i data-lucide="settings" class="w-5 h-5"></i>
-                </button>
-            </div>
+    <!-- Minimal Header -->
+    <header class="bg-[#0d1117] sticky top-0 z-30 px-4 py-4 max-w-md mx-auto flex items-center justify-between">
+        <div class="flex bg-[#161b22] p-1 rounded-xl">
+            <button @click="viewMode = 'week'" :class="viewMode === 'week' ? 'bg-[#30363d] text-white' : 'text-zinc-400'" class="px-3 py-1 rounded-lg text-xs font-medium transition">Неделя</button>
+            <button @click="viewMode = 'month'" :class="viewMode === 'month' ? 'bg-[#30363d] text-white' : 'text-zinc-400'" class="px-3 py-1 rounded-lg text-xs font-medium transition">Месяц</button>
+            <button @click="viewMode = 'year'" :class="viewMode === 'year' ? 'bg-[#30363d] text-white' : 'text-zinc-400'" class="px-3 py-1 rounded-lg text-xs font-medium transition">Год</button>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+            <button @click="openSettings = true" class="p-2 rounded-xl bg-[#161b22] text-zinc-400 hover:text-white transition">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+            </button>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 py-6 space-y-6">
+    <main class="max-w-md mx-auto px-4 space-y-4">
 
-        <!-- Stats Overview Cards -->
-        <div class="grid grid-cols-3 gap-3">
-            <div class="bg-[#161b22] border border-[#30363d] rounded-2xl p-3 sm:p-4 text-center">
-                <div class="text-xs text-zinc-400 mb-1">Стрик</div>
-                <div class="text-xl sm:text-2xl font-bold text-emerald-400 flex items-center justify-center space-x-1">
-                    <i data-lucide="flame" class="w-5 h-5 text-amber-500 fill-amber-500"></i>
-                    <span x-text="currentStreak"></span> <span class="text-xs font-normal text-zinc-400 ml-1">дн.</span>
-                </div>
-            </div>
-            <div class="bg-[#161b22] border border-[#30363d] rounded-2xl p-3 sm:p-4 text-center">
-                <div class="text-xs text-zinc-400 mb-1">Тренировок</div>
-                <div class="text-xl sm:text-2xl font-bold text-white" x-text="totalWorkouts"></div>
-            </div>
-            <div class="bg-[#161b22] border border-[#30363d] rounded-2xl p-3 sm:p-4 text-center">
-                <div class="text-xs text-zinc-400 mb-1">Повторений</div>
-                <div class="text-xl sm:text-2xl font-bold text-emerald-400" x-text="totalReps"></div>
-            </div>
+        <!-- Date Navigation Bar -->
+        <div class="flex items-center justify-between bg-[#161b22] px-4 py-2.5 rounded-2xl">
+            <button @click="shiftDate(-1)" class="text-zinc-400 hover:text-white p-1">
+                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+            </button>
+            <span class="text-sm font-semibold text-white" x-text="dateRangeTitle"></span>
+            <button @click="shiftDate(1)" class="text-zinc-400 hover:text-white p-1">
+                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
         </div>
 
-        <!-- View Selector & Navigation -->
-        <div class="bg-[#161b22] border border-[#30363d] rounded-2xl p-4 space-y-4">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <!-- View Mode Tabs -->
-                <div class="flex bg-[#0d1117] p-1 rounded-xl border border-[#30363d] w-full sm:w-auto">
-                    <button @click="viewMode = 'week'" :class="viewMode === 'week' ? 'bg-[#21262d] text-white shadow' : 'text-zinc-400 hover:text-zinc-200'" class="flex-1 sm:flex-initial px-4 py-1.5 rounded-lg text-xs font-medium transition">Неделя</button>
-                    <button @click="viewMode = 'month'" :class="viewMode === 'month' ? 'bg-[#21262d] text-white shadow' : 'text-zinc-400 hover:text-zinc-200'" class="flex-1 sm:flex-initial px-4 py-1.5 rounded-lg text-xs font-medium transition">Месяц</button>
-                    <button @click="viewMode = 'year'" :class="viewMode === 'year' ? 'bg-[#21262d] text-white shadow' : 'text-zinc-400 hover:text-zinc-200'" class="flex-1 sm:flex-initial px-4 py-1.5 rounded-lg text-xs font-medium transition">Год</button>
-                </div>
-
-                <!-- Date Navigation -->
-                <div class="flex items-center justify-between w-full sm:w-auto space-x-2">
-                    <button @click="shiftDate(-1)" class="p-2 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-zinc-300 transition border border-[#30363d]">
-                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                    </button>
-                    <span class="text-sm font-semibold text-white px-2 text-center min-w-[140px]" x-text="dateRangeTitle"></span>
-                    <button @click="shiftDate(1)" class="p-2 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-zinc-300 transition border border-[#30363d]">
-                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- HEATMAP CONTAINER -->
-            <div class="pt-2 overflow-x-auto pb-2">
-                
-                <!-- WEEK VIEW -->
-                <template x-if="viewMode === 'week'">
-                    <div class="grid grid-cols-7 gap-2 min-w-[320px]">
-                        <template x-for="day in currentWeekDays" :key="day.dateStr">
-                            <div @click="selectDay(day.dateStr)" 
-                                 class="flex flex-col items-center justify-between p-3 rounded-xl border cursor-pointer transition hover:scale-105"
-                                 :class="isToday(day.dateStr) ? 'border-emerald-500 bg-[#21262d]' : 'border-[#30363d] bg-[#0d1117]'">
-                                <span class="text-xs text-zinc-400 uppercase" x-text="day.dayName"></span>
-                                <span class="text-sm font-bold text-white my-1" x-text="day.dayNum"></span>
-                                <div class="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition"
-                                     :class="getColorClass(day.intensity)">
-                                    <span x-text="day.totalReps > 0 ? day.totalReps : ''" class="text-[10px]"></span>
-                                </div>
+        <!-- HEATMAP CONTAINER (Clean, no borders, fits screen) -->
+        <div class="bg-[#161b22] p-4 rounded-2xl space-y-3">
+            
+            <!-- WEEK VIEW -->
+            <template x-if="viewMode === 'week'">
+                <div class="grid grid-cols-7 gap-2">
+                    <template x-for="day in currentWeekDays" :key="day.dateStr">
+                        <div @click="selectDay(day.dateStr)" 
+                             class="flex flex-col items-center justify-between p-2.5 rounded-xl cursor-pointer transition active:scale-95"
+                             :class="isToday(day.dateStr) ? 'bg-[#30363d]' : 'bg-[#0d1117]'">
+                            <span class="text-[10px] text-zinc-500 uppercase" x-text="day.dayName"></span>
+                            <span class="text-sm font-bold text-white my-1.5" x-text="day.dayNum"></span>
+                            <div class="w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold"
+                                 :class="getColorClass(day.intensity)">
+                                <span x-text="day.totalReps > 0 ? day.totalReps : ''"></span>
                             </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- MONTH VIEW (All days visible, no borders) -->
+            <template x-if="viewMode === 'month'">
+                <div>
+                    <div class="grid grid-cols-7 gap-1 mb-2 text-center text-[10px] text-zinc-500 font-medium">
+                        <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1.5">
+                        <template x-for="cell in currentMonthGrid" :key="cell.dateStr || Math.random()">
+                            <template x-if="cell.empty">
+                                <div class="aspect-square bg-transparent"></div>
+                            </template>
+                            <template x-if="!cell.empty">
+                                <div @click="selectDay(cell.dateStr)"
+                                     class="aspect-square rounded-lg p-1 flex flex-col justify-between items-center cursor-pointer transition active:scale-95 relative"
+                                     :class="[getColorClass(cell.intensity), isToday(cell.dateStr) ? 'ring-1 ring-emerald-400' : '']">
+                                    <span class="text-[10px] font-medium" :class="isToday(cell.dateStr) ? 'text-emerald-400 font-bold' : 'text-zinc-400'" x-text="cell.dayNum"></span>
+                                    <div class="w-1.5 h-1.5 rounded-full" :class="cell.intensity > 0 ? 'bg-white/90' : 'bg-transparent'"></div>
+                                </div>
+                            </template>
                         </template>
                     </div>
-                </template>
-
-                <!-- MONTH VIEW -->
-                <template x-if="viewMode === 'month'">
-                    <div class="min-w-[340px]">
-                        <div class="grid grid-cols-7 gap-1 mb-2 text-center text-xs text-zinc-500 font-medium">
-                            <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
-                        </div>
-                        <div class="grid grid-cols-7 gap-1.5">
-                            <template x-for="cell in currentMonthGrid" :key="cell.dateStr || Math.random()">
-                                <template x-if="cell.empty">
-                                    <div class="aspect-square bg-transparent"></div>
-                                </template>
-                                <template x-if="!cell.empty">
-                                    <div @click="selectDay(cell.dateStr)"
-                                         class="aspect-square rounded-lg p-1 flex flex-col justify-between items-center cursor-pointer border transition hover:border-emerald-500 relative group"
-                                         :class="[getColorClass(cell.intensity), isToday(cell.dateStr) ? 'ring-2 ring-emerald-400' : 'border-transparent']">
-                                        <span class="text-[10px] text-zinc-300 font-medium" x-text="cell.dayNum"></span>
-                                        <div class="w-2 h-2 rounded-full" :class="cell.intensity > 0 ? 'bg-white/80' : 'bg-transparent'"></div>
-                                    </div>
-                                </template>
-                            </template>
-                        </div>
-                    </div>
-                </template>
-
-                <!-- YEAR VIEW (GitHub Heatmap Style) -->
-                <template x-if="viewMode === 'year'">
-                    <div class="min-w-[650px] overflow-x-auto pb-2">
-                        <div class="flex text-[10px] text-zinc-500 mb-1 space-x-12">
-                            <template x-for="monthLabel in yearMonthLabels">
-                                <span x-text="monthLabel"></span>
-                            </template>
-                        </div>
-                        <div class="flex gap-1">
-                            <template x-for="week in yearWeeks" :key="week.weekIndex">
-                                <div class="flex flex-col gap-1">
-                                    <template x-for="day in week.days" :key="day.dateStr">
-                                        <div @click="selectDay(day.dateStr)"
-                                             class="w-3.5 h-3.5 rounded-[3px] cursor-pointer transition hover:ring-1 hover:ring-white relative group"
-                                             :class="getColorClass(day.intensity)"
-                                             :title="day.dateStr + ': ' + day.totalReps + ' пов.'">
-                                        </div>
-                                    </template>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-                </template>
-
-            </div>
-
-            <!-- Legend -->
-            <div class="flex items-center justify-between text-xs text-zinc-400 pt-2 border-t border-[#30363d]">
-                <span>Меньше</span>
-                <div class="flex items-center space-x-1.5">
-                    <div class="w-3 h-3 rounded-[3px] bg-github-0 border border-[#30363d]"></div>
-                    <div class="w-3 h-3 rounded-[3px] bg-github-1"></div>
-                    <div class="w-3 h-3 rounded-[3px] bg-github-2"></div>
-                    <div class="w-3 h-3 rounded-[3px] bg-github-3"></div>
-                    <div class="w-3 h-3 rounded-[3px] bg-github-4"></div>
                 </div>
-                <span>Больше</span>
-            </div>
-        </div>
+            </template>
 
-        <!-- Quick Exercise Preset / Log Today Button -->
-        <div class="bg-gradient-to-r from-emerald-950/40 to-[#161b22] border border-emerald-500/30 rounded-2xl p-4 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="bg-emerald-500 text-black p-2.5 rounded-xl font-bold">
-                    <i data-lucide="plus" class="w-6 h-6"></i>
+            <!-- YEAR VIEW (Compact grid for phone) -->
+            <template x-if="viewMode === 'year'">
+                <div class="grid grid-cols-12 gap-1.5">
+                    <template x-for="day in yearDaysList" :key="day.dateStr">
+                        <div @click="selectDay(day.dateStr)"
+                             class="aspect-square rounded-[4px] cursor-pointer transition active:scale-90 relative"
+                             :class="[getColorClass(day.intensity), isToday(day.dateStr) ? 'ring-1 ring-white' : '']"
+                             :title="day.dateStr">
+                        </div>
+                    </template>
                 </div>
-                <div>
-                    <h3 class="font-bold text-white text-sm sm:text-base">Записать тренировку за сегодня</h3>
-                    <p class="text-xs text-zinc-400" x-text="formatDateHuman(todayStr)"></p>
-                </div>
-            </div>
-            <button @click="selectDay(todayStr)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition shadow-lg shadow-emerald-900/40">
-                Записать
-            </button>
+            </template>
+
         </div>
 
     </main>
 
-    <!-- DAY DETAIL MODAL -->
-    <div x-show="openModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" x-cloak>
-        <div @click.away="openModal = false" class="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-5 space-y-5 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <!-- FLOATING ACTION BUTTON (FAB) in bottom right corner -->
+    <div class="fixed bottom-6 right-6 z-40">
+        <button @click="selectDay(todayStr)" class="w-14 h-14 bg-emerald-500 hover:bg-emerald-400 text-black rounded-full flex items-center justify-center shadow-xl shadow-emerald-950/60 transition active:scale-90">
+            <i data-lucide="plus" class="w-8 h-8 stroke-[2.5]"></i>
+        </button>
+    </div>
+
+    <!-- DAY DETAIL MODAL (iOS Timer / Stepper style) -->
+    <div x-show="openModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/70 backdrop-blur-sm" x-cloak>
+        <div @click.away="openModal = false" class="bg-[#161b22] w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
             
             <!-- Modal Header -->
-            <div class="flex items-center justify-between border-b border-[#30363d] pb-3">
-                <div>
-                    <h3 class="font-bold text-white text-base sm:text-lg flex items-center space-x-2">
-                        <i data-lucide="calendar" class="w-5 h-5 text-emerald-400"></i>
-                        <span x-text="formatDateHuman(selectedDate)"></span>
-                    </h3>
-                    <p class="text-xs text-zinc-400">Внеси результаты упражнений</p>
-                </div>
-                <button @click="openModal = false" class="p-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-zinc-400 hover:text-white transition">
+            <div class="flex items-center justify-between pb-2 border-b border-[#30363d]">
+                <h3 class="font-bold text-white text-base" x-text="formatDateHuman(selectedDate)"></h3>
+                <button @click="openModal = false" class="p-1 rounded-full bg-[#30363d] text-zinc-300">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
             <!-- Exercises List -->
-            <div class="space-y-3 overflow-y-auto pr-1 flex-1">
-                <template x-for="(ex, index) in activeDayExercises" :key="index">
-                    <div class="bg-[#0d1117] border border-[#30363d] rounded-xl p-3.5 space-y-3">
+            <div class="space-y-4 overflow-y-auto pr-1 flex-1 py-1">
+                <template x-for="(ex, exIndex) in activeDayExercises" :key="exIndex">
+                    <div class="bg-[#0d1117] p-3.5 rounded-2xl space-y-3">
+                        
+                        <!-- Exercise Header / Select -->
                         <div class="flex items-center justify-between">
-                            <select x-model="ex.name" class="bg-[#161b22] text-white text-sm font-medium border border-[#30363d] rounded-lg px-3 py-1.5 focus:outline-none focus:border-emerald-500 w-2/3">
+                            <select x-model="ex.name" class="bg-[#161b22] text-white text-sm font-semibold rounded-xl px-3 py-1.5 focus:outline-none w-2/3">
                                 <option value="Отжимания">Отжимания</option>
                                 <option value="Подтягивания">Подтягивания</option>
                                 <option value="Приседания">Приседания</option>
@@ -237,44 +161,58 @@
                                 <option value="Брусья">Брусья</option>
                                 <option value="Другое">Другое</option>
                             </select>
-                            <button @click="removeExercise(index)" class="text-zinc-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-[#21262d] transition">
+                            <button @click="removeExercise(exIndex)" class="text-zinc-500 hover:text-red-400 p-1">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
-                        
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="text-[10px] text-zinc-400 block mb-1 uppercase tracking-wider">Подходы</label>
-                                <input type="number" min="1" max="100" x-model.number="ex.sets" class="w-full bg-[#161b22] text-white text-sm border border-[#30363d] rounded-lg px-3 py-1.5 focus:outline-none focus:border-emerald-500">
-                            </div>
-                            <div>
-                                <label class="text-[10px] text-zinc-400 block mb-1 uppercase tracking-wider">Повторения / Значение</label>
-                                <input type="number" min="1" max="1000" x-model.number="ex.reps" class="w-full bg-[#161b22] text-white text-sm border border-[#30363d] rounded-lg px-3 py-1.5 focus:outline-none focus:border-emerald-500">
-                            </div>
+
+                        <!-- Sets & Reps iOS Wheel / Stepper Style -->
+                        <div class="space-y-2 pt-1">
+                            <template x-for="(set, setIndex) in ex.setsList" :key="setIndex">
+                                <div class="flex items-center justify-between bg-[#161b22] px-3 py-2 rounded-xl">
+                                    <span class="text-xs text-zinc-400 font-medium">Подход <span x-text="setIndex + 1"></span></span>
+                                    
+                                    <div class="flex items-center space-x-3">
+                                        <!-- Reps Stepper (iPhone timer style buttons) -->
+                                        <div class="flex items-center space-x-2 bg-[#0d1117] px-2 py-1 rounded-lg">
+                                            <button @click="adjustReps(exIndex, setIndex, -1)" class="w-7 h-7 bg-[#21262d] hover:bg-[#30363d] text-white rounded-md flex items-center justify-center font-bold text-sm transition active:scale-95">-</button>
+                                            <span class="w-8 text-center text-sm font-bold text-emerald-400" x-text="set.reps"></span>
+                                            <button @click="adjustReps(exIndex, setIndex, 1)" class="w-7 h-7 bg-[#21262d] hover:bg-[#30363d] text-white rounded-md flex items-center justify-center font-bold text-sm transition active:scale-95">+</button>
+                                        </div>
+
+                                        <!-- Delete set -->
+                                        <button @click="removeSet(exIndex, setIndex)" class="text-zinc-600 hover:text-red-400 p-1">
+                                            <i data-lucide="minus-circle" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Add Set Quick Button (+) -->
+                            <button @click="addSet(exIndex)" class="w-full py-2 bg-emerald-950/30 hover:bg-emerald-900/30 border border-emerald-500/20 rounded-xl text-xs font-semibold text-emerald-400 flex items-center justify-center space-x-1 transition active:scale-95">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                <span>Добавить подход</span>
+                            </button>
                         </div>
+
                     </div>
                 </template>
 
                 <!-- Add Exercise Button -->
-                <button @click="addExerciseRow()" class="w-full py-2.5 border border-dashed border-[#30363d] hover:border-emerald-500/50 rounded-xl text-xs text-zinc-400 hover:text-emerald-400 flex items-center justify-center space-x-2 transition bg-[#0d1117]/50">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span>Добавить упражнение</span>
+                <button @click="addExerciseRow()" class="w-full py-3 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-xs font-semibold text-white flex items-center justify-center space-x-2 transition active:scale-95">
+                    <i data-lucide="plus" class="w-4 h-4 text-emerald-400"></i>
+                    <span>Новое упражнение</span>
                 </button>
             </div>
 
             <!-- Modal Footer -->
-            <div class="border-t border-[#30363d] pt-3 flex items-center justify-between">
-                <button @click="clearDayData()" class="text-xs text-red-400 hover:text-red-300 px-3 py-2 rounded-lg hover:bg-red-500/10 transition">
-                    Очистить день
+            <div class="pt-2 flex space-x-2">
+                <button @click="clearDayData()" class="px-4 py-2.5 rounded-xl bg-red-500/10 text-red-400 text-xs font-semibold hover:bg-red-500/20 transition">
+                    Очистить
                 </button>
-                <div class="flex space-x-2">
-                    <button @click="openModal = false" class="px-4 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-zinc-300 text-xs font-semibold transition">
-                        Отмена
-                    </button>
-                    <button @click="saveDayData()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition shadow-lg shadow-emerald-900/40">
-                        Сохранить
-                    </button>
-                </div>
+                <button @click="saveDayData()" class="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold transition shadow-lg shadow-emerald-950">
+                    Сохранить
+                </button>
             </div>
 
         </div>
@@ -282,28 +220,22 @@
 
     <!-- SETTINGS MODAL -->
     <div x-show="openSettings" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" x-cloak>
-        <div @click.away="openSettings = false" class="bg-[#161b22] border border-[#30363d] w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl">
+        <div @click.away="openSettings = false" class="bg-[#161b22] w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-[#30363d] pb-3">
-                <h3 class="font-bold text-white text-base flex items-center space-x-2">
-                    <i data-lucide="settings" class="w-5 h-5 text-emerald-400"></i>
-                    <span>Настройки и данные</span>
-                </h3>
-                <button @click="openSettings = false" class="p-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-zinc-400 hover:text-white transition">
+                <h3 class="font-bold text-white text-base">Настройки</h3>
+                <button @click="openSettings = false" class="p-1 rounded-full bg-[#30363d] text-zinc-300">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
-            <div class="space-y-4 text-xs text-zinc-300">
-                <p class="text-zinc-400 leading-relaxed">
-                    Данные хранятся в памяти твоего браузера (LocalStorage). Чтобы не потерять их при очистке кэша или переходе с телефона на ПК, ты можешь экспортировать или импортировать JSON-файл.
-                </p>
-
-                <div class="flex space-x-3 pt-2">
-                    <button @click="exportData()" class="flex-1 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-white font-medium flex items-center justify-center space-x-2 transition">
+            <div class="space-y-3 text-xs text-zinc-300">
+                <p class="text-zinc-400">Резервное копирование данных (сохранение в файл и восстановление).</p>
+                <div class="flex space-x-2 pt-1">
+                    <button @click="exportData()" class="flex-1 py-2.5 rounded-xl bg-[#0d1117] hover:bg-[#21262d] text-white font-medium flex items-center justify-center space-x-2 transition">
                         <i data-lucide="download" class="w-4 h-4"></i>
-                        <span>Экспорт данных</span>
+                        <span>Экспорт</span>
                     </button>
-                    <label class="flex-1 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-white font-medium flex items-center justify-center space-x-2 transition cursor-pointer">
+                    <label class="flex-1 py-2.5 rounded-xl bg-[#0d1117] hover:bg-[#21262d] text-white font-medium flex items-center justify-center space-x-2 transition cursor-pointer">
                         <i data-lucide="upload" class="w-4 h-4"></i>
                         <span>Импорт</span>
                         <input type="file" @change="importData" accept=".json" class="hidden">
@@ -312,7 +244,7 @@
             </div>
 
             <div class="border-t border-[#30363d] pt-3 flex justify-end">
-                <button @click="openSettings = false" class="px-4 py-2 rounded-xl bg-emerald-600 text-white font-semibold transition">
+                <button @click="openSettings = false" class="px-4 py-2 rounded-xl bg-emerald-500 text-black text-xs font-bold">
                     Готово
                 </button>
             </div>
@@ -323,8 +255,8 @@
     <script>
         function trackerApp() {
             return {
-                workouts: {}, // format: { 'YYYY-MM-DD': [{name: 'Отжимания', sets: 3, reps: 25}, ...] }
-                viewMode: 'year', // 'week', 'month', 'year'
+                workouts: {}, // format: { 'YYYY-MM-DD': [{name: 'Отжимания', setsList: [{reps: 20}, {reps: 25}] }] }
+                viewMode: 'month', // 'week', 'month', 'year'
                 currentDate: new Date(),
                 todayStr: '',
                 openModal: false,
@@ -333,50 +265,54 @@
                 activeDayExercises: [],
 
                 init() {
-                    // Load from localStorage
-                    const saved = localStorage.getItem('gym_streak_data');
+                    const saved = localStorage.getItem('gym_streak_data_v2');
                     if (saved) {
                         try {
                             this.workouts = JSON.parse(saved);
                         } catch (e) {
-                            console.error('Failed to parse saved workouts', e);
+                            console.error(e);
                         }
                     } else {
-                        // Demo data for initial look
-                        this.loadDemoData();
+                        // Migrate or default demo
+                        const oldSaved = localStorage.getItem('gym_streak_data');
+                        if (oldSaved) {
+                            try {
+                                const oldData = JSON.parse(oldSaved);
+                                // Convert old format to new setsList format
+                                for (let date in oldData) {
+                                    this.workouts[date] = oldData[date].map(ex => ({
+                                        name: ex.name,
+                                        setsList: Array.from({length: ex.sets || 3}, () => ({ reps: Math.round((ex.reps || 20) / (ex.sets || 3)) }))
+                                    }));
+                                }
+                                this.saveToStorage();
+                            } catch(err) {}
+                        } else {
+                            this.loadDemoData();
+                        }
                     }
 
                     const today = new Date();
                     this.todayStr = this.formatDateIso(today);
                     this.selectedDate = this.todayStr;
 
-                    this.$nextTick(() => {
-                        lucide.createIcons();
-                    });
-
-                    this.$watch('viewMode', () => {
-                        this.$nextTick(() => lucide.createIcons());
-                    });
-                    this.$watch('openModal', () => {
-                        this.$nextTick(() => lucide.createIcons());
-                    });
-                    this.$watch('openSettings', () => {
-                        this.$nextTick(() => lucide.createIcons());
-                    });
+                    this.$nextTick(() => lucide.createIcons());
+                    this.$watch('viewMode', () => this.$nextTick(() => lucide.createIcons()));
+                    this.$watch('openModal', () => this.$nextTick(() => lucide.createIcons()));
                 },
 
                 loadDemoData() {
                     const today = new Date();
                     const dStr = this.formatDateIso(today);
                     this.workouts[dStr] = [
-                        { name: 'Отжимания', sets: 4, reps: 25 },
-                        { name: 'Пресс', sets: 3, reps: 30 }
+                        { name: 'Отжимания', setsList: [{reps: 25}, {reps: 20}, {reps: 15}] },
+                        { name: 'Пресс', setsList: [{reps: 30}, {reps: 30}] }
                     ];
                     this.saveToStorage();
                 },
 
                 saveToStorage() {
-                    localStorage.setItem('gym_streak_data', JSON.stringify(this.workouts));
+                    localStorage.setItem('gym_streak_data_v2', JSON.stringify(this.workouts));
                 },
 
                 formatDateIso(date) {
@@ -390,20 +326,23 @@
                     if (!dateStr) return '';
                     const [y, m, d] = dateStr.split('-').map(Number);
                     const date = new Date(y, m - 1, d);
-                    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'short' });
+                    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', weekday: 'short' });
                 },
 
                 isToday(dateStr) {
                     return dateStr === this.todayStr;
                 },
 
-                // Calculate intensity (0 to 4) based on total reps or sets
                 getIntensity(dateStr) {
                     const dayExs = this.workouts[dateStr];
                     if (!dayExs || !dayExs.length) return 0;
                     
-                    let totalReps = dayExs.reduce((sum, ex) => sum + (Number(ex.sets || 0) * Number(ex.reps || 0)), 0);
-                    if (totalReps === 0 && dayExs.length > 0) totalReps = 15; // Just active
+                    let totalReps = 0;
+                    dayExs.forEach(ex => {
+                        if (ex.setsList) {
+                            ex.setsList.forEach(s => totalReps += Number(s.reps || 0));
+                        }
+                    });
 
                     if (totalReps === 0) return 0;
                     if (totalReps < 30) return 1;
@@ -412,93 +351,35 @@
                     return 4;
                 },
 
-                getTotalRepsForDay(dateStr) {
-                    const dayExs = this.workouts[dateStr];
-                    if (!dayExs || !dayExs.length) return 0;
-                    return dayExs.reduce((sum, ex) => sum + (Number(ex.sets || 0) * Number(ex.reps || 0)), 0);
-                },
-
                 getColorClass(intensity) {
                     switch (intensity) {
-                        case 1: return 'bg-github-1 border border-emerald-800/50';
-                        case 2: return 'bg-github-2 border border-emerald-700/50';
-                        case 3: return 'bg-github-3 border border-emerald-500/50';
-                        case 4: return 'bg-github-4 border border-emerald-400';
-                        default: return 'bg-github-0 border border-[#30363d]';
+                        case 1: return 'bg-github-1';
+                        case 2: return 'bg-github-2';
+                        case 3: return 'bg-github-3';
+                        case 4: return 'bg-github-4';
+                        default: return 'bg-github-0';
                     }
                 },
 
-                // Stats computed
-                get totalWorkouts() {
-                    return Object.keys(this.workouts).filter(k => this.workouts[k] && this.workouts[k].length > 0).length;
-                },
-
-                get totalReps() {
-                    let total = 0;
-                    for (let date in this.workouts) {
-                        const dayExs = this.workouts[date];
-                        if (dayExs) {
-                            total += dayExs.reduce((sum, ex) => sum + (Number(ex.sets || 0) * Number(ex.reps || 0)), 0);
-                        }
-                    }
-                    return total;
-                },
-
-                get currentStreak() {
-                    let streak = 0;
-                    let d = new Date();
-                    
-                    // Check backwards from today or yesterday
-                    for (let i = 0; i < 365; i++) {
-                        const str = this.formatDateIso(d);
-                        const dayExs = this.workouts[str];
-                        if (dayExs && dayExs.length > 0) {
-                            streak++;
-                        } else {
-                            if (i === 0) {
-                                // If today is not done yet, don't break streak immediately, check yesterday
-                                d.setDate(d.getDate() - 1);
-                                const yesterdayStr = this.formatDateIso(d);
-                                if (this.workouts[yesterdayStr] && this.workouts[yesterdayStr].length > 0) {
-                                    d.setDate(d.getDate() + 1); // restore for next iteration logic
-                                    continue;
-                                }
-                            }
-                            if (streak > 0 || i > 0) break;
-                        }
-                        d.setDate(d.getDate() - 1);
-                    }
-                    return streak;
-                },
-
-                // Navigation title & shift
                 get dateRangeTitle() {
                     const y = this.currentDate.getFullYear();
                     const m = this.currentDate.getMonth();
-                    
-                    if (this.viewMode === 'week') {
-                        return `Неделя (${y})`;
-                    } else if (this.viewMode === 'month') {
+                    if (this.viewMode === 'week') return `Неделя (${y})`;
+                    if (this.viewMode === 'month') {
                         const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
                         return `${months[m]} ${y}`;
-                    } else {
-                        return `${y} год`;
                     }
+                    return `${y} год`;
                 },
 
                 shiftDate(direction) {
                     const d = new Date(this.currentDate);
-                    if (this.viewMode === 'week') {
-                        d.setDate(d.getDate() + (direction * 7));
-                    } else if (this.viewMode === 'month') {
-                        d.setMonth(d.getMonth() + direction);
-                    } else {
-                        d.setFullYear(d.getFullYear() + direction);
-                    }
+                    if (this.viewMode === 'week') d.setDate(d.getDate() + (direction * 7));
+                    else if (this.viewMode === 'month') d.setMonth(d.getMonth() + direction);
+                    else d.setFullYear(d.getFullYear() + direction);
                     this.currentDate = d;
                 },
 
-                // WEEK VIEW DATA
                 get currentWeekDays() {
                     let d = new Date(this.currentDate);
                     let dayOfWeek = d.getDay();
@@ -509,36 +390,33 @@
                     const names = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
                     for (let i = 0; i < 7; i++) {
                         let dateStr = this.formatDateIso(d);
+                        let totalR = 0;
+                        if (this.workouts[dateStr]) {
+                            this.workouts[dateStr].forEach(ex => ex.setsList?.forEach(s => totalR += Number(s.reps || 0)));
+                        }
                         days.push({
                             dateStr: dateStr,
                             dayName: names[i],
                             dayNum: d.getDate(),
                             intensity: this.getIntensity(dateStr),
-                            totalReps: this.getTotalRepsForDay(dateStr)
+                            totalReps: totalR
                         });
                         d.setDate(d.getDate() + 1);
                     }
                     return days;
                 },
 
-                // MONTH VIEW DATA
                 get currentMonthGrid() {
                     let y = this.currentDate.getFullYear();
                     let m = this.currentDate.getMonth();
-                    
                     let firstDayOfMonth = new Date(y, m, 1);
                     let lastDayOfMonth = new Date(y, m + 1, 0);
-                    
                     let startingDayOfWeek = firstDayOfMonth.getDay();
-                    let startIndex = startingDayOfWeek === 0 ? 6 : startingDayOfWeek - 1; // Mon = 0
+                    let startIndex = startingDayOfWeek === 0 ? 6 : startingDayOfWeek - 1;
                     
                     let grid = [];
-                    // Empty cells before start
-                    for (let i = 0; i < startIndex; i++) {
-                        grid.push({ empty: true });
-                    }
+                    for (let i = 0; i < startIndex; i++) grid.push({ empty: true });
 
-                    // Days of month
                     for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
                         let dateObj = new Date(y, m, i);
                         let dateStr = this.formatDateIso(dateObj);
@@ -552,67 +430,63 @@
                     return grid;
                 },
 
-                // YEAR VIEW DATA (GitHub Heatmap)
-                get yearMonthLabels() {
-                    return ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
-                },
-
-                get yearWeeks() {
+                get yearDaysList() {
                     let y = this.currentDate.getFullYear();
-                    // Start from 52 weeks ago or Jan 1st
-                    let endDate = new Date(y, 11, 31);
                     let startDate = new Date(y, 0, 1);
-                    
-                    // Adjust start to previous Monday
-                    let dayOfWeek = startDate.getDay();
-                    let diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-                    startDate.setDate(startDate.getDate() + diff);
-
-                    let weeks = [];
+                    let endDate = new Date(y, 11, 31);
+                    let list = [];
                     let curr = new Date(startDate);
-                    let weekIndex = 0;
-
-                    while (curr <= endDate || weeks.length < 52) {
-                        let weekDays = [];
-                        for (let i = 0; i < 7; i++) {
-                            let dateStr = this.formatDateIso(curr);
-                            weekDays.push({
-                                dateStr: dateStr,
-                                intensity: this.getIntensity(dateStr),
-                                totalReps: this.getTotalRepsForDay(dateStr)
-                            });
-                            curr.setDate(curr.getDate() + 1);
-                        }
-                        weeks.push({ weekIndex: weekIndex++, days: weekDays });
-                        if (curr.getFullYear() > y && weeks.length >= 52) break;
+                    while (curr <= endDate) {
+                        let dateStr = this.formatDateIso(curr);
+                        list.push({
+                            dateStr: dateStr,
+                            intensity: this.getIntensity(dateStr)
+                        });
+                        curr.setDate(curr.getDate() + 1);
                     }
-                    return weeks;
+                    return list;
                 },
 
-                // MODAL ACTIONS
                 selectDay(dateStr) {
                     if (!dateStr) return;
                     this.selectedDate = dateStr;
                     const existing = this.workouts[dateStr];
                     if (existing && existing.length > 0) {
-                        // Deep copy
                         this.activeDayExercises = JSON.parse(JSON.stringify(existing));
                     } else {
-                        // Default template
                         this.activeDayExercises = [
-                            { name: 'Отжимания', sets: 3, reps: 20 },
-                            { name: 'Пресс', sets: 3, reps: 25 }
+                            { name: 'Отжимания', setsList: [{reps: 20}] }
                         ];
                     }
                     this.openModal = true;
                 },
 
                 addExerciseRow() {
-                    this.activeDayExercises.push({ name: 'Приседания', sets: 3, reps: 20 });
+                    this.activeDayExercises.push({ name: 'Приседания', setsList: [{reps: 20}] });
                 },
 
                 removeExercise(index) {
                     this.activeDayExercises.splice(index, 1);
+                },
+
+                addSet(exIndex) {
+                    const lastRep = this.activeDayExercises[exIndex].setsList.slice(-1)[0]?.reps || 20;
+                    this.activeDayExercises[exIndex].setsList.push({ reps: lastRep });
+                },
+
+                removeSet(exIndex, setIndex) {
+                    this.activeDayExercises[exIndex].setsList.splice(setIndex, 1);
+                    if (this.activeDayExercises[exIndex].setsList.length === 0) {
+                        this.removeExercise(exIndex);
+                    }
+                },
+
+                adjustReps(exIndex, setIndex, delta) {
+                    let current = Number(this.activeDayExercises[exIndex].setsList[setIndex].reps || 0);
+                    current += delta;
+                    if (current < 1) current = 1;
+                    if (current > 999) current = 999;
+                    this.activeDayExercises[exIndex].setsList[setIndex].reps = current;
                 },
 
                 clearDayData() {
@@ -622,6 +496,8 @@
                 },
 
                 saveDayData() {
+                    // Filter out empty
+                    this.activeDayExercises = this.activeDayExercises.filter(ex => ex.setsList && ex.setsList.length > 0);
                     if (this.activeDayExercises.length > 0) {
                         this.workouts[this.selectedDate] = JSON.parse(JSON.stringify(this.activeDayExercises));
                     } else {
@@ -635,7 +511,7 @@
                     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.workouts, null, 2));
                     const dlAnchorElem = document.createElement('a');
                     dlAnchorElem.setAttribute("href", dataStr);
-                    dlAnchorElem.setAttribute("download", `gym_streak_backup_${this.formatDateIso(new Date())}.json`);
+                    dlAnchorElem.setAttribute("download", `gym_backup.json`);
                     dlAnchorElem.click();
                 },
 
@@ -645,14 +521,11 @@
                         fileReader.readAsText(event.target.files[0], "UTF-8");
                         fileReader.onload = (e) => {
                             try {
-                                const parsed = JSON.parse(e.target.result);
-                                this.workouts = parsed;
+                                this.workouts = JSON.parse(e.target.result);
                                 this.saveToStorage();
-                                alert('Данные успешно импортированы!');
+                                alert('Успешно!');
                                 this.openSettings = false;
-                            } catch (err) {
-                                alert('Ошибка при чтении файла JSON');
-                            }
+                            } catch (err) { alert('Ошибка файла'); }
                         };
                     }
                 }

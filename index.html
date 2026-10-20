@@ -159,12 +159,12 @@
 
     <!-- DAY DETAIL MODAL -->
     <div x-show="openModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" x-cloak>
-        <div @click.away="openModal = false" class="bg-[#161b22] border border-[#30363d] w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col modal-enter">
+        <div @click.away="saveAndCloseModal()" class="bg-[#161b22] border border-[#30363d] w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col modal-enter">
             
             <!-- Modal Header -->
             <div class="flex items-center justify-between pb-2 border-b border-[#30363d]">
                 <h3 class="font-bold text-white text-base" x-text="formatDateHuman(selectedDate)"></h3>
-                <button @click="openModal = false" class="p-1.5 rounded-xl bg-[#21262d] text-zinc-300">
+                <button @click="saveAndCloseModal()" class="p-1.5 rounded-xl bg-[#21262d] text-zinc-300">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -193,7 +193,7 @@
                                         <div @click="openPicker(exIndex, setIndex)"
                                              class="cursor-pointer text-base font-bold text-white hover:text-emerald-400 transition select-none px-2 py-1"
                                              title="Нажми для изменения">
-                                            <span x-text="set.reps"></span> пов.
+                                            <span x-text="set.reps"></span> <span x-text="activeHabitUnit"></span>
                                         </div>
 
                                         <!-- Delete set -->
@@ -225,8 +225,8 @@
                 <button @click="clearDayData()" class="px-4 py-2.5 rounded-xl bg-[#21262d] border border-[#30363d] text-red-400 text-xs font-semibold hover:bg-red-500/10 transition">
                     Очистить
                 </button>
-                <button @click="saveDayData()" class="flex-1 py-2.5 rounded-xl bg-[#21262d] border border-[#30363d] hover:bg-[#30363d] text-white text-xs font-bold transition">
-                    Сохранить
+                <button @click="saveAndCloseModal()" class="flex-1 py-2.5 rounded-xl bg-[#21262d] border border-[#30363d] hover:bg-[#30363d] text-white text-xs font-bold transition">
+                    Готово (сохранено)
                 </button>
             </div>
 
@@ -319,11 +319,12 @@
                 </button>
             </div>
 
-            <!-- Add habit input -->
+            <!-- Add habit input & unit -->
             <div class="flex space-x-2">
-                <input type="text" x-model="newHabitName" @keyup.enter="addHabitItem()" placeholder="Новое дело или привычка..." class="flex-1 bg-[#0d1117] border border-[#30363d] text-white text-xs px-3 py-2 rounded-xl focus:outline-none focus:border-emerald-500">
+                <input type="text" x-model="newHabitName" @keyup.enter="addHabitItem()" placeholder="Название дела..." class="flex-1 bg-[#0d1117] border border-[#30363d] text-white text-xs px-3 py-2 rounded-xl focus:outline-none focus:border-emerald-500">
+                <input type="text" x-model="newHabitUnit" placeholder="Ед. (пов., мин...)" class="w-24 bg-[#0d1117] border border-[#30363d] text-white text-xs px-3 py-2 rounded-xl focus:outline-none focus:border-emerald-500 text-center">
                 <button @click="addHabitItem()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition">
-                    Добавить
+                    +
                 </button>
             </div>
 
@@ -331,7 +332,7 @@
             <div class="space-y-2 overflow-y-auto max-h-[50vh] pr-1">
                 <template x-for="(habit, hIndex) in habits" :key="habit.id">
                     <div class="flex items-center justify-between bg-[#0d1117] border border-[#30363d] px-3.5 py-2.5 rounded-xl">
-                        <span class="text-sm font-medium text-white" x-text="habit.name"></span>
+                        <span class="text-sm font-medium text-white" x-text="habit.name + ' (' + (habit.unit || 'пов.') + ')'"></span>
                         <div class="flex items-center space-x-1">
                             <button @click="renameHabit(hIndex)" class="text-zinc-400 hover:text-white p-1.5 rounded-lg bg-[#161b22] border border-[#30363d]" title="Переименовать">
                                 <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
@@ -366,10 +367,11 @@
                 selectedDate: '',
                 activeDayExercises: [],
                 
-                habits: [{ id: 'workout_default', name: 'Тренировки' }],
+                habits: [{ id: 'workout_default', name: 'Тренировки', unit: 'пов.' }],
                 activeHabitId: 'workout_default',
                 allData: {},
                 newHabitName: '',
+                newHabitUnit: 'пов.',
 
                 githubToken: '',
                 gistId: '',
@@ -494,9 +496,15 @@
                             if (res.ok) {
                                 let data = await res.json();
                                 if (data.files && data.files['workouts.json']) {
-                                    let remoteWorkouts = JSON.parse(data.files['workouts.json'].content);
-                                    if (Object.keys(remoteWorkouts).length > 0) {
-                                        this.workouts = remoteWorkouts;
+                                    let remoteState = JSON.parse(data.files['workouts.json'].content);
+                                    if (remoteState && remoteState.habits && remoteState.allData) {
+                                        this.habits = remoteState.habits;
+                                        this.allData = remoteState.allData;
+                                        if (remoteState.activeHabitId) this.activeHabitId = remoteState.activeHabitId;
+                                        this.saveToStorageLocally();
+                                    } else if (remoteState && typeof remoteState === 'object') {
+                                        // Legacy single workout format fallback
+                                        this.allData['workout_default'] = remoteState;
                                         this.saveToStorageLocally();
                                     }
                                 }
@@ -512,7 +520,13 @@
                                     description: 'GymTrackerData',
                                     public: false,
                                     files: {
-                                        'workouts.json': { content: JSON.stringify(this.workouts) }
+                                        'workouts.json': {
+                                            content: JSON.stringify({
+                                                habits: this.habits,
+                                                allData: this.allData,
+                                                activeHabitId: this.activeHabitId
+                                            })
+                                        }
                                     }
                                 })
                             });
@@ -541,7 +555,13 @@
                             },
                             body: JSON.stringify({
                                 files: {
-                                    'workouts.json': { content: JSON.stringify(this.workouts) }
+                                    'workouts.json': {
+                                        content: JSON.stringify({
+                                            habits: this.habits,
+                                            allData: this.allData,
+                                            activeHabitId: this.activeHabitId
+                                        })
+                                    }
                                 }
                             })
                         });
@@ -754,6 +774,11 @@
                     return h ? h.name : 'Тренировки';
                 },
 
+                get activeHabitUnit() {
+                    const h = this.habits.find(item => item.id === this.activeHabitId);
+                    return h && h.unit ? h.unit : 'пов.';
+                },
+
                 selectHabit(id) {
                     this.activeHabitId = id;
                     localStorage.setItem('gym_active_habit_v3', id);
@@ -766,9 +791,11 @@
                 addHabitItem() {
                     const name = this.newHabitName.trim();
                     if (!name) return;
+                    const unit = (this.newHabitUnit || 'пов.').trim();
                     const id = 'habit_' + Date.now();
-                    this.habits.push({ id, name });
+                    this.habits.push({ id, name, unit });
                     this.newHabitName = '';
+                    this.newHabitUnit = 'пов.';
                     this.saveHabitsConfig();
                     this.selectHabit(id);
                     this.$nextTick(() => lucide.createIcons());
@@ -777,8 +804,12 @@
                 renameHabit(index) {
                     const h = this.habits[index];
                     const newName = prompt('Новое название дела/привычки:', h.name);
-                    if (newName && newName.trim()) {
+                    if (newName !== null && newName.trim()) {
                         h.name = newName.trim();
+                        const newUnit = prompt('Единица измерения (пов., мин., стр., раз...):', h.unit || 'пов.');
+                        if (newUnit !== null) {
+                            h.unit = newUnit.trim() || 'пов.';
+                        }
                         this.saveHabitsConfig();
                         this.$nextTick(() => lucide.createIcons());
                     }
@@ -800,6 +831,10 @@
                 saveHabitsConfig() {
                     localStorage.setItem('gym_habits_list_v3', JSON.stringify(this.habits));
                     localStorage.setItem('gym_all_habits_data_v3', JSON.stringify(this.allData));
+                },
+
+                saveAndCloseModal() {
+                    this.saveDayData();
                 },
 
                 selectDay(dateStr) {

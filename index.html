@@ -463,6 +463,7 @@
                 
                 habits: [{ id: 'workout_default', name: 'Тренировки', unit: 'пов.' }],
                 activeHabitId: 'workout_default',
+                modalHabitId: null,
                 allData: {},
                 newHabitName: '',
                 newHabitUnit: 'пов.',
@@ -836,12 +837,25 @@
                     return list;
                 },
 
-                lastActiveHabitBeforeModal: null,
+                // Removed lastActiveHabitBeforeModal as it's no longer needed with modalHabitId.
+                selectDayForHabit(habitId, dateStr) { // Called when clicking a day in 'all' view
+                    if (!dateStr) return;
+                    this.selectedDate = dateStr;
+                    this.modalHabitId = habitId;
 
-                selectDayForHabit(habitId, dateStr) {
-                    this.lastActiveHabitBeforeModal = 'all';
-                    this.activeHabitId = habitId;
-                    this.selectDay(dateStr);
+                    const habitData = this.allData[habitId] || {};
+                    const existing = habitData[dateStr];
+
+                    if (existing && existing.length > 0) {
+                        this.activeDayExercises = JSON.parse(JSON.stringify(existing));
+                    } else {
+                        const h = this.habits.find(item => item.id === habitId);
+                        this.activeDayExercises = [
+                            { name: h ? h.name : 'Тренировки', setsList: [{reps: 0}] }
+                        ];
+                    }
+                    this.openModal = true;
+                    this.$nextTick(() => lucide.createIcons());
                 },
 
                 isExerciseInTemplates(name) {
@@ -851,10 +865,10 @@
                 },
 
                 get activeHabitTemplates() {
-                    const h = this.habits.find(item => item.id === this.activeHabitId);
+                    const idToUse = this.modalHabitId || (this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId);
+                    const h = this.habits.find(item => item.id === idToUse);
                     return h && h.templates ? h.templates : [];
                 },
-
                 addExerciseFromTemplate(template) {
                     this.activeDayExercises.push({
                         name: template.name,
@@ -868,7 +882,8 @@
                         alert('Введите название упражнения');
                         return;
                     }
-                    const h = this.habits.find(item => item.id === this.activeHabitId);
+                    const idToUse = this.modalHabitId || (this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId);
+                    const h = this.habits.find(item => item.id === idToUse);
                     if (h) {
                         if (!h.templates) h.templates = [];
                         h.templates.push({
@@ -881,10 +896,13 @@
                 },
 
                 removeTemplate(tIndex) {
-                    const h = this.habits.find(item => item.id === this.activeHabitId);
+                    const idToUse = this.modalHabitId || (this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId);
+                    const h = this.habits.find(item => item.id === idToUse);
                     if (h && h.templates) {
-                        h.templates.splice(tIndex, 1);
-                        this.saveHabitsConfig();
+                        if (confirm('Удалить шаблон?')) {
+                            h.templates.splice(tIndex, 1);
+                            this.saveHabitsConfig();
+                        }
                     }
                 },
 
@@ -983,12 +1001,14 @@
                 },
 
                 get activeHabitName() {
+                    if (this.activeHabitId === 'all') return 'All';
                     const h = this.habits.find(item => item.id === this.activeHabitId);
                     return h ? h.name : 'Тренировки';
                 },
 
                 get activeHabitUnit() {
-                    const h = this.habits.find(item => item.id === this.activeHabitId);
+                    const idToUse = this.modalHabitId || (this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId);
+                    const h = this.habits.find(item => item.id === idToUse);
                     return h && h.unit ? h.unit : 'пов.';
                 },
 
@@ -1057,16 +1077,20 @@
 
                 selectDay(dateStr) {
                     if (!dateStr) return;
-                    if (this.activeHabitId !== 'all') {
-                        this.lastActiveHabitBeforeModal = this.activeHabitId;
-                    }
                     this.selectedDate = dateStr;
-                    const existing = this.workouts[dateStr];
+                    this.modalHabitId = null; // When opening from main (non-all) view, modal starts without a specific habit, defaults to activeHabitId
+                    
+                    const targetHabitId = this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId;
+                    const habitData = this.allData[targetHabitId] || {};
+                    const existing = habitData[dateStr];
+
                     if (existing && existing.length > 0) {
                         this.activeDayExercises = JSON.parse(JSON.stringify(existing));
                     } else {
+                        const h = this.habits.find(item => item.id === targetHabitId);
+                        const name = h ? h.name : 'Тренировки';
                         this.activeDayExercises = [
-                            { name: this.activeHabitName, setsList: [{reps: 0}] }
+                            { name: name, setsList: [{reps: 0}] }
                         ];
                     }
                     this.openModal = true;

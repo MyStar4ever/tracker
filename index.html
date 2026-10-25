@@ -71,6 +71,13 @@
                         </div>
                     </template>
                     <div class="border-t border-[#30363d] my-1"></div>
+                    <div @click="selectHabit('all'); openHabitMenu = false" 
+                         class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition"
+                         :class="activeHabitId === 'all' ? 'bg-[#21262d] text-white font-bold' : 'text-zinc-400 hover:text-white hover:bg-[#21262d]/50'">
+                        <span>📊 Все дела (Сводка)</span>
+                        <span x-show="activeHabitId === 'all'" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    </div>
+                    <div class="border-t border-[#30363d] my-1"></div>
                     <button @click="openHabitManager = true; openHabitMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 hover:bg-[#21262d] transition flex items-center space-x-2">
                         <i data-lucide="settings" class="w-3.5 h-3.5"></i>
                         <span>Управление делами...</span>
@@ -102,45 +109,103 @@
         </div>
 
         <!-- UNIFORM HEATMAP CONTAINER (Exact same 12-column or uniform square size across all views) -->
-        <div class="px-2 space-y-3" id="heatmap-container">
+        <div class="px-2 space-y-6" id="heatmap-container">
             
-            <!-- WEEK VIEW -->
-            <template x-if="viewMode === 'week'">
-                <div class="grid grid-cols-12 gap-1.5">
-                    <template x-for="day in currentWeekDays" :key="day.dateStr">
-                        <div @click="selectDay(day.dateStr)" 
-                             class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
-                             :id="isToday(day.dateStr) ? 'today-square' : ''"
-                             :class="[getColorClass(day.intensity), isToday(day.dateStr) ? 'ring-1 ring-white' : '']"
-                             :title="day.dateStr">
+            <!-- IF SINGLE HABIT -->
+            <template x-if="activeHabitId !== 'all'">
+                <div class="space-y-3">
+                    <!-- WEEK VIEW -->
+                    <template x-if="viewMode === 'week'">
+                        <div class="grid grid-cols-12 gap-1.5">
+                            <template x-for="day in currentWeekDays" :key="day.dateStr">
+                                <div @click="selectDay(day.dateStr)" 
+                                     class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
+                                     :id="isToday(day.dateStr) ? 'today-square' : ''"
+                                     :class="[getColorClass(day.intensity), isToday(day.dateStr) ? 'ring-1 ring-white' : '']"
+                                     :title="day.dateStr">
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- MONTH VIEW -->
+                    <template x-if="viewMode === 'month'">
+                        <div class="grid grid-cols-12 gap-1.5">
+                            <template x-for="cell in currentMonthGrid" :key="cell.dateStr || Math.random()">
+                                <div @click="selectDay(cell.dateStr)"
+                                     class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
+                                     :id="isToday(cell.dateStr) ? 'today-square' : ''"
+                                     :class="[getColorClass(cell.intensity), isToday(cell.dateStr) ? 'ring-1 ring-white' : '']"
+                                     :title="cell.dateStr">
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- YEAR VIEW -->
+                    <template x-if="viewMode === 'year'">
+                        <div class="grid grid-cols-12 gap-1.5">
+                            <template x-for="day in yearDaysList" :key="day.dateStr">
+                                <div @click="selectDay(day.dateStr)"
+                                     class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
+                                     :id="isToday(day.dateStr) ? 'today-square' : ''"
+                                     :class="[getColorClass(day.intensity), isToday(day.dateStr) ? 'ring-1 ring-white' : '']"
+                                     :title="day.dateStr">
+                                </div>
+                            </template>
                         </div>
                     </template>
                 </div>
             </template>
 
-            <!-- MONTH VIEW -->
-            <template x-if="viewMode === 'month'">
-                <div class="grid grid-cols-12 gap-1.5">
-                    <template x-for="cell in currentMonthGrid" :key="cell.dateStr || Math.random()">
-                        <div @click="selectDay(cell.dateStr)"
-                             class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
-                             :id="isToday(cell.dateStr) ? 'today-square' : ''"
-                             :class="[getColorClass(cell.intensity), isToday(cell.dateStr) ? 'ring-1 ring-white' : '']"
-                             :title="cell.dateStr">
-                        </div>
-                    </template>
-                </div>
-            </template>
+            <!-- IF ALL HABITS (SUMMARY VIEW) -->
+            <template x-if="activeHabitId === 'all'">
+                <div class="space-y-6">
+                    <template x-for="h in habits" :key="h.id">
+                        <div class="bg-[#161b22] border border-[#30363d] p-3 rounded-2xl space-y-2">
+                            <div class="flex items-center justify-between px-1">
+                                <span class="text-xs font-bold text-white" x-text="h.name"></span>
+                                <button @click="selectHabit(h.id)" class="text-[10px] text-emerald-400 hover:underline">Открыть</button>
+                            </div>
+                            
+                            <!-- WEEK VIEW FOR HABIT -->
+                            <template x-if="viewMode === 'week'">
+                                <div class="grid grid-cols-12 gap-1.5">
+                                    <template x-for="day in getHabitWeekDays(h.id)" :key="day.dateStr">
+                                        <div @click="selectDayForHabit(h.id, day.dateStr)" 
+                                             class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
+                                             :class="[getColorClass(day.intensity), isToday(day.dateStr) ? 'ring-1 ring-white' : '']"
+                                             :title="h.name + ': ' + day.dateStr">
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
 
-            <!-- YEAR VIEW -->
-            <template x-if="viewMode === 'year'">
-                <div class="grid grid-cols-12 gap-1.5">
-                    <template x-for="day in yearDaysList" :key="day.dateStr">
-                        <div @click="selectDay(day.dateStr)"
-                             class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
-                             :id="isToday(day.dateStr) ? 'today-square' : ''"
-                             :class="[getColorClass(day.intensity), isToday(day.dateStr) ? 'ring-1 ring-white' : '']"
-                             :title="day.dateStr">
+                            <!-- MONTH VIEW FOR HABIT -->
+                            <template x-if="viewMode === 'month'">
+                                <div class="grid grid-cols-12 gap-1.5">
+                                    <template x-for="cell in getHabitMonthGrid(h.id)" :key="cell.dateStr || Math.random()">
+                                        <div @click="selectDayForHabit(h.id, cell.dateStr)"
+                                             class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
+                                             :class="[getColorClass(cell.intensity), isToday(cell.dateStr) ? 'ring-1 ring-white' : '']"
+                                             :title="h.name + ': ' + cell.dateStr">
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <!-- YEAR VIEW FOR HABIT -->
+                            <template x-if="viewMode === 'year'">
+                                <div class="grid grid-cols-12 gap-1.5">
+                                    <template x-for="day in getHabitYearDays(h.id)" :key="day.dateStr">
+                                        <div @click="selectDayForHabit(h.id, day.dateStr)"
+                                             class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
+                                             :class="[getColorClass(day.intensity), isToday(day.dateStr) ? 'ring-1 ring-white' : '']"
+                                             :title="h.name + ': ' + day.dateStr">
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
                         </div>
                     </template>
                 </div>
@@ -171,15 +236,36 @@
 
             <!-- Exercises List -->
             <div class="space-y-4 overflow-y-auto pr-1 flex-1 py-1">
+                
+                <!-- Templates Quick Add -->
+                <template x-if="activeHabitTemplates.length > 0">
+                    <div class="bg-[#0d1117] border border-[#30363d] p-3 rounded-2xl space-y-2">
+                        <span class="text-[11px] text-zinc-400 font-semibold block">Шаблоны упражнений:</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            <template x-for="(t, tIdx) in activeHabitTemplates" :key="tIdx">
+                                <div class="flex items-center bg-[#161b22] border border-[#30363d] rounded-xl px-2.5 py-1 text-xs text-white space-x-2">
+                                    <span @click="addExerciseFromTemplate(t)" class="cursor-pointer hover:text-emerald-400 font-medium" x-text="t.name"></span>
+                                    <button @click="removeTemplate(tIdx)" class="text-zinc-500 hover:text-red-400">×</button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
                 <template x-for="(ex, exIndex) in activeDayExercises" :key="exIndex">
                     <div class="bg-[#0d1117] border border-[#30363d] p-3.5 rounded-2xl space-y-3">
                         
                         <!-- Exercise Header / Input -->
                         <div class="flex items-center justify-between">
                             <input type="text" x-model="ex.name" placeholder="Название упражнения/дела..." class="bg-[#161b22] border border-[#30363d] text-white text-sm font-semibold rounded-xl px-3.5 py-1.5 focus:outline-none focus:border-emerald-500 w-2/3">
-                            <button @click="removeExercise(exIndex)" class="text-zinc-500 hover:text-red-400 p-1.5 rounded-xl bg-[#161b22] border border-[#30363d]">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
+                            <div class="flex items-center space-x-1">
+                                <button @click="saveAsTemplate(ex)" class="text-zinc-400 hover:text-emerald-400 p-1.5 rounded-xl bg-[#161b22] border border-[#30363d]" title="Сохранить в шаблоны">
+                                    <i data-lucide="bookmark" class="w-4 h-4"></i>
+                                </button>
+                                <button @click="removeExercise(exIndex)" class="text-zinc-500 hover:text-red-400 p-1.5 rounded-xl bg-[#161b22] border border-[#30363d]" title="Удалить">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Sets List -->
@@ -664,7 +750,12 @@
                 },
 
                 getIntensity(dateStr) {
-                    const dayExs = this.workouts[dateStr];
+                    return this.getIntensityForHabit(this.activeHabitId, dateStr);
+                },
+
+                getIntensityForHabit(habitId, dateStr) {
+                    const habitWorkouts = this.allData[habitId] || {};
+                    const dayExs = habitWorkouts[dateStr];
                     if (!dayExs || !dayExs.length) return 0;
                     let totalReps = 0;
                     dayExs.forEach(ex => {
@@ -675,6 +766,102 @@
                     if (totalReps <= 60) return 2;
                     if (totalReps <= 100) return 3;
                     return 4;
+                },
+
+                getHabitWeekDays(habitId) {
+                    let d = new Date(this.currentDate);
+                    let dayOfWeek = d.getDay();
+                    let distanceToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                    d.setDate(d.getDate() + distanceToMonday);
+
+                    let list = [];
+                    for (let i = 0; i < 7; i++) {
+                        let dateStr = this.formatDateIso(d);
+                        list.push({
+                            dateStr: dateStr,
+                            intensity: this.getIntensityForHabit(habitId, dateStr)
+                        });
+                        d.setDate(d.getDate() + 1);
+                    }
+                    return list;
+                },
+
+                getHabitMonthGrid(habitId) {
+                    let y = this.currentDate.getFullYear();
+                    let m = this.currentDate.getMonth();
+                    let lastDayOfMonth = new Date(y, m + 1, 0);
+                    
+                    let list = [];
+                    for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
+                        let dateObj = new Date(y, m, i);
+                        let dateStr = this.formatDateIso(dateObj);
+                        list.push({
+                            dateStr: dateStr,
+                            intensity: this.getIntensityForHabit(habitId, dateStr)
+                        });
+                    }
+                    return list;
+                },
+
+                getHabitYearDays(habitId) {
+                    let y = this.currentDate.getFullYear();
+                    let startDate = new Date(y, 0, 1);
+                    let endDate = new Date(y, 11, 31);
+                    let list = [];
+                    let curr = new Date(startDate);
+                    while (curr <= endDate) {
+                        let dateStr = this.formatDateIso(curr);
+                        list.push({
+                            dateStr: dateStr,
+                            intensity: this.getIntensityForHabit(habitId, dateStr)
+                        });
+                        curr.setDate(curr.getDate() + 1);
+                    }
+                    return list;
+                },
+
+                selectDayForHabit(habitId, dateStr) {
+                    this.activeHabitId = habitId;
+                    localStorage.setItem('gym_active_habit_v3', habitId);
+                    this.selectDay(dateStr);
+                },
+
+                get activeHabitTemplates() {
+                    const h = this.habits.find(item => item.id === this.activeHabitId);
+                    return h && h.templates ? h.templates : [];
+                },
+
+                addExerciseFromTemplate(template) {
+                    this.activeDayExercises.push({
+                        name: template.name,
+                        setsList: template.defaultSets ? JSON.parse(JSON.stringify(template.defaultSets)) : [{reps: 0}]
+                    });
+                    this.$nextTick(() => lucide.createIcons());
+                },
+
+                saveAsTemplate(ex) {
+                    if (!ex.name.trim()) {
+                        alert('Введите название упражнения');
+                        return;
+                    }
+                    const h = this.habits.find(item => item.id === this.activeHabitId);
+                    if (h) {
+                        if (!h.templates) h.templates = [];
+                        h.templates.push({
+                            name: ex.name,
+                            defaultSets: JSON.parse(JSON.stringify(ex.setsList))
+                        });
+                        this.saveHabitsConfig();
+                        alert('Упражнение сохранено в шаблоны!');
+                    }
+                },
+
+                removeTemplate(tIndex) {
+                    const h = this.habits.find(item => item.id === this.activeHabitId);
+                    if (h && h.templates) {
+                        h.templates.splice(tIndex, 1);
+                        this.saveHabitsConfig();
+                    }
                 },
 
                 getColorClass(intensity) {

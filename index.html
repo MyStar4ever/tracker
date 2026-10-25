@@ -989,15 +989,18 @@
                 },
 
                 get workouts() {
-                    const id = this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId;
+                    const id = this.modalHabitId || this.activeHabitId;
+                    if (id === 'all') return {}; // В режиме "All" возвращаем пустой объект, так как данные лежат в отдельных делах
                     if (!this.allData[id]) {
                         this.allData[id] = {};
                     }
                     return this.allData[id];
                 },
                 set workouts(val) {
-                    const id = this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId;
-                    this.allData[id] = val;
+                    const id = this.modalHabitId || this.activeHabitId;
+                    if (id !== 'all') {
+                        this.allData[id] = val;
+                    }
                 },
 
                 get activeHabitName() {
@@ -1068,32 +1071,14 @@
 
                 saveAndCloseModal() {
                     this.saveDayData();
-                    if (this.lastActiveHabitBeforeModal === 'all') {
-                        this.activeHabitId = 'all';
-                        localStorage.setItem('gym_active_habit_v3', 'all');
-                        this.lastActiveHabitBeforeModal = null;
-                    }
                 },
 
                 selectDay(dateStr) {
                     if (!dateStr) return;
                     this.selectedDate = dateStr;
-                    this.modalHabitId = null; // When opening from main (non-all) view, modal starts without a specific habit, defaults to activeHabitId
-                    
-                    const targetHabitId = this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId;
-                    const habitData = this.allData[targetHabitId] || {};
-                    const existing = habitData[dateStr];
-
-                    if (existing && existing.length > 0) {
-                        this.activeDayExercises = JSON.parse(JSON.stringify(existing));
-                    } else {
-                        const h = this.habits.find(item => item.id === targetHabitId);
-                        const name = h ? h.name : 'Тренировки';
-                        this.activeDayExercises = [
-                            { name: name, setsList: [{reps: 0}] }
-                        ];
-                    }
+                    this.modalHabitId = null;
                     this.openModal = true;
+                    document.body.style.overflow = 'hidden';
                     this.$nextTick(() => lucide.createIcons());
                 },
 

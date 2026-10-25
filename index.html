@@ -668,9 +668,12 @@
                         if (res.ok) {
                             this.syncStatus = 'synced';
                         } else {
+                            const errText = await res.text();
+                            console.error('Gist Error:', errText);
                             this.syncStatus = 'error';
                         }
                     } catch (e) {
+                        console.error('Gist Exception:', e);
                         this.syncStatus = 'error';
                     }
                 },

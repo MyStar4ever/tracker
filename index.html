@@ -331,7 +331,7 @@
     <div x-show="openPickerModal" 
          @touchstart="startPickerDrag($event)" 
          @mousedown="startPickerDrag($event)"
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md select-none cursor-ns-resize" 
+         class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md select-none cursor-ns-resize" 
          x-cloak>
         
         <!-- Big white number with pop animation -->
@@ -340,8 +340,8 @@
         </div>
 
         <!-- Done checkmark button in bottom-right corner -->
-        <div class="absolute bottom-8 right-8 z-50">
-            <button @click="closePicker()" class="w-16 h-16 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-zinc-400 hover:text-white rounded-full flex items-center justify-center shadow-2xl transition active:scale-90">
+        <div class="absolute bottom-8 right-8 z-[70]">
+            <button @click.stop="closePicker()" class="w-16 h-16 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-zinc-400 hover:text-white rounded-full flex items-center justify-center shadow-2xl transition active:scale-90">
                 <i data-lucide="check" class="w-8 h-8 stroke-[3]"></i>
             </button>
         </div>
@@ -1076,7 +1076,20 @@
                 selectDay(dateStr) {
                     if (!dateStr) return;
                     this.selectedDate = dateStr;
-                    this.modalHabitId = null;
+                    this.modalHabitId = this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId;
+                    
+                    const habitData = this.allData[this.modalHabitId] || {};
+                    const existing = habitData[dateStr];
+
+                    if (existing && existing.length > 0) {
+                        this.activeDayExercises = JSON.parse(JSON.stringify(existing));
+                    } else {
+                        const h = this.habits.find(item => item.id === this.modalHabitId);
+                        const name = h ? h.name : 'Тренировки';
+                        this.activeDayExercises = [
+                            { name: name, setsList: [{reps: 0}] }
+                        ];
+                    }
                     this.openModal = true;
                     document.body.style.overflow = 'hidden';
                     this.$nextTick(() => lucide.createIcons());

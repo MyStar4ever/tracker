@@ -329,11 +329,13 @@
 
     <!-- FULLSCREEN BLUR DRAG REPS PICKER OVERLAY -->
     <div x-show="openPickerModal" 
+         @touchstart="startPickerDrag($event)" 
+         @mousedown="startPickerDrag($event)"
          class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md select-none cursor-ns-resize" 
          x-cloak>
         
         <!-- Big white number with pop animation -->
-        <div class="text-center" @touchstart="startPickerDrag($event)" @mousedown="startPickerDrag($event)">
+        <div class="text-center">
             <div class="text-8xl font-black text-white transition-transform duration-75" :class="animatingPop ? 'number-pop' : ''" x-text="pickerCurrentVal"></div>
         </div>
 
@@ -495,7 +497,7 @@
                     }
 
                     const savedActive = localStorage.getItem('gym_active_habit_v3');
-                    if (savedActive && this.habits.some(h => h.id === savedActive)) {
+                    if (savedActive && (savedActive === 'all' || this.habits.some(h => h.id === savedActive))) {
                         this.activeHabitId = savedActive;
                     } else if (this.habits.length > 0) {
                         this.activeHabitId = this.habits[0].id;
@@ -694,6 +696,7 @@
                 },
 
                 startPickerDrag(e) {
+                    if (e.target.closest('button')) return;
                     if (e.cancelable) e.preventDefault();
                     this.pickerDragging = true;
                     this.pickerStartY = e.clientY || (e.touches ? e.touches[0].clientY : 0);

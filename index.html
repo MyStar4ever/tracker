@@ -597,7 +597,9 @@
                                     if (remoteState && remoteState.habits && remoteState.allData) {
                                         this.habits = remoteState.habits;
                                         this.allData = remoteState.allData;
-                                        if (remoteState.activeHabitId) this.activeHabitId = remoteState.activeHabitId;
+                                         if (remoteState.activeHabitId && this.activeHabitId !== 'all') {
+                                             this.activeHabitId = remoteState.activeHabitId;
+                                         }
                                         this.saveToStorageLocally();
                                     } else if (remoteState && typeof remoteState === 'object') {
                                         // Legacy single workout format fallback
@@ -683,7 +685,7 @@
 
                 setViewMode(mode) {
                     this.viewMode = mode;
-                    localStorage.setItem('gym_view_mode_v3', mode);
+                    this.saveToStorageLocally();
                     this.currentDate = new Date();
                 },
 
@@ -735,6 +737,7 @@
                     localStorage.setItem('gym_all_habits_data_v3', JSON.stringify(this.allData));
                     localStorage.setItem('gym_habits_list_v3', JSON.stringify(this.habits));
                     localStorage.setItem('gym_active_habit_v3', this.activeHabitId);
+                    localStorage.setItem('gym_view_mode_v3', this.viewMode);
                 },
 
                 saveToStorage() {
@@ -968,13 +971,15 @@
                 },
 
                 get workouts() {
-                    if (!this.allData[this.activeHabitId]) {
-                        this.allData[this.activeHabitId] = {};
+                    const id = this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId;
+                    if (!this.allData[id]) {
+                        this.allData[id] = {};
                     }
-                    return this.allData[this.activeHabitId];
+                    return this.allData[id];
                 },
                 set workouts(val) {
-                    this.allData[this.activeHabitId] = val;
+                    const id = this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId;
+                    this.allData[id] = val;
                 },
 
                 get activeHabitName() {
@@ -989,7 +994,7 @@
 
                 selectHabit(id) {
                     this.activeHabitId = id;
-                    localStorage.setItem('gym_active_habit_v3', id);
+                    this.saveToStorageLocally();
                     this.$nextTick(() => {
                         lucide.createIcons();
                         this.scrollToToday();

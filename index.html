@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Трекер</title>
+    <!-- Favicon (SVG data URI - works everywhere including GitHub Pages) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310b981'%3E%3Cpath d='M6.5 5A1.5 1.5 0 0 0 5 6.5V8H3.5A1.5 1.5 0 0 0 2 9.5v5A1.5 1.5 0 0 0 3.5 16H5v1.5A1.5 1.5 0 0 0 6.5 19h1A1.5 1.5 0 0 0 9 17.5V16h6v1.5a1.5 1.5 0 0 0 1.5 1.5h1a1.5 1.5 0 0 0 1.5-1.5V16h1.5a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 20.5 8H19V6.5A1.5 1.5 0 0 0 17.5 5h-1A1.5 1.5 0 0 0 15 6.5V8H9V6.5A1.5 1.5 0 0 0 7.5 5h-1z'/%3E%3C/svg%3E">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -241,8 +243,24 @@
     </main>
 
     <!-- DAY DETAIL MODAL -->
-    <div x-show="openModal" @click.self="saveAndCloseModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" x-cloak>
-        <div class="bg-[#161b22] border border-[#30363d] w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col modal-enter">
+    <div x-show="openModal" 
+         x-transition:enter="transition-opacity duration-200 ease-out"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity duration-150 ease-in"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click.self="saveAndCloseModal()" 
+         class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm" 
+         x-cloak>
+        <div x-show="openModal"
+             x-transition:enter="transition-all duration-200 ease-out"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-3"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition-all duration-150 ease-in"
+             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+             x-transition:leave-end="opacity-0 scale-95 translate-y-3"
+             class="bg-[#161b22] w-full max-w-sm rounded-[38px] p-4 sm:p-5 space-y-4 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
             
             <!-- Modal Header -->
             <div class="flex items-center justify-between pb-2 border-b border-[#30363d]">
@@ -280,11 +298,11 @@
                         </div>
 
                         <template x-for="(plan, pIdx) in plannedTasksForSelectedDate" :key="'plan'+pIdx">
-                            <div x-data="{ isExpanded: false }" class="bg-[#161b22] border border-[#30363d] rounded-2xl overflow-hidden modal-enter transition-all shadow-md">
+                            <div x-data="{ isExpanded: false }" class="bg-[#0d1117] rounded-[26px] overflow-hidden transition-all shadow-lg">
                                 
                                 <!-- Card Collapsible Header -->
                                 <div @click="isExpanded = !isExpanded; $nextTick(() => { lucide.createIcons(); document.querySelectorAll('textarea').forEach(autoResize); })" 
-                                     class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-[#21262d]/50 transition select-none">
+                                     class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-white/5 transition select-none">
                                     <div class="flex items-center space-x-2.5 min-w-0 flex-1 mr-2">
                                         <!-- Круговой индикатор прогресса -->
                                         <div @click.stop="toggleTask(plan.task); saveToStorage()" class="relative flex items-center justify-center w-6 h-6 flex-shrink-0 cursor-pointer" title="Переключить статус">
@@ -298,7 +316,7 @@
                                         </div>
                                         <div class="min-w-0 flex-1">
                                             <div class="flex items-center space-x-1.5">
-                                                <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-[#21262d] text-zinc-300 border border-[#30363d] uppercase tracking-wider">План</span>
+                                                <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded-lg bg-[#21262d] text-zinc-300 uppercase tracking-wider">План</span>
                                                 <span class="text-[10px] text-zinc-500 truncate" x-text="'из ' + formatDateHuman(plan.sourceDate)"></span>
                                             </div>
                                             <div class="text-xs font-semibold text-white truncate mt-0.5" :class="getTaskProgress(plan.task) === 100 ? 'line-through text-zinc-500' : ''" x-text="plan.task.name || 'Без названия'"></div>
@@ -314,13 +332,13 @@
                                 <!-- Card Body (Expanded with smooth accordion animation) -->
                                 <div class="accordion-grid" :class="isExpanded ? 'expanded' : ''">
                                     <div class="accordion-inner">
-                                        <div class="p-3.5 pt-0 space-y-3 border-t border-[#30363d]/60 mt-1">
+                                        <div class="p-3.5 pt-0 space-y-3 mt-1">
                                     
                                     <!-- 1. Название главной задачи и число -->
                                     <div class="flex items-start justify-between gap-2 pt-2">
                                         <div class="flex items-start space-x-2 flex-1 min-w-0">
-                                            <textarea x-effect="autoResize($el)" x-model="plan.task.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Название задачи..." class="bg-[#0d1117] border border-[#30363d] text-sm font-semibold text-white rounded-xl px-3 py-1.5 focus:outline-none focus:border-zinc-500 w-full resize-none leading-relaxed" :class="getTaskProgress(plan.task) === 100 ? 'line-through text-zinc-500' : ''"></textarea>
-                                            <div @click.stop="openTaskPicker(plan.task)" class="cursor-pointer text-sm font-bold text-white hover:text-zinc-300 transition select-none px-2 py-1.5 flex-shrink-0 bg-[#0d1117] border border-[#30363d] rounded-xl" title="Нажми для изменения">
+                                            <textarea x-effect="autoResize($el)" x-model="plan.task.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Название задачи..." class="bg-[#161b22] text-sm font-semibold text-white rounded-2xl px-3.5 py-2 focus:outline-none focus:ring-1 focus:ring-zinc-600 w-full resize-none leading-relaxed" :class="getTaskProgress(plan.task) === 100 ? 'line-through text-zinc-500' : ''"></textarea>
+                                            <div @click.stop="openTaskPicker(plan.task)" class="cursor-pointer text-sm font-bold text-white hover:text-zinc-300 transition select-none px-2.5 py-2 flex-shrink-0 bg-[#161b22] rounded-2xl" title="Нажми для изменения">
                                                 <span x-text="plan.task.reps"></span>
                                             </div>
                                         </div>
@@ -330,9 +348,9 @@
                                     <div class="space-y-1.5 pl-1">
                                         <div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Шаги задачи</div>
                                         <template x-for="(subTask, subIndex) in plan.task.subTasks" :key="'pst'+subIndex">
-                                            <div class="flex items-start justify-between bg-[#0d1117] border border-[#30363d] px-2.5 py-1.5 rounded-lg gap-2">
+                                            <div class="flex items-start justify-between bg-[#161b22] px-3 py-2 rounded-2xl gap-2">
                                                 <div class="flex items-start space-x-2 flex-1 min-w-0">
-                                                    <button @click.stop="toggleTask(subTask); saveToStorage()" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition flex-shrink-0 mt-0.5" :class="subTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#161b22]'">
+                                                    <button @click.stop="toggleTask(subTask); saveToStorage()" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition flex-shrink-0 mt-0.5" :class="subTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0d1117]'">
                                                         <i data-lucide="check" class="w-2.5 h-2.5 text-white" x-show="subTask.completed"></i>
                                                     </button>
                                                     <textarea x-effect="autoResize($el)" x-model="subTask.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Шаг задачи..." class="bg-transparent text-xs text-zinc-300 focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="subTask.completed ? 'line-through text-zinc-500' : ''"></textarea>
@@ -343,30 +361,32 @@
                                             </div>
                                         </template>
 
-                                        <!-- Кнопка добавления шага -->
-                                        <button @click.stop="addSubTask(plan.task, $event)" class="text-xs text-zinc-400 hover:text-white flex items-center space-x-1 pt-0.5">
-                                            <i data-lucide="plus" class="w-3 h-3"></i>
-                                            <span>Добавить шаг</span>
-                                        </button>
+                                        <!-- Кнопка добавления шага (прижата вправо) -->
+                                        <div class="flex justify-end pt-0.5">
+                                            <button @click.stop="addSubTask(plan.task, $event)" class="text-xs text-zinc-400 hover:text-white flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#161b22] transition">
+                                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                                <span>Добавить шаг</span>
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <!-- 3. Замер (всегда доступен) -->
-                                    <div class="border-t border-[#30363d]/60 pt-2 space-y-1.5">
+                                    <div class="pt-2 space-y-1.5">
                                         <div class="flex items-center justify-between">
                                             <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Замер</span>
-                                            <div class="flex items-center space-x-1.5 bg-[#0d1117] border border-[#30363d] rounded-lg px-2 py-0.5">
+                                            <div class="flex items-center space-x-1.5 bg-[#161b22] rounded-xl px-2.5 py-1">
                                                 <i data-lucide="calendar" class="w-3 h-3 text-zinc-400"></i>
                                                 <input type="date" x-model="plan.task.measurementBlock.date" @change="saveToStorage()" @click.stop class="bg-transparent text-[11px] text-white focus:outline-none cursor-pointer">
                                             </div>
                                         </div>
-                                        <textarea x-effect="autoResize($el)" x-model="plan.task.measurementBlock.description" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Показатели замера..." class="bg-[#0d1117] border border-[#30363d] text-xs text-zinc-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-zinc-500 w-full resize-none leading-relaxed"></textarea>
+                                        <textarea x-effect="autoResize($el)" x-model="plan.task.measurementBlock.description" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Показатели замера..." class="bg-[#161b22] text-xs text-zinc-200 rounded-2xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-zinc-600 w-full resize-none leading-relaxed"></textarea>
                                     </div>
 
                                     <!-- 4. Решение (всегда отображается) -->
-                                    <div class="border-t border-[#30363d]/60 pt-2 space-y-2">
+                                    <div class="pt-2 space-y-2">
                                         <div class="flex items-center justify-between">
                                             <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Решение</span>
-                                            <div class="flex items-center space-x-1.5 bg-[#0d1117] border border-[#30363d] rounded-lg px-2 py-0.5">
+                                            <div class="flex items-center space-x-1.5 bg-[#161b22] rounded-xl px-2.5 py-1">
                                                 <i data-lucide="calendar" class="w-3 h-3 text-zinc-400"></i>
                                                 <input type="date" x-model="plan.task.solutionBlock.date" @change="saveToStorage()" @click.stop class="bg-transparent text-[11px] text-white focus:outline-none cursor-pointer">
                                             </div>
@@ -388,9 +408,9 @@
                                         <!-- Шаги решения -->
                                         <div class="space-y-1.5 pt-1 pl-2">
                                             <template x-for="(solStep, solIndex) in plan.task.solutionBlock.steps" :key="'psol'+solIndex">
-                                                <div class="flex items-start justify-between bg-[#0d1117] border border-[#30363d] px-2.5 py-1.5 rounded-lg gap-2">
+                                                <div class="flex items-start justify-between bg-[#161b22] px-3 py-2 rounded-2xl gap-2">
                                                     <div class="flex items-start space-x-2 flex-1 min-w-0">
-                                                        <button @click.stop="toggleTask(solStep); saveToStorage()" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition flex-shrink-0 mt-0.5" :class="solStep.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#161b22]'">
+                                                        <button @click.stop="toggleTask(solStep); saveToStorage()" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition flex-shrink-0 mt-0.5" :class="solStep.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0d1117]'">
                                                             <i data-lucide="check" class="w-2.5 h-2.5 text-white" x-show="solStep.completed"></i>
                                                         </button>
                                                         <textarea x-effect="autoResize($el)" x-model="solStep.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Шаг решения..." class="bg-transparent text-xs text-zinc-300 focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="solStep.completed ? 'line-through text-zinc-500' : ''"></textarea>
@@ -402,11 +422,13 @@
                                                 </div>
                                             </template>
 
-                                            <!-- Кнопка добавления шага решения -->
-                                            <button @click.stop="addSolutionStep(plan.task, $event)" class="text-xs text-zinc-400 hover:text-white flex items-center space-x-1 pt-0.5">
-                                                <i data-lucide="plus" class="w-3 h-3"></i>
-                                                <span>Добавить шаг решения</span>
-                                            </button>
+                                            <!-- Кнопка добавления шага решения (прижата вправо) -->
+                                            <div class="flex justify-end pt-0.5">
+                                                <button @click.stop="addSolutionStep(plan.task, $event)" class="text-xs text-zinc-400 hover:text-white flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#161b22] transition">
+                                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                                    <span>Добавить шаг решения</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -427,17 +449,17 @@
                 </template>
 
                 <template x-for="(ex, exIndex) in activeDayExercises" :key="exIndex">
-                    <div class="bg-[#0d1117] border border-[#30363d] p-3.5 rounded-2xl space-y-3 modal-enter">
+                    <div :class="ex.setsList && ex.setsList.length > 0 ? 'bg-[#0d1117] p-4 rounded-[26px] space-y-3 shadow-lg' : 'space-y-3'">
                         
-                        <!-- Exercise Header / Input -->
-                        <div class="flex items-center justify-between">
+                        <!-- Exercise Header / Input (only for exercises with sets) -->
+                        <div class="flex items-center justify-between" x-show="ex.setsList && ex.setsList.length > 0">
                             <div class="flex items-center w-2/3">
                                 <template x-if="ex.isCheckbox">
                                     <button @click="toggleCheckbox(ex)" class="mr-2">
                                         <i data-lucide="check-square" class="w-5 h-5" :class="ex.completed ? 'text-emerald-400' : 'text-zinc-600'"></i>
                                     </button>
                                 </template>
-                                <input type="text" x-model="ex.name" placeholder="Название упражнения/дела..." class="bg-[#161b22] border border-[#30363d] text-white text-sm font-semibold rounded-xl px-3.5 py-1.5 focus:outline-none focus:border-emerald-500 w-full" :class="ex.isCheckbox && ex.completed ? 'line-through text-zinc-500' : ''">
+                                <input type="text" x-model="ex.name" placeholder="Название упражнения/дела..." class="bg-[#161b22] text-white text-sm font-semibold rounded-2xl px-3.5 py-2 focus:outline-none focus:ring-1 focus:ring-emerald-500 w-full" :class="ex.isCheckbox && ex.completed ? 'line-through text-zinc-500' : ''">
                             </div>
                             
                             <div class="flex items-center space-x-2 relative" x-data="{ openExMenu: false }">
@@ -445,23 +467,23 @@
                                     <i data-lucide="more-horizontal" class="w-5 h-5"></i>
                                 </button>
                                 
-                                <div x-show="openExMenu" @click.away="openExMenu = false" class="absolute right-0 mt-2 w-44 bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl p-1 z-50 modal-enter" x-cloak>
+                                <div x-show="openExMenu" @click.away="openExMenu = false" class="absolute right-0 mt-2 w-44 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter" x-cloak>
                                     <button x-show="!ex.isCheckbox" @click="isExerciseInTemplates(ex.name) ? null : saveAsTemplate(ex); openExMenu = false" 
-                                            class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center justify-between transition"
+                                            class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between transition"
                                             :class="isExerciseInTemplates(ex.name) ? 'text-zinc-500 cursor-default' : 'text-emerald-400 hover:bg-[#21262d]'">
                                         <span x-text="isExerciseInTemplates(ex.name) ? 'В шаблонах ✓' : 'Сохранить в шаблоны'"></span>
                                     </button>
-                                    <button @click="removeExercise(exIndex); openExMenu = false" class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
+                                    <button @click="removeExercise(exIndex); openExMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
                                         Удалить
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Sets List -->
-                        <div x-show="!ex.isCheckbox" class="space-y-2 pt-1">
+                        <!-- Sets List (only for exercises with sets) -->
+                        <div x-show="!ex.isCheckbox && ex.setsList && ex.setsList.length > 0" class="space-y-2 pt-1">
                             <template x-for="(set, setIndex) in ex.setsList" :key="setIndex">
-                                <div class="flex items-center justify-between bg-[#161b22] border border-[#30363d] px-3 py-2 rounded-xl">
+                                <div class="flex items-center justify-between bg-[#161b22] px-3.5 py-2.5 rounded-2xl">
                                     <span class="text-xs text-zinc-400 font-medium">Подход <span x-text="setIndex + 1"></span></span>
                                     
                                     <div class="flex items-center space-x-3">
@@ -474,11 +496,11 @@
 
                                         <!-- Three dots menu for set actions -->
                                         <div class="relative" x-data="{ openSetMenu: false }">
-                                            <button @click="openSetMenu = !openSetMenu" class="text-zinc-600 hover:text-white p-1">
+                                            <button @click="openSetMenu = !openSetMenu" class="text-zinc-500 hover:text-white p-1">
                                                 <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                                             </button>
-                                            <div x-show="openSetMenu" @click.away="openSetMenu = false" class="absolute right-0 mt-2 w-32 bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl p-1 z-50 modal-enter" x-cloak>
-                                                <button @click="removeSet(exIndex, setIndex); openSetMenu = false" class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
+                                            <div x-show="openSetMenu" @click.away="openSetMenu = false" class="absolute right-0 mt-2 w-32 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter" x-cloak>
+                                                <button @click="removeSet(exIndex, setIndex); openSetMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
                                                     Удалить
                                                 </button>
                                             </div>
@@ -486,10 +508,11 @@
                                     </div>
                                 </div>
                             </template>
+                        </div>
 
-                            <!-- Task List -->
-                            <template x-for="(task, taskIndex) in ex.tasksList" :key="'t'+taskIndex">
-                                <div class="bg-[#161b22] border border-[#30363d] p-3 rounded-xl space-y-3">
+                        <!-- Task List -->
+                        <template x-for="(task, taskIndex) in ex.tasksList" :key="'t'+taskIndex">
+                            <div class="bg-[#0d1117] p-4 rounded-[26px] space-y-3 shadow-lg">
                                     
                                     <!-- 1. Главная задача -->
                                     <div class="flex items-start justify-between gap-2">
@@ -525,11 +548,11 @@
                                     </div>
 
                                     <!-- 2. Шаги главной задачи (ВВЕРХУ) -->
-                                    <div class="space-y-1.5 pl-2">
+                                    <div class="space-y-1.5 pl-1">
                                         <template x-for="(subTask, subIndex) in task.subTasks" :key="'st'+subIndex">
-                                            <div class="flex items-start justify-between bg-[#0d1117] border border-[#30363d] px-2.5 py-1.5 rounded-lg gap-2">
+                                            <div class="flex items-start justify-between bg-[#161b22] px-3 py-2 rounded-2xl gap-2">
                                                 <div class="flex items-start space-x-2 flex-1 min-w-0">
-                                                    <button @click.stop="toggleTask(subTask)" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition flex-shrink-0 mt-0.5" :class="subTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#161b22]'">
+                                                    <button @click.stop="toggleTask(subTask)" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition flex-shrink-0 mt-0.5" :class="subTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0d1117]'">
                                                         <i data-lucide="check" class="w-2.5 h-2.5 text-white" x-show="subTask.completed"></i>
                                                     </button>
                                                     <textarea x-effect="autoResize($el)" x-model="subTask.name" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Шаг задачи..." class="bg-transparent text-xs text-zinc-300 focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="subTask.completed ? 'line-through text-zinc-500' : ''"></textarea>
@@ -550,31 +573,33 @@
                                             </div>
                                         </template>
 
-                                        <!-- Кнопка добавления шага -->
-                                        <button @click.stop="addSubTask(task, $event)" class="text-xs text-zinc-400 hover:text-white flex items-center space-x-1 pt-0.5">
-                                            <i data-lucide="plus" class="w-3 h-3"></i>
-                                            <span>Добавить шаг</span>
-                                        </button>
+                                        <!-- Кнопка добавления шага (прижата вправо) -->
+                                        <div class="flex justify-end pt-0.5">
+                                            <button @click.stop="addSubTask(task, $event)" class="text-xs text-zinc-400 hover:text-white flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#161b22] transition">
+                                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                                <span>Добавить шаг</span>
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <!-- 3. Замер (под шагами) -->
-                                    <div class="border-t border-[#30363d]/60 pt-2 space-y-2">
+                                    <div class="pt-2 space-y-2">
                                         <div class="flex items-center justify-between">
                                             <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Замер</span>
-                                            <div class="flex items-center space-x-1.5 bg-[#0d1117] border border-[#30363d] rounded-lg px-2 py-0.5">
+                                            <div class="flex items-center space-x-1.5 bg-[#161b22] rounded-xl px-2.5 py-1">
                                                 <i data-lucide="calendar" class="w-3.5 h-3.5 text-zinc-400"></i>
                                                 <input type="date" x-model="task.measurementBlock.date" @change="saveDayData()" @click.stop class="bg-transparent text-xs text-white focus:outline-none cursor-pointer">
                                             </div>
                                         </div>
-                                        <textarea x-effect="autoResize($el)" x-model="task.measurementBlock.description" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Показатели замера..." class="bg-[#0d1117] border border-[#30363d] text-xs text-zinc-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-zinc-500 w-full resize-none leading-relaxed"></textarea>
+                                        <textarea x-effect="autoResize($el)" x-model="task.measurementBlock.description" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Показатели замера..." class="bg-[#161b22] text-xs text-zinc-200 rounded-2xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-zinc-600 w-full resize-none leading-relaxed"></textarea>
                                     </div>
 
                                     <!-- 4. Решение -->
-                                    <div class="border-t border-[#30363d]/60 pt-2 space-y-2">
+                                    <div class="pt-2 space-y-2">
                                         <div class="flex items-center justify-between">
                                             <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Решение</span>
                                             <!-- Дата решения для календаря -->
-                                            <div class="flex items-center space-x-1.5 bg-[#0d1117] border border-[#30363d] rounded-lg px-2 py-0.5">
+                                            <div class="flex items-center space-x-1.5 bg-[#161b22] rounded-xl px-2.5 py-1">
                                                 <i data-lucide="calendar" class="w-3.5 h-3.5 text-zinc-400"></i>
                                                 <input type="date" x-model="task.solutionBlock.date" @change="saveDayData()" @click.stop class="bg-transparent text-xs text-white focus:outline-none cursor-pointer">
                                             </div>
@@ -596,9 +621,9 @@
                                         <!-- Шаги решения -->
                                         <div class="space-y-1.5 pt-1 pl-2">
                                             <template x-for="(solStep, solIndex) in task.solutionBlock.steps" :key="'sol'+solIndex">
-                                                <div class="flex items-start justify-between bg-[#0d1117] border border-[#30363d] px-2.5 py-1.5 rounded-lg gap-2">
+                                                <div class="flex items-start justify-between bg-[#161b22] px-3 py-2 rounded-2xl gap-2">
                                                     <div class="flex items-start space-x-2 flex-1 min-w-0">
-                                                        <button @click.stop="toggleTask(solStep)" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition flex-shrink-0 mt-0.5" :class="solStep.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#161b22]'">
+                                                        <button @click.stop="toggleTask(solStep)" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition flex-shrink-0 mt-0.5" :class="solStep.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0d1117]'">
                                                             <i data-lucide="check" class="w-2.5 h-2.5 text-white" x-show="solStep.completed"></i>
                                                         </button>
                                                         <textarea x-effect="autoResize($el)" x-model="solStep.name" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Шаг решения..." class="bg-transparent text-xs text-zinc-300 focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="solStep.completed ? 'line-through text-zinc-500' : ''"></textarea>
@@ -620,65 +645,66 @@
                                                 </div>
                                             </template>
 
-                                            <!-- Кнопка добавления шага решения -->
-                                            <button @click.stop="addSolutionStep(task, $event)" class="text-xs text-zinc-400 hover:text-white flex items-center space-x-1 pt-0.5">
-                                                <i data-lucide="plus" class="w-3 h-3"></i>
-                                                <span>Добавить шаг решения</span>
-                                            </button>
+                                            <!-- Кнопка добавления шага решения (прижата вправо) -->
+                                            <div class="flex justify-end pt-0.5">
+                                                <button @click.stop="addSolutionStep(task, $event)" class="text-xs text-zinc-400 hover:text-white flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#161b22] transition">
+                                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                                    <span>Добавить шаг решения</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
                                 </div>
                             </template>
 
-                            <!-- Add Set & Task Buttons -->
-                            <div class="flex space-x-2">
-                                <button @click="addCheckboxTask(exIndex)" class="flex-1 py-2 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] rounded-xl text-zinc-300 flex items-center justify-center transition active:scale-95">
+                            <!-- Add Set & Task Buttons (only for exercises with sets) -->
+                            <div class="flex space-x-2 pt-1" x-show="ex.setsList && ex.setsList.length > 0">
+                                <button @click="addCheckboxTask(exIndex)" class="flex-1 py-2.5 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-zinc-300 flex items-center justify-center transition active:scale-95">
                                     <i data-lucide="check-square" class="w-4 h-4"></i>
                                 </button>
-                                <button @click="addSet(exIndex)" class="flex-1 py-2 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] rounded-xl text-zinc-300 flex items-center justify-center transition active:scale-95">
+                                <button @click="addSet(exIndex)" class="flex-1 py-2.5 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-zinc-300 flex items-center justify-center transition active:scale-95">
                                     <i data-lucide="plus" class="w-4 h-4"></i>
                                 </button>
                             </div>
-                        </div>
 
                     </div>
                 </template>
 
-                                <!-- Action buttons row (Templates + Add Exercise) -->
-                                <div class="flex space-x-2 pt-1">
-                                    <!-- Templates Dropdown Button -->
-                                    <div class="relative flex-1" x-data="{ openTemplates: false }">
-                                        <button @click="openTemplates = !openTemplates; $nextTick(() => lucide.createIcons())" class="w-full py-3 bg-[#161b22] border border-[#30363d] hover:bg-[#21262d] rounded-2xl text-xs font-semibold text-zinc-300 flex items-center justify-center space-x-2 transition active:scale-95">
-                                            <i data-lucide="bookmark" class="w-4 h-4 text-zinc-400"></i>
-                                            <span>Шаблоны</span>
-                                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200" :class="openTemplates ? 'rotate-180' : ''"></i>
-                                        </button>
+                <!-- Action buttons row (Templates + Add Exercise) -->
+                <div class="flex space-x-2 pt-1">
+                    <!-- Templates Dropdown Button -->
+                    <div class="relative flex-1" x-data="{ openTemplates: false }">
+                        <button @click="openTemplates = !openTemplates; $nextTick(() => lucide.createIcons())" class="w-full py-3 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-xs font-semibold text-zinc-300 flex items-center justify-center space-x-2 transition active:scale-95">
+                            <i data-lucide="bookmark" class="w-4 h-4 text-zinc-400"></i>
+                            <span>Шаблоны</span>
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200" :class="openTemplates ? 'rotate-180' : ''"></i>
+                        </button>
 
-                                        <div x-show="openTemplates" @click.away="openTemplates = false" class="absolute left-0 right-0 bottom-full mb-2 bg-[#161b22] border border-[#30363d] rounded-2xl shadow-2xl p-2 z-50 space-y-1 modal-enter" x-cloak>
-                                            <template x-if="activeHabitTemplates.length === 0">
-                                                <div class="text-center py-2 text-xs text-zinc-500">Нет сохраненных шаблонов</div>
-                                            </template>
-                                            <template x-for="(t, tIdx) in activeHabitTemplates" :key="tIdx">
-                                                <div class="flex items-center justify-between px-3 py-2 rounded-xl text-xs text-white hover:bg-[#21262d] transition">
-                                                    <span @click="addExerciseFromTemplate(t); openTemplates = false; $nextTick(() => lucide.createIcons())" class="cursor-pointer font-medium flex-1 truncate mr-2" x-text="t.name"></span>
-                                                    <button @click="removeTemplate(tIdx)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-500/10 text-zinc-400 hover:text-red-400 text-base font-bold transition">×</button>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </div>
-
-                                    <!-- Add Task Button -->
-                                    <button @click="addEmptyTaskRow()" class="px-3.5 py-3 bg-[#161b22] border border-[#30363d] hover:bg-[#21262d] rounded-2xl text-zinc-300 hover:text-white flex items-center justify-center space-x-1.5 transition active:scale-95 text-xs font-semibold" title="Новая задача">
-                                        <i data-lucide="check-square" class="w-4 h-4 text-zinc-400"></i>
-                                        <span>Задача</span>
-                                    </button>
-
-                                    <!-- Add Exercise Button -->
-                                    <button @click="addExerciseRow()" class="w-12 py-3 bg-[#161b22] border border-[#30363d] hover:bg-[#21262d] rounded-2xl text-white flex items-center justify-center transition active:scale-95" title="Новое упражнение">
-                                        <i data-lucide="plus" class="w-5 h-5 text-zinc-300"></i>
-                                    </button>
+                        <div x-show="openTemplates" @click.away="openTemplates = false" class="absolute left-0 right-0 bottom-full mb-2 bg-[#161b22] rounded-2xl shadow-2xl p-2 z-50 space-y-1 modal-enter" x-cloak>
+                            <template x-if="activeHabitTemplates.length === 0">
+                                <div class="text-center py-2 text-xs text-zinc-500">Нет сохраненных шаблонов</div>
+                            </template>
+                            <template x-for="(t, tIdx) in activeHabitTemplates" :key="tIdx">
+                                <div class="flex items-center justify-between px-3 py-2 rounded-xl text-xs text-white hover:bg-[#21262d] transition">
+                                    <span @click="addExerciseFromTemplate(t); openTemplates = false; $nextTick(() => lucide.createIcons())" class="cursor-pointer font-medium flex-1 truncate mr-2" x-text="t.name"></span>
+                                    <button @click="removeTemplate(tIdx)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-500/10 text-zinc-400 hover:text-red-400 text-base font-bold transition">×</button>
                                 </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Add Task Button -->
+                    <button @click="addEmptyTaskRow()" class="px-3.5 py-3 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-zinc-300 hover:text-white flex items-center justify-center space-x-1.5 transition active:scale-95 text-xs font-semibold" title="Новая задача">
+                        <i data-lucide="check-square" class="w-4 h-4 text-zinc-400"></i>
+                        <span>Задача</span>
+                    </button>
+
+                    <!-- Add Exercise Button -->
+                    <button @click="addExerciseRow()" class="w-12 py-3 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-white flex items-center justify-center transition active:scale-95" title="Новое упражнение">
+                        <i data-lucide="plus" class="w-5 h-5 text-zinc-300"></i>
+                    </button>
+                </div>
             </div>
 
         </div>
@@ -1003,39 +1029,42 @@
                     }
                 },
 
-                async pushToGist() {
+                pushToGist() {
                     if (!this.githubToken || !this.gistId) return;
+                    if (this._gistTimer) clearTimeout(this._gistTimer);
                     this.syncStatus = 'syncing';
-                    try {
-                        let res = await fetch(`https://api.github.com/gists/${this.gistId}`, {
-                            method: 'PATCH',
-                            headers: {
-                                'Authorization': `token ${this.githubToken}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                files: {
-                                    'workouts.json': {
-                                        content: JSON.stringify({
-                                            habits: this.habits,
-                                            allData: this.allData,
-                                            activeHabitId: this.activeHabitId
-                                        })
+                    this._gistTimer = setTimeout(async () => {
+                        try {
+                            let res = await fetch(`https://api.github.com/gists/${this.gistId}`, {
+                                method: 'PATCH',
+                                headers: {
+                                    'Authorization': `token ${this.githubToken}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    files: {
+                                        'workouts.json': {
+                                            content: JSON.stringify({
+                                                habits: this.habits,
+                                                allData: this.allData,
+                                                activeHabitId: this.activeHabitId
+                                            })
+                                        }
                                     }
-                                }
-                            })
-                        });
-                        if (res.ok) {
-                            this.syncStatus = 'synced';
-                        } else {
-                            const errText = await res.text();
-                            console.error('Gist Error:', errText);
+                                })
+                            });
+                            if (res.ok) {
+                                this.syncStatus = 'synced';
+                            } else {
+                                const errText = await res.text();
+                                console.error('Gist Error:', errText);
+                                this.syncStatus = 'error';
+                            }
+                        } catch (e) {
+                            console.error('Gist Exception:', e);
                             this.syncStatus = 'error';
                         }
-                    } catch (e) {
-                        console.error('Gist Exception:', e);
-                        this.syncStatus = 'error';
-                    }
+                    }, 1200);
                 },
 
                 scrollToToday() {
@@ -1495,6 +1524,9 @@
                 normalizeDayExercises(exercises) {
                     if (!Array.isArray(exercises)) return [];
                     exercises.forEach(ex => {
+                        if (ex.tasksList && ex.tasksList.length > 0 && ex.setsList && ex.setsList.length === 1 && Number(ex.setsList[0].reps || 0) === 0) {
+                            ex.setsList = [];
+                        }
                         if (ex.tasksList && Array.isArray(ex.tasksList)) {
                             ex.tasksList.forEach(task => {
                                 if (task.measurementDate && (!task.measurementBlock || !task.measurementBlock.date)) {

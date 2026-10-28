@@ -40,7 +40,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         [x-cloak] { display: none !important; }
-        body { touch-action: pan-x pan-y; user-select: none; -webkit-user-select: none; background-color: #0d1117; color: #c9d1d9; }
+        html, body { touch-action: pan-y; user-select: none; -webkit-user-select: none; background-color: #0d1117; color: #c9d1d9; overflow-x: hidden; }
         ::-webkit-scrollbar { width: 0px; height: 0px; display: none; }
         .modal-enter { animation: modalIn 0.15s ease-out forwards; }
         @keyframes modalIn {
@@ -284,7 +284,7 @@
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
          @click.self="saveAndCloseModal()" 
-         class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm" 
+         class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm overflow-x-hidden" 
          x-cloak>
         <div x-show="openModal"
              x-transition:enter="transition-all duration-200 ease-out"
@@ -293,7 +293,7 @@
              x-transition:leave="transition-all duration-150 ease-in"
              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
              x-transition:leave-end="opacity-0 scale-95 translate-y-3"
-             class="bg-[#161b22] w-full max-w-sm rounded-[38px] px-4 pt-3 pb-4 sm:px-5 sm:pt-3.5 sm:pb-5 space-y-3 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col relative">
+             class="bg-[#161b22] w-full max-w-sm rounded-[38px] px-4 pt-3 pb-4 sm:px-5 sm:pt-3.5 sm:pb-5 space-y-3 shadow-2xl overflow-hidden overflow-x-hidden max-h-[85vh] flex flex-col relative">
 
             <!-- TELEGRAM-STYLE SLIDE-OVER GRAPH SCREEN -->
             <div x-show="showGraphView"
@@ -369,7 +369,7 @@
             </div>
 
             <!-- Exercises List with smooth iOS scroll dissolve -->
-            <div class="space-y-4 overflow-y-auto pr-1 flex-1 py-2 scroll-mask">
+            <div class="space-y-4 overflow-y-auto overflow-x-hidden pr-1 flex-1 py-2 scroll-mask">
 
                 <!-- Planned tasks for this date if any -->
                 <template x-if="plannedTasksForSelectedDate.length > 0">
@@ -401,7 +401,7 @@
                                                 <span class="text-[11px] font-medium px-2 py-0.5 rounded-md bg-[#21262d] text-zinc-300">План</span>
                                                 <span class="text-xs text-zinc-400 truncate" x-text="'из ' + formatDateHuman(plan.sourceDate)"></span>
                                             </div>
-                                            <div class="text-[15px] font-semibold text-white truncate mt-0.5" :class="getTaskProgress(plan.task) === 100 ? 'line-through text-zinc-500' : ''" x-text="plan.task.name || 'Без названия'"></div>
+                                            <div class="text-[15px] font-semibold truncate mt-0.5" :class="getTaskProgress(plan.task) === 100 ? 'text-zinc-500' : 'text-white'" x-text="plan.task.name || 'Без названия'"></div>
                                         </div>
                                     </div>
 
@@ -419,7 +419,7 @@
                                     <!-- 1. Название главной задачи и число -->
                                     <div class="flex items-start justify-between gap-2 pt-2">
                                         <div class="flex items-start space-x-2 flex-1 min-w-0">
-                                            <textarea x-effect="autoResize($el)" x-model="plan.task.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Название задачи..." class="bg-[#161b22] text-[15px] font-semibold text-white rounded-2xl px-3.5 py-2 focus:outline-none focus:ring-1 focus:ring-zinc-600 w-full resize-none leading-relaxed" :class="getTaskProgress(plan.task) === 100 ? 'line-through text-zinc-500' : ''"></textarea>
+                                            <textarea x-effect="autoResize($el)" x-model="plan.task.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Название задачи..." class="bg-[#161b22] text-[15px] font-semibold rounded-2xl px-3.5 py-2 focus:outline-none focus:ring-1 focus:ring-zinc-600 w-full resize-none leading-relaxed" :class="getTaskProgress(plan.task) === 100 ? 'text-zinc-500' : 'text-white'"></textarea>
                                             <div @click.stop="openTaskPicker(plan.task)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-2.5 py-2 flex-shrink-0 bg-[#161b22] rounded-2xl active:scale-90" :class="plan.task._justUpdated ? 'number-pop text-emerald-400' : ''" title="Нажми для изменения">
                                                 <span x-text="plan.task.reps"></span>
                                             </div>
@@ -428,14 +428,14 @@
 
                                     <!-- 2. Шаги главной задачи -->
                                     <div class="space-y-1.5 pl-1">
-                                        <div class="text-xs font-medium text-zinc-400 tracking-wide">Шаги задачи</div>
+                                        <div class="text-xs font-medium tracking-wide transition-colors" :class="(!plan.task.subTasks || plan.task.subTasks.length === 0) ? 'text-zinc-600' : 'text-zinc-400'">Шаги задачи</div>
                                         <template x-for="(subTask, subIndex) in plan.task.subTasks" :key="'pst'+subIndex">
                                             <div class="flex items-start justify-between bg-[#161b22] px-3.5 py-2.5 rounded-2xl gap-2 ios-item-enter">
                                                 <div class="flex items-start space-x-2 flex-1 min-w-0">
                                                     <button @click.stop="toggleTask(subTask); saveToStorage()" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition active:scale-90 flex-shrink-0 mt-0.5" :class="subTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0d1117]'">
                                                         <i data-lucide="check" class="w-2.5 h-2.5 text-white check-pop" x-show="subTask.completed"></i>
                                                     </button>
-                                                    <textarea x-effect="autoResize($el)" x-model="subTask.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Шаг задачи..." class="bg-transparent text-sm text-zinc-100 focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="subTask.completed ? 'line-through text-zinc-500' : ''"></textarea>
+                                                    <textarea x-effect="autoResize($el)" x-model="subTask.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Шаг задачи..." class="bg-transparent text-sm focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="subTask.completed ? 'text-zinc-500' : 'text-zinc-100'"></textarea>
                                                     <div @click.stop="openTaskPicker(subTask)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-1.5 flex-shrink-0 mt-0.5 active:scale-90" :class="subTask._justUpdated ? 'number-pop text-emerald-400' : ''" title="Изменить">
                                                         <span x-text="subTask.reps"></span>
                                                     </div>
@@ -445,7 +445,7 @@
 
                                         <!-- Кнопка добавления шага (прижата вправо) -->
                                         <div class="flex justify-end pt-0.5">
-                                            <button @click.stop="addSubTask(plan.task, $event)" class="text-xs font-medium text-zinc-400 hover:text-white flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#161b22] transition">
+                                            <button @click.stop="addSubTask(plan.task, $event)" class="text-xs font-medium flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#161b22] transition" :class="(!plan.task.subTasks || plan.task.subTasks.length === 0) ? 'text-zinc-600 hover:text-zinc-400' : 'text-zinc-400 hover:text-white'">
                                                 <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                                                 <span>Добавить шаг</span>
                                             </button>
@@ -456,7 +456,7 @@
                                     <div class="pt-2 space-y-1.5">
                                         <div class="flex items-center justify-between py-1 cursor-pointer select-none">
                                             <div class="flex items-center space-x-1.5" @click="showMeasurement = !showMeasurement">
-                                                <span class="text-xs font-medium text-zinc-400 tracking-wide">Замер</span>
+                                                <span class="text-xs font-medium tracking-wide transition-colors" :class="(showMeasurement || hasMeasurementContent(plan.task)) ? 'text-zinc-400' : 'text-zinc-600'">Замер</span>
                                                 <!-- Зеленая точка, если свернуто, но данные есть -->
                                                 <span x-show="!showMeasurement && hasMeasurementContent(plan.task)" class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" title="Есть данные замера"></span>
                                             </div>
@@ -464,18 +464,18 @@
                                             <!-- Иконки прижаты вправо: график, календарь без фона, галочка (шеврон) -->
                                             <div class="flex items-center space-x-1 flex-shrink-0">
                                                 <!-- Значок графика -->
-                                                <button @click.stop="openMetricsGraph(plan.task)" class="p-1 rounded-xl text-zinc-400 hover:text-emerald-400 hover:bg-[#161b22] transition" title="Открыть график показателей">
+                                                <button @click.stop="openMetricsGraph(plan.task)" class="p-1 rounded-xl transition hover:bg-[#161b22]" :class="(showMeasurement || hasMeasurementContent(plan.task)) ? 'text-zinc-400 hover:text-emerald-400' : 'text-zinc-600 hover:text-zinc-400'" title="Открыть график показателей">
                                                     <i data-lucide="trending-up" class="w-4 h-4"></i>
                                                 </button>
 
                                                 <!-- Значок календаря без фона и без дд мм гггг -->
-                                                <div class="relative p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-[#161b22] transition cursor-pointer" :class="plan.task.measurementBlock && plan.task.measurementBlock.date ? 'text-emerald-400' : ''" title="Дата замера">
+                                                <div class="relative p-1 rounded-xl transition cursor-pointer hover:bg-[#161b22]" :class="plan.task.measurementBlock && plan.task.measurementBlock.date ? 'text-emerald-400' : ((showMeasurement || hasMeasurementContent(plan.task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400')" title="Дата замера">
                                                     <i data-lucide="calendar" class="w-4 h-4"></i>
                                                     <input type="date" x-model="plan.task.measurementBlock.date" @change="saveToStorage()" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
                                                 </div>
 
                                                 <!-- Галочка (шеврон) для сворачивания/разворачивания -->
-                                                <button @click="showMeasurement = !showMeasurement" class="p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-[#161b22] transition" title="Развернуть/свернуть замер">
+                                                <button @click="showMeasurement = !showMeasurement" class="p-1 rounded-xl transition hover:bg-[#161b22]" :class="(showMeasurement || hasMeasurementContent(plan.task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400'" title="Развернуть/свернуть замер">
                                                     <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200" :class="showMeasurement ? 'rotate-180' : ''"></i>
                                                 </button>
                                             </div>
@@ -518,7 +518,7 @@
                                     <div class="pt-2 space-y-2">
                                         <div class="flex items-center justify-between py-1 cursor-pointer select-none">
                                             <div class="flex items-center space-x-1.5" @click="showSolution = !showSolution">
-                                                <span class="text-xs font-medium text-zinc-400 tracking-wide">Решение</span>
+                                                <span class="text-xs font-medium tracking-wide transition-colors" :class="(showSolution || hasSolutionContent(plan.task)) ? 'text-zinc-400' : 'text-zinc-600'">Решение</span>
                                                 <!-- Зеленая точка, если свернуто, но данные есть -->
                                                 <span x-show="!showSolution && hasSolutionContent(plan.task)" class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" title="Есть данные решения"></span>
                                             </div>
@@ -526,13 +526,13 @@
                                             <!-- Иконки прижаты вправо: календарь без фона, галочка (шеврон) -->
                                             <div class="flex items-center space-x-1 flex-shrink-0">
                                                 <!-- Значок календаря без фона и без дд мм гггг -->
-                                                <div class="relative p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-[#161b22] transition cursor-pointer" :class="plan.task.solutionBlock && plan.task.solutionBlock.date ? 'text-emerald-400' : ''" title="Дата решения">
+                                                <div class="relative p-1 rounded-xl transition cursor-pointer hover:bg-[#161b22]" :class="plan.task.solutionBlock && plan.task.solutionBlock.date ? 'text-emerald-400' : ((showSolution || hasSolutionContent(plan.task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400')" title="Дата решения">
                                                     <i data-lucide="calendar" class="w-4 h-4"></i>
                                                     <input type="date" x-model="plan.task.solutionBlock.date" @change="saveToStorage()" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
                                                 </div>
 
                                                 <!-- Галочка (шеврон) для сворачивания/разворачивания -->
-                                                <button @click="showSolution = !showSolution" class="p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-[#161b22] transition" title="Развернуть/свернуть решение">
+                                                <button @click="showSolution = !showSolution" class="p-1 rounded-xl transition hover:bg-[#161b22]" :class="(showSolution || hasSolutionContent(plan.task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400'" title="Развернуть/свернуть решение">
                                                     <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200" :class="showSolution ? 'rotate-180' : ''"></i>
                                                 </button>
                                             </div>
@@ -562,7 +562,7 @@
                                                                 <button @click.stop="toggleTask(solStep); saveToStorage()" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition active:scale-90 flex-shrink-0 mt-0.5" :class="solStep.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0d1117]'">
                                                                     <i data-lucide="check" class="w-2.5 h-2.5 text-white check-pop" x-show="solStep.completed"></i>
                                                                 </button>
-                                                                <textarea x-effect="autoResize($el)" x-model="solStep.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Шаг решения..." class="bg-transparent text-sm text-zinc-100 focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="solStep.completed ? 'line-through text-zinc-500' : ''"></textarea>
+                                                                <textarea x-effect="autoResize($el)" x-model="solStep.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Шаг решения..." class="bg-transparent text-sm focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="solStep.completed ? 'text-zinc-500' : 'text-zinc-100'"></textarea>
                                                                 
                                                                 <div @click.stop="openTaskPicker(solStep)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-1.5 flex-shrink-0 mt-0.5 active:scale-90" :class="solStep._justUpdated ? 'number-pop text-emerald-400' : ''" title="Изменить">
                                                                     <span x-text="solStep.reps"></span>
@@ -610,7 +610,7 @@
                                         <i data-lucide="check-square" class="w-5 h-5" :class="ex.completed ? 'text-emerald-400' : 'text-zinc-600'"></i>
                                     </button>
                                 </template>
-                                <input type="text" x-model="ex.name" placeholder="Название упражнения/дела..." class="bg-[#161b22] text-white text-[15px] font-semibold rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 w-full" :class="ex.isCheckbox && ex.completed ? 'line-through text-zinc-500' : ''">
+                                <input type="text" x-model="ex.name" placeholder="Название упражнения/дела..." class="bg-[#161b22] text-[15px] font-semibold rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 w-full" :class="ex.isCheckbox && ex.completed ? 'text-zinc-500' : 'text-white'">
                             </div>
                             
                             <div class="flex items-center space-x-1.5 flex-shrink-0">
@@ -709,19 +709,19 @@
                             <div x-data="{ showMeasurement: hasMeasurementContent(task), showSolution: hasSolutionContent(task) }" class="bg-[#0d1117] p-4 rounded-[26px] space-y-3 shadow-lg ios-item-enter">
                                     
                                     <!-- Верх карточки: когда главная задача еще не активирована -->
-                                    <div class="flex items-center justify-between pb-1" x-show="!taskHasMain(task)">
-                                        <span class="text-xs font-semibold text-zinc-400">Задача</span>
-                                        <div class="flex items-center space-x-2">
-                                            <!-- Большой плюс справа сверху -->
-                                            <button @click="activateMainTask(task)" class="p-2 rounded-2xl bg-[#161b22] hover:bg-[#21262d] text-zinc-300 hover:text-white transition flex items-center justify-center active:scale-95 shadow" title="Добавить главную задачу">
-                                                <i data-lucide="plus" class="w-5 h-5 text-emerald-400 stroke-[2.5]"></i>
+                                    <div class="flex items-center justify-between py-1.5" x-show="!taskHasMain(task)">
+                                        <span class="text-sm font-semibold text-zinc-400">Задача</span>
+                                        <div class="flex items-center space-x-3">
+                                            <!-- Большой плюс как кнопка-галочка в календаре -->
+                                            <button @click="activateMainTask(task)" class="w-14 h-14 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-emerald-400 rounded-full flex items-center justify-center shadow-2xl transition active:scale-90" title="Добавить главную задачу">
+                                                <i data-lucide="plus" class="w-8 h-8 stroke-[3]"></i>
                                             </button>
                                             <!-- Меню три точки для удаления карточки целиком -->
                                             <div class="relative" x-data="{ openTaskMenu: false }">
-                                                <button @click.stop="openTaskMenu = !openTaskMenu" class="text-zinc-500 hover:text-white p-1">
-                                                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                                                <button @click.stop="openTaskMenu = !openTaskMenu" class="text-zinc-500 hover:text-white p-2">
+                                                    <i data-lucide="more-horizontal" class="w-5 h-5"></i>
                                                 </button>
-                                                <div x-show="openTaskMenu" @click.away="openTaskMenu = false" class="absolute right-0 mt-2 w-32 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter" x-cloak>
+                                                <div x-show="openTaskMenu" @click.away="openTaskMenu = false" class="absolute right-0 mt-2 w-32 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/50" x-cloak>
                                                     <button @click.stop="ex.tasksList.splice(taskIndex, 1); openTaskMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
                                                         Удалить
                                                     </button>
@@ -746,7 +746,7 @@
                                                     <i data-lucide="check" class="absolute w-3 h-3 text-emerald-400 check-pop" x-show="getTaskProgress(task) === 100"></i>
                                                 </div>
                                                 <!-- Поле ввода главной задачи -->
-                                                <textarea x-effect="autoResize($el)" x-model="task.name" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Название задачи..." class="bg-transparent text-[15px] font-semibold text-white focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="getTaskProgress(task) === 100 ? 'line-through text-zinc-500' : ''"></textarea>
+                                                <textarea x-effect="autoResize($el)" x-model="task.name" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Название задачи..." class="bg-transparent text-[15px] font-semibold focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="getTaskProgress(task) === 100 ? 'text-zinc-500' : 'text-white'"></textarea>
                                                 <!-- Число справа -->
                                                 <div @click.stop="openTaskPicker(exIndex, taskIndex)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-2 py-0.5 flex-shrink-0 mt-0.5 active:scale-90" :class="task._justUpdated ? 'number-pop text-emerald-400' : ''" title="Нажми для изменения">
                                                     <span x-text="task.reps"></span>
@@ -767,14 +767,14 @@
 
                                         <!-- 2. Шаги главной задачи (ВВЕРХУ) -->
                                         <div class="space-y-1.5 pl-1">
-                                            <div class="text-xs font-medium text-zinc-400 tracking-wide">Шаги задачи</div>
+                                            <div class="text-xs font-medium tracking-wide transition-colors" :class="(!task.subTasks || task.subTasks.length === 0) ? 'text-zinc-600' : 'text-zinc-400'">Шаги задачи</div>
                                             <template x-for="(subTask, subIndex) in task.subTasks" :key="'st'+subIndex">
                                                 <div class="flex items-start justify-between bg-[#161b22] px-3.5 py-2.5 rounded-2xl gap-2 ios-item-enter">
                                                     <div class="flex items-start space-x-2 flex-1 min-w-0">
                                                         <button @click.stop="toggleTask(subTask)" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition active:scale-90 flex-shrink-0 mt-0.5" :class="subTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0d1117]'">
                                                             <i data-lucide="check" class="w-2.5 h-2.5 text-white check-pop" x-show="subTask.completed"></i>
                                                         </button>
-                                                        <textarea x-effect="autoResize($el)" x-model="subTask.name" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Шаг задачи..." class="bg-transparent text-sm text-zinc-100 focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="subTask.completed ? 'line-through text-zinc-500' : ''"></textarea>
+                                                        <textarea x-effect="autoResize($el)" x-model="subTask.name" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Шаг задачи..." class="bg-transparent text-sm focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="subTask.completed ? 'text-zinc-500' : 'text-zinc-100'"></textarea>
                                                         <div @click.stop="openTaskPicker(exIndex, taskIndex, subIndex)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-1.5 flex-shrink-0 mt-0.5 active:scale-90" :class="subTask._justUpdated ? 'number-pop text-emerald-400' : ''" title="Изменить">
                                                             <span x-text="subTask.reps"></span>
                                                         </div>
@@ -794,7 +794,7 @@
 
                                             <!-- Кнопка добавления шага (прижата вправо) -->
                                             <div class="flex justify-end pt-0.5">
-                                                <button @click.stop="addSubTask(task, $event)" class="text-xs font-medium text-zinc-400 hover:text-white flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#161b22] transition">
+                                                <button @click.stop="addSubTask(task, $event)" class="text-xs font-medium flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#161b22] transition" :class="(!task.subTasks || task.subTasks.length === 0) ? 'text-zinc-600 hover:text-zinc-400' : 'text-zinc-400 hover:text-white'">
                                                     <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                                                     <span>Добавить шаг</span>
                                                 </button>
@@ -807,7 +807,7 @@
                                     <div class="pt-2 space-y-1.5">
                                         <div class="flex items-center justify-between py-1 cursor-pointer select-none">
                                             <div class="flex items-center space-x-1.5" @click="showMeasurement = !showMeasurement">
-                                                <span class="text-xs font-medium text-zinc-400 tracking-wide">Замер</span>
+                                                <span class="text-xs font-medium tracking-wide transition-colors" :class="(showMeasurement || hasMeasurementContent(task)) ? 'text-zinc-400' : 'text-zinc-600'">Замер</span>
                                                 <!-- Зеленая точка, если свернуто, но данные есть -->
                                                 <span x-show="!showMeasurement && hasMeasurementContent(task)" class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" title="Есть данные замера"></span>
                                             </div>
@@ -815,18 +815,18 @@
                                             <!-- Иконки прижаты вправо: график, календарь без фона, галочка (шеврон) -->
                                             <div class="flex items-center space-x-1 flex-shrink-0">
                                                 <!-- Значок графика -->
-                                                <button @click.stop="openMetricsGraph(task)" class="p-1 rounded-xl text-zinc-400 hover:text-emerald-400 hover:bg-[#161b22] transition" title="Открыть график показателей">
+                                                <button @click.stop="openMetricsGraph(task)" class="p-1 rounded-xl transition hover:bg-[#161b22]" :class="(showMeasurement || hasMeasurementContent(task)) ? 'text-zinc-400 hover:text-emerald-400' : 'text-zinc-600 hover:text-zinc-400'" title="Открыть график показателей">
                                                     <i data-lucide="trending-up" class="w-4 h-4"></i>
                                                 </button>
 
                                                 <!-- Значок календаря без фона и без дд мм гггг -->
-                                                <div class="relative p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-[#161b22] transition cursor-pointer" :class="task.measurementBlock && task.measurementBlock.date ? 'text-emerald-400' : ''" title="Дата замера">
+                                                <div class="relative p-1 rounded-xl transition cursor-pointer hover:bg-[#161b22]" :class="task.measurementBlock && task.measurementBlock.date ? 'text-emerald-400' : ((showMeasurement || hasMeasurementContent(task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400')" title="Дата замера">
                                                     <i data-lucide="calendar" class="w-4 h-4"></i>
                                                     <input type="date" x-model="task.measurementBlock.date" @change="saveDayData()" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
                                                 </div>
 
                                                 <!-- Галочка (шеврон) для сворачивания/разворачивания -->
-                                                <button @click="showMeasurement = !showMeasurement" class="p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-[#161b22] transition" title="Развернуть/свернуть замер">
+                                                <button @click="showMeasurement = !showMeasurement" class="p-1 rounded-xl transition hover:bg-[#161b22]" :class="(showMeasurement || hasMeasurementContent(task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400'" title="Развернуть/свернуть замер">
                                                     <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200" :class="showMeasurement ? 'rotate-180' : ''"></i>
                                                 </button>
                                             </div>
@@ -869,7 +869,7 @@
                                     <div class="pt-2 space-y-2">
                                         <div class="flex items-center justify-between py-1 cursor-pointer select-none">
                                             <div class="flex items-center space-x-1.5" @click="showSolution = !showSolution">
-                                                <span class="text-xs font-medium text-zinc-400 tracking-wide">Решение</span>
+                                                <span class="text-xs font-medium tracking-wide transition-colors" :class="(showSolution || hasSolutionContent(task)) ? 'text-zinc-400' : 'text-zinc-600'">Решение</span>
                                                 <!-- Зеленая точка, если свернуто, но данные есть -->
                                                 <span x-show="!showSolution && hasSolutionContent(task)" class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" title="Есть данные решения"></span>
                                             </div>
@@ -877,13 +877,13 @@
                                             <!-- Иконки прижаты вправо: календарь без фона, галочка (шеврон) -->
                                             <div class="flex items-center space-x-1 flex-shrink-0">
                                                 <!-- Значок календаря без фона и без дд мм гггг -->
-                                                <div class="relative p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-[#161b22] transition cursor-pointer" :class="task.solutionBlock && task.solutionBlock.date ? 'text-emerald-400' : ''" title="Дата решения">
+                                                <div class="relative p-1 rounded-xl transition cursor-pointer hover:bg-[#161b22]" :class="task.solutionBlock && task.solutionBlock.date ? 'text-emerald-400' : ((showSolution || hasSolutionContent(task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400')" title="Дата решения">
                                                     <i data-lucide="calendar" class="w-4 h-4"></i>
                                                     <input type="date" x-model="task.solutionBlock.date" @change="saveDayData()" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
                                                 </div>
 
                                                 <!-- Галочка (шеврон) для сворачивания/разворачивания -->
-                                                <button @click="showSolution = !showSolution" class="p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-[#161b22] transition" title="Развернуть/свернуть решение">
+                                                <button @click="showSolution = !showSolution" class="p-1 rounded-xl transition hover:bg-[#161b22]" :class="(showSolution || hasSolutionContent(task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400'" title="Развернуть/свернуть решение">
                                                     <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200" :class="showSolution ? 'rotate-180' : ''"></i>
                                                 </button>
                                             </div>
@@ -913,7 +913,7 @@
                                                                 <button @click.stop="toggleTask(solStep)" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition active:scale-90 flex-shrink-0 mt-0.5" :class="solStep.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0d1117]'">
                                                                     <i data-lucide="check" class="w-2.5 h-2.5 text-white check-pop" x-show="solStep.completed"></i>
                                                                 </button>
-                                                                <textarea x-effect="autoResize($el)" x-model="solStep.name" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Шаг решения..." class="bg-transparent text-sm text-zinc-100 focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="solStep.completed ? 'line-through text-zinc-500' : ''"></textarea>
+                                                                <textarea x-effect="autoResize($el)" x-model="solStep.name" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Шаг решения..." class="bg-transparent text-sm focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="solStep.completed ? 'text-zinc-500' : 'text-zinc-100'"></textarea>
                                                                 
                                                                 <div @click.stop="openTaskPicker(exIndex, taskIndex, null, solIndex)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-1.5 flex-shrink-0 mt-0.5 active:scale-90" :class="solStep._justUpdated ? 'number-pop text-emerald-400' : ''" title="Изменить">
                                                                     <span x-text="solStep.reps"></span>
@@ -963,33 +963,46 @@
                 <!-- Action buttons row (Templates + Add Exercise) -->
                 <div class="flex space-x-2 pt-1 flex-shrink-0">
                     <!-- Templates Dropdown Button -->
-                    <div class="relative flex-1" x-data="{ openTemplates: false }">
-                        <button @click="openTemplates = !openTemplates; $nextTick(() => lucide.createIcons())" class="w-full py-3 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-zinc-300 flex items-center justify-center space-x-1 transition active:scale-95" title="Шаблоны">
-                            <i data-lucide="bookmark" class="w-4 h-4 text-zinc-400"></i>
-                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-zinc-500 transition-transform duration-200" :class="openTemplates ? 'rotate-180' : ''"></i>
+                    <div class="relative flex-1" x-data="{ openTemplates: false, manageTemplates: false }">
+                        <button @click="openTemplates = !openTemplates; manageTemplates = false; $nextTick(() => lucide.createIcons())" class="w-full py-3.5 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-zinc-300 flex items-center justify-center space-x-1 transition active:scale-90" title="Шаблоны">
+                            <i data-lucide="bookmark" class="w-7 h-7 text-zinc-300 stroke-[2.2]"></i>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-500 transition-transform duration-200" :class="openTemplates ? 'rotate-180' : ''"></i>
                         </button>
 
-                        <div x-show="openTemplates" @click.away="openTemplates = false" class="absolute left-0 right-0 bottom-full mb-2 bg-[#161b22] rounded-2xl shadow-2xl p-2 z-50 space-y-1 modal-enter" x-cloak>
+                        <div x-show="openTemplates" @click.away="openTemplates = false; manageTemplates = false" class="absolute left-0 bottom-full mb-3 w-72 max-w-[85vw] bg-[#161b22] rounded-2xl shadow-2xl p-2.5 z-50 modal-enter border border-[#30363d]/60 space-y-2" x-cloak>
+                            <!-- Header with 3 dots menu -->
+                            <div class="flex items-center justify-between px-2 pt-1 pb-1.5 border-b border-[#30363d]/40">
+                                <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Шаблоны</span>
+                                <button @click.stop="manageTemplates = !manageTemplates; $nextTick(() => lucide.createIcons())" class="p-1 rounded-lg text-zinc-400 hover:text-white transition active:scale-90" :class="manageTemplates ? 'text-red-400' : ''" :title="manageTemplates ? 'Завершить' : 'Управление шаблонами'">
+                                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+
                             <template x-if="activeHabitTemplates.length === 0">
-                                <div class="text-center py-2 text-xs text-zinc-500">Нет сохраненных шаблонов</div>
+                                <div class="text-center py-3 text-xs text-zinc-500">Нет сохраненных шаблонов</div>
                             </template>
-                            <template x-for="(t, tIdx) in activeHabitTemplates" :key="tIdx">
-                                <div class="flex items-center justify-between px-3 py-2 rounded-xl text-xs text-white hover:bg-[#21262d] transition">
-                                    <span @click="addExerciseFromTemplate(t); openTemplates = false; $nextTick(() => lucide.createIcons())" class="cursor-pointer font-medium flex-1 truncate mr-2" x-text="t.name"></span>
-                                    <button @click="removeTemplate(tIdx)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-500/10 text-zinc-400 hover:text-red-400 text-base font-bold transition">×</button>
-                                </div>
-                            </template>
+
+                            <div class="max-h-60 overflow-y-auto space-y-1 pr-0.5" x-show="activeHabitTemplates.length > 0">
+                                <template x-for="(t, tIdx) in activeHabitTemplates" :key="tIdx">
+                                    <div class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm bg-[#0d1117]/50 hover:bg-[#21262d] transition group">
+                                        <span @click="if (!manageTemplates) { addExerciseFromTemplate(t); openTemplates = false; $nextTick(() => lucide.createIcons()); }" class="cursor-pointer font-medium flex-1 truncate text-zinc-200 group-hover:text-white mr-2" x-text="t.name"></span>
+                                        <button x-show="manageTemplates" @click.stop="removeTemplate(tIdx); $nextTick(() => lucide.createIcons())" class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition flex-shrink-0" title="Удалить шаблон">
+                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Add Task Button -->
-                    <button @click="addEmptyTaskRow()" class="flex-1 py-3 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-zinc-300 hover:text-white flex items-center justify-center transition active:scale-95" title="Новая задача">
-                        <i data-lucide="check-square" class="w-4 h-4 text-zinc-400"></i>
+                    <button @click="addEmptyTaskRow()" class="flex-1 py-3.5 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-zinc-300 hover:text-white flex items-center justify-center transition active:scale-90" title="Новая задача">
+                        <i data-lucide="check-square" class="w-7 h-7 text-zinc-300 stroke-[2.2]"></i>
                     </button>
 
                     <!-- Add Exercise Button -->
-                    <button @click="addExerciseRow()" class="flex-1 py-3 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-white flex items-center justify-center transition active:scale-95" title="Новое упражнение">
-                        <i data-lucide="plus" class="w-5 h-5 text-zinc-300"></i>
+                    <button @click="addExerciseRow()" class="flex-1 py-3.5 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-white flex items-center justify-center transition active:scale-90" title="Новое упражнение">
+                        <i data-lucide="plus" class="w-8 h-8 text-zinc-200 stroke-[2.5]"></i>
                     </button>
                 </div>
             </div>
@@ -1603,95 +1616,147 @@
                 getIntensityForHabit(habitId, dateStr) {
                     const habitWorkouts = this.allData[habitId] || {};
                     
-                    let hasPlannedTaskOnDate = false;
-                    Object.values(habitWorkouts).forEach(dayExs => {
-                        if (Array.isArray(dayExs)) {
-                            dayExs.forEach(ex => {
-                                if (ex.tasksList) {
-                                    ex.tasksList.forEach(task => {
-                                        // Проверка даты Замера (с поддержкой старого и нового формата)
-                                        const mDate = (task.measurementBlock && task.measurementBlock.date) || task.measurementDate;
-                                        if (mDate === dateStr) {
-                                            hasPlannedTaskOnDate = true;
-                                        }
-                                        // Проверка даты Решения
-                                        const sDate = (task.solutionBlock && task.solutionBlock.date);
-                                        if (sDate === dateStr) {
-                                            hasPlannedTaskOnDate = true;
-                                        }
-                                        // Проверка дат шагов решения
-                                        if (task.solutionBlock && task.solutionBlock.steps) {
-                                            task.solutionBlock.steps.forEach(solStep => {
-                                                if (solStep.date === dateStr) {
-                                                    hasPlannedTaskOnDate = true;
-                                                }
-                                            });
-                                        }
-                                        // Проверка дат подзадач основной задачи (если нужно, хотя обычно они не привязаны к дате)
-                                        // if (task.subTasks) { /* ... */ }
-                                    });
-                                }
-                            });
-                        }
-                    });
-
-                    const dayExs = habitWorkouts[dateStr];
-                    if ((!dayExs || !dayExs.length) && !hasPlannedTaskOnDate) return 0;
-                    
                     let totalReps = 0;
                     let hasActivities = false;
+                    let hasPlannedTaskOnDate = false;
+                    let hasUncompletedTasks = false;
                     let completedScore = 0;
 
+                    const isBlankTask = (task) => {
+                        const hasName = !!(task.name && task.name.trim().length > 0 && task.name !== 'Новая задача');
+                        const hasSubTasks = !!(task.subTasks && task.subTasks.length > 0);
+                        const hasMeas = this.hasMeasurementContent ? this.hasMeasurementContent(task) : false;
+                        const hasSol = this.hasSolutionContent ? this.hasSolutionContent(task) : false;
+                        return !hasName && !hasSubTasks && !hasMeas && !hasSol;
+                    };
+
+                    const dayExs = habitWorkouts[dateStr];
                     if (dayExs && dayExs.length) {
                         dayExs.forEach(ex => {
-                            hasActivities = true;
-                            if (ex.isCheckbox && ex.completed) {
-                                completedScore += 30;
+                            if (ex.isCheckbox) {
+                                if (ex.name && ex.name.trim().length > 0) {
+                                    hasActivities = true;
+                                    if (ex.completed) {
+                                        completedScore += 30;
+                                    } else {
+                                        hasUncompletedTasks = true;
+                                    }
+                                }
                             }
                             if (ex.setsList) {
-                                ex.setsList.forEach(s => totalReps += Number(s.reps || 0));
+                                ex.setsList.forEach(s => {
+                                    const r = Number(s.reps || 0);
+                                    if (r > 0) {
+                                        hasActivities = true;
+                                        totalReps += r;
+                                    }
+                                });
                             }
                             if (ex.tasksList && Array.isArray(ex.tasksList)) {
                                 ex.tasksList.forEach(task => {
-                                    const prog = this.getTaskProgress ? this.getTaskProgress(task) : (task.completed ? 100 : 0);
-                                    if (prog === 100 || task.completed) {
-                                        completedScore += 30;
-                                    } else if (prog > 0) {
-                                        completedScore += Math.round(prog * 0.25);
+                                    if (isBlankTask(task)) return;
+
+                                    hasActivities = true;
+                                    const hasMain = this.taskHasMain ? this.taskHasMain(task) : true;
+
+                                    if (!hasMain) {
+                                        // Главная задача не создана, только замер / решение
+                                        if (task.solutionBlock && task.solutionBlock.steps && task.solutionBlock.steps.length > 0) {
+                                            const stepsForToday = task.solutionBlock.steps.filter(st => !st.date || st.date === dateStr);
+                                            if (stepsForToday.length > 0) {
+                                                if (stepsForToday.every(st => !!st.completed)) {
+                                                    completedScore += 30;
+                                                } else {
+                                                    hasUncompletedTasks = true;
+                                                }
+                                            } else {
+                                                completedScore += 30;
+                                            }
+                                        } else {
+                                            completedScore += 30;
+                                        }
+                                    } else {
+                                        // Полноценная главная задача
+                                        if (task.subTasks && task.subTasks.length > 0) {
+                                            if (task.subTasks.every(st => !!st.completed)) {
+                                                completedScore += 30;
+                                            } else {
+                                                hasUncompletedTasks = true;
+                                            }
+                                        } else {
+                                            const prog = this.getTaskProgress ? this.getTaskProgress(task) : (task.completed ? 100 : 0);
+                                            if (prog === 100 || task.completed) {
+                                                completedScore += 30;
+                                            } else {
+                                                hasUncompletedTasks = true;
+                                            }
+                                        }
                                     }
                                 });
                             }
                         });
                     }
 
-                    // Учитываем выполненные запланированные задачи на эту дату
-                    Object.values(habitWorkouts).forEach(dExs => {
+                    // Учитываем запланированные задачи на эту дату ИЗ ДРУГИХ ДНЕЙ
+                    Object.entries(habitWorkouts).forEach(([sourceDate, dExs]) => {
+                        if (sourceDate === dateStr) return; // Не дублируем текущий день
                         if (!Array.isArray(dExs)) return;
                         dExs.forEach(ex => {
                             if (!ex.tasksList) return;
                             ex.tasksList.forEach(task => {
+                                if (isBlankTask(task)) return;
+
                                 const mDate = (task.measurementBlock && task.measurementBlock.date) || task.measurementDate;
                                 const sDate = (task.solutionBlock && task.solutionBlock.date);
-                                let matchDate = (mDate === dateStr || sDate === dateStr);
+                                
+                                let stepMatch = false;
                                 if (task.solutionBlock && task.solutionBlock.steps) {
-                                    if (task.solutionBlock.steps.some(st => st.date === dateStr)) matchDate = true;
+                                    task.solutionBlock.steps.forEach(solStep => {
+                                        if (solStep.date === dateStr) {
+                                            stepMatch = true;
+                                            hasPlannedTaskOnDate = true;
+                                            hasActivities = true;
+                                            if (solStep.completed) {
+                                                completedScore += 30;
+                                            } else {
+                                                hasUncompletedTasks = true;
+                                            }
+                                        }
+                                    });
                                 }
-                                if (matchDate) {
-                                    hasActivities = true;
-                                    const prog = this.getTaskProgress ? this.getTaskProgress(task) : (task.completed ? 100 : 0);
-                                    if (prog === 100 || task.completed) {
-                                        completedScore += 30;
-                                    } else if (prog > 0) {
-                                        completedScore += Math.round(prog * 0.25);
+
+                                if (!stepMatch) {
+                                    if (sDate === dateStr) {
+                                        hasPlannedTaskOnDate = true;
+                                        hasActivities = true;
+                                        const prog = this.getTaskProgress ? this.getTaskProgress(task) : (task.completed ? 100 : 0);
+                                        if (prog === 100 || task.completed) {
+                                            completedScore += 30;
+                                        } else {
+                                            hasUncompletedTasks = true;
+                                        }
+                                    } else if (mDate === dateStr) {
+                                        hasPlannedTaskOnDate = true;
+                                        hasActivities = true;
+                                        const hasValues = task.measurementBlock && task.measurementBlock.metrics && task.measurementBlock.metrics.some(m => m.value && String(m.value).trim().length > 0);
+                                        if (hasValues || task.completed) {
+                                            completedScore += 30;
+                                        } else {
+                                            hasUncompletedTasks = true;
+                                        }
                                     }
                                 }
                             });
                         });
                     });
 
+                    if (!hasActivities && !hasPlannedTaskOnDate) return 0;
+                    
+                    // Если есть хотя бы одна невыполненная задача дня — не красим в зелёный
+                    if (hasUncompletedTasks) return 0.5;
+
                     const totalScore = totalReps + completedScore;
-                    if (totalScore === 0 && (hasActivities || hasPlannedTaskOnDate)) return 0.5; // Запланировано (серый цвет)
-                    if (totalScore === 0) return 0;
+                    if (totalScore === 0) return 0.5; // Запланировано / без очков
                     if (totalScore <= 30) return 1;
                     if (totalScore <= 75) return 2;
                     if (totalScore <= 120) return 3;
@@ -2295,8 +2360,15 @@
                 saveDayData() {
                     const validExercises = this.activeDayExercises.filter(ex => {
                         const hasSets = ex.setsList && ex.setsList.some(s => Number(s.reps || 0) > 0);
-                        const hasTasks = ex.tasksList && ex.tasksList.length > 0;
-                        return hasSets || hasTasks;
+                        const hasTasks = ex.tasksList && ex.tasksList.some(task => {
+                            const hasName = !!(task.name && task.name.trim().length > 0 && task.name !== 'Новая задача');
+                            const hasSubTasks = !!(task.subTasks && task.subTasks.length > 0);
+                            const hasMeas = this.hasMeasurementContent(task);
+                            const hasSol = this.hasSolutionContent(task);
+                            return hasName || hasSubTasks || hasMeas || hasSol;
+                        });
+                        const hasCheckbox = ex.isCheckbox && ex.name && ex.name.trim().length > 0;
+                        return hasSets || hasTasks || hasCheckbox;
                     });
                     if (validExercises.length > 0) {
                         this.workouts[this.selectedDate] = JSON.parse(JSON.stringify(validExercises));
@@ -2308,11 +2380,6 @@
 
                 saveAndCloseModal() {
                     this.closeGraphView();
-                    this.activeDayExercises = this.activeDayExercises.filter(ex => {
-                        const hasSets = ex.setsList && ex.setsList.some(s => Number(s.reps || 0) > 0);
-                        const hasTasks = ex.tasksList && ex.tasksList.length > 0;
-                        return hasSets || hasTasks;
-                    });
                     this.saveDayData();
                     this.openModal = false;
                     document.body.style.overflow = '';

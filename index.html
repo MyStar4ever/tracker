@@ -42,9 +42,35 @@
             0% { transform: scale(1.15); }
             100% { transform: scale(1); }
         }
+        /* Принудительное расширение полей ввода */
+        textarea { overflow: hidden; min-height: 24px; display: block; width: 100%; resize: none; }
+        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; filter: invert(0.8); }
+        /* Плавная анимация сворачивания / разворачивания карточек плана */
+        .accordion-grid {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.25s ease-in-out, opacity 0.2s ease-in-out;
+            opacity: 0;
+        }
+        .accordion-grid.expanded {
+            grid-template-rows: 1fr;
+            opacity: 1;
+        }
+        .accordion-inner {
+            overflow: hidden;
+            min-height: 0;
+        }
     </style>
 </head>
-<body class="min-h-screen font-sans antialiased pb-24" x-data="trackerApp()" x-init="initApp()">
+<script>
+    // Автоматическое расширение textarea
+    function autoResize(el) {
+        if (!el) return;
+        el.style.height = 'auto';
+        el.style.height = Math.max(24, el.scrollHeight + 2) + 'px';
+    }
+</script>
+<body class="min-h-screen font-sans antialiased pb-24" x-data="trackerApp()" x-init="initApp(); $nextTick(() => document.querySelectorAll('textarea').forEach(autoResize))">
 
     <!-- Minimal Header -->
     <header class="sticky top-0 z-30 px-4 py-3 max-w-md mx-auto flex items-center justify-between bg-[#0d1117]">
@@ -215,35 +241,204 @@
     </main>
 
     <!-- DAY DETAIL MODAL -->
-    <div x-show="openModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" x-cloak>
-        <div @click.away="saveAndCloseModal()" class="bg-[#161b22] border border-[#30363d] w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col modal-enter">
+    <div x-show="openModal" @click.self="saveAndCloseModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" x-cloak>
+        <div class="bg-[#161b22] border border-[#30363d] w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col modal-enter">
             
             <!-- Modal Header -->
             <div class="flex items-center justify-between pb-2 border-b border-[#30363d]">
                 <h3 class="font-bold text-white text-base" x-text="formatDateHuman(selectedDate)"></h3>
                 
-                <!-- Three dots menu -->
-                <div class="relative" x-data="{ openMenu: false }">
-                    <button @click="openMenu = !openMenu" class="p-1.5 rounded-xl bg-[#21262d] text-zinc-300 hover:text-white transition">
-                        <i data-lucide="more-vertical" class="w-5 h-5"></i>
-                    </button>
-                    <div x-show="openMenu" @click.away="openMenu = false" class="absolute right-0 mt-2 w-36 bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl p-1 z-50 modal-enter" x-cloak>
-                        <button @click="clearDayData(); openMenu = false" class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
-                            Очистить день
+                <div class="flex items-center space-x-1.5">
+                    <!-- Three dots menu -->
+                    <div class="relative" x-data="{ openMenu: false }">
+                        <button @click="openMenu = !openMenu" class="p-1.5 rounded-xl bg-[#21262d] text-zinc-300 hover:text-white transition">
+                            <i data-lucide="more-vertical" class="w-5 h-5"></i>
                         </button>
+                        <div x-show="openMenu" @click.away="openMenu = false" class="absolute right-0 mt-2 w-36 bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl p-1 z-50 modal-enter" x-cloak>
+                            <button @click="clearDayData(); openMenu = false" class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
+                                Очистить день
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- Close button -->
+                    <button @click="saveAndCloseModal()" class="p-1.5 rounded-xl bg-[#21262d] text-zinc-400 hover:text-white transition" title="Закрыть">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
                 </div>
             </div>
 
             <!-- Exercises List -->
             <div class="space-y-4 overflow-y-auto pr-1 flex-1 py-1">
 
+                <!-- Planned tasks for this date if any -->
+                <template x-if="plannedTasksForSelectedDate.length > 0">
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-2 px-1 text-xs font-semibold text-zinc-400">
+                            <i data-lucide="calendar" class="w-4 h-4 text-zinc-400"></i>
+                            <span>Запланировано на этот день:</span>
+                        </div>
+
+                        <template x-for="(plan, pIdx) in plannedTasksForSelectedDate" :key="'plan'+pIdx">
+                            <div x-data="{ isExpanded: false }" class="bg-[#161b22] border border-[#30363d] rounded-2xl overflow-hidden modal-enter transition-all shadow-md">
+                                
+                                <!-- Card Collapsible Header -->
+                                <div @click="isExpanded = !isExpanded; $nextTick(() => { lucide.createIcons(); document.querySelectorAll('textarea').forEach(autoResize); })" 
+                                     class="flex items-center justify-between p-3.5 cursor-pointer hover:bg-[#21262d]/50 transition select-none">
+                                    <div class="flex items-center space-x-2.5 min-w-0 flex-1 mr-2">
+                                        <!-- Круговой индикатор прогресса -->
+                                        <div @click.stop="toggleTask(plan.task); saveToStorage()" class="relative flex items-center justify-center w-6 h-6 flex-shrink-0 cursor-pointer" title="Переключить статус">
+                                            <svg class="w-6 h-6 -rotate-90" viewBox="0 0 36 36">
+                                                <circle cx="18" cy="18" r="15.915" fill="none" stroke="#21262d" stroke-width="4"></circle>
+                                                <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" stroke-width="4" 
+                                                        :stroke-dasharray="getTaskProgress(plan.task) + ', 100'" stroke-dashoffset="0" 
+                                                        class="transition-all duration-300"></circle>
+                                            </svg>
+                                            <i data-lucide="check" class="absolute w-3 h-3 text-emerald-400" x-show="getTaskProgress(plan.task) === 100"></i>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-center space-x-1.5">
+                                                <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-[#21262d] text-zinc-300 border border-[#30363d] uppercase tracking-wider">План</span>
+                                                <span class="text-[10px] text-zinc-500 truncate" x-text="'из ' + formatDateHuman(plan.sourceDate)"></span>
+                                            </div>
+                                            <div class="text-xs font-semibold text-white truncate mt-0.5" :class="getTaskProgress(plan.task) === 100 ? 'line-through text-zinc-500' : ''" x-text="plan.task.name || 'Без названия'"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center space-x-2 flex-shrink-0">
+                                        <span class="text-xs font-mono font-bold text-zinc-400" x-text="getTaskProgress(plan.task) + '%'"></span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 transition-transform duration-200" :class="isExpanded ? 'rotate-180' : ''"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Card Body (Expanded with smooth accordion animation) -->
+                                <div class="accordion-grid" :class="isExpanded ? 'expanded' : ''">
+                                    <div class="accordion-inner">
+                                        <div class="p-3.5 pt-0 space-y-3 border-t border-[#30363d]/60 mt-1">
+                                    
+                                    <!-- 1. Название главной задачи и число -->
+                                    <div class="flex items-start justify-between gap-2 pt-2">
+                                        <div class="flex items-start space-x-2 flex-1 min-w-0">
+                                            <textarea x-effect="autoResize($el)" x-model="plan.task.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Название задачи..." class="bg-[#0d1117] border border-[#30363d] text-sm font-semibold text-white rounded-xl px-3 py-1.5 focus:outline-none focus:border-zinc-500 w-full resize-none leading-relaxed" :class="getTaskProgress(plan.task) === 100 ? 'line-through text-zinc-500' : ''"></textarea>
+                                            <div @click.stop="openTaskPicker(plan.task)" class="cursor-pointer text-sm font-bold text-white hover:text-zinc-300 transition select-none px-2 py-1.5 flex-shrink-0 bg-[#0d1117] border border-[#30363d] rounded-xl" title="Нажми для изменения">
+                                                <span x-text="plan.task.reps"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 2. Шаги главной задачи -->
+                                    <div class="space-y-1.5 pl-1">
+                                        <div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Шаги задачи</div>
+                                        <template x-for="(subTask, subIndex) in plan.task.subTasks" :key="'pst'+subIndex">
+                                            <div class="flex items-start justify-between bg-[#0d1117] border border-[#30363d] px-2.5 py-1.5 rounded-lg gap-2">
+                                                <div class="flex items-start space-x-2 flex-1 min-w-0">
+                                                    <button @click.stop="toggleTask(subTask); saveToStorage()" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition flex-shrink-0 mt-0.5" :class="subTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#161b22]'">
+                                                        <i data-lucide="check" class="w-2.5 h-2.5 text-white" x-show="subTask.completed"></i>
+                                                    </button>
+                                                    <textarea x-effect="autoResize($el)" x-model="subTask.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Шаг задачи..." class="bg-transparent text-xs text-zinc-300 focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="subTask.completed ? 'line-through text-zinc-500' : ''"></textarea>
+                                                    <div @click.stop="openTaskPicker(subTask)" class="cursor-pointer text-xs font-bold text-white hover:text-zinc-300 transition select-none px-1 flex-shrink-0 mt-0.5" title="Изменить">
+                                                        <span x-text="subTask.reps"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <!-- Кнопка добавления шага -->
+                                        <button @click.stop="addSubTask(plan.task, $event)" class="text-xs text-zinc-400 hover:text-white flex items-center space-x-1 pt-0.5">
+                                            <i data-lucide="plus" class="w-3 h-3"></i>
+                                            <span>Добавить шаг</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- 3. Замер (всегда доступен) -->
+                                    <div class="border-t border-[#30363d]/60 pt-2 space-y-1.5">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Замер</span>
+                                            <div class="flex items-center space-x-1.5 bg-[#0d1117] border border-[#30363d] rounded-lg px-2 py-0.5">
+                                                <i data-lucide="calendar" class="w-3 h-3 text-zinc-400"></i>
+                                                <input type="date" x-model="plan.task.measurementBlock.date" @change="saveToStorage()" @click.stop class="bg-transparent text-[11px] text-white focus:outline-none cursor-pointer">
+                                            </div>
+                                        </div>
+                                        <textarea x-effect="autoResize($el)" x-model="plan.task.measurementBlock.description" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Показатели замера..." class="bg-[#0d1117] border border-[#30363d] text-xs text-zinc-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-zinc-500 w-full resize-none leading-relaxed"></textarea>
+                                    </div>
+
+                                    <!-- 4. Решение (всегда отображается) -->
+                                    <div class="border-t border-[#30363d]/60 pt-2 space-y-2">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Решение</span>
+                                            <div class="flex items-center space-x-1.5 bg-[#0d1117] border border-[#30363d] rounded-lg px-2 py-0.5">
+                                                <i data-lucide="calendar" class="w-3 h-3 text-zinc-400"></i>
+                                                <input type="date" x-model="plan.task.solutionBlock.date" @change="saveToStorage()" @click.stop class="bg-transparent text-[11px] text-white focus:outline-none cursor-pointer">
+                                            </div>
+                                        </div>
+
+                                        <!-- Заголовок решения как мини-задача -->
+                                        <div class="flex items-start space-x-2 w-full pl-1">
+                                            <div class="relative flex items-center justify-center w-5 h-5 flex-shrink-0 mt-0.5">
+                                                <svg class="w-5 h-5 -rotate-90" viewBox="0 0 36 36">
+                                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#21262d" stroke-width="4"></circle>
+                                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" stroke-width="4" 
+                                                            :stroke-dasharray="getTaskProgress(plan.task) + ', 100'" stroke-dashoffset="0" 
+                                                            class="transition-all duration-300"></circle>
+                                                </svg>
+                                            </div>
+                                            <textarea x-effect="autoResize($el)" x-model="plan.task.solutionBlock.title" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Заголовок решения..." class="bg-transparent text-xs font-semibold text-white focus:outline-none w-full resize-none leading-relaxed py-0.5"></textarea>
+                                        </div>
+
+                                        <!-- Шаги решения -->
+                                        <div class="space-y-1.5 pt-1 pl-2">
+                                            <template x-for="(solStep, solIndex) in plan.task.solutionBlock.steps" :key="'psol'+solIndex">
+                                                <div class="flex items-start justify-between bg-[#0d1117] border border-[#30363d] px-2.5 py-1.5 rounded-lg gap-2">
+                                                    <div class="flex items-start space-x-2 flex-1 min-w-0">
+                                                        <button @click.stop="toggleTask(solStep); saveToStorage()" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition flex-shrink-0 mt-0.5" :class="solStep.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#161b22]'">
+                                                            <i data-lucide="check" class="w-2.5 h-2.5 text-white" x-show="solStep.completed"></i>
+                                                        </button>
+                                                        <textarea x-effect="autoResize($el)" x-model="solStep.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Шаг решения..." class="bg-transparent text-xs text-zinc-300 focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="solStep.completed ? 'line-through text-zinc-500' : ''"></textarea>
+                                                        
+                                                        <div @click.stop="openTaskPicker(solStep)" class="cursor-pointer text-xs font-bold text-white hover:text-zinc-300 transition select-none px-1 flex-shrink-0 mt-0.5" title="Изменить">
+                                                            <span x-text="solStep.reps"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+
+                                            <!-- Кнопка добавления шага решения -->
+                                            <button @click.stop="addSolutionStep(plan.task, $event)" class="text-xs text-zinc-400 hover:text-white flex items-center space-x-1 pt-0.5">
+                                                <i data-lucide="plus" class="w-3 h-3"></i>
+                                                <span>Добавить шаг решения</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Empty state for day -->
+                <template x-if="activeDayExercises.length === 0 && plannedTasksForSelectedDate.length === 0">
+                    <div class="text-center py-10 px-4 space-y-1 modal-enter">
+                        <div class="text-xs font-medium text-zinc-400">На этот день пока ничего нет</div>
+                        <div class="text-[11px] text-zinc-600">Нажми на кнопку внизу, чтобы добавить упражнение или задачу</div>
+                    </div>
+                </template>
+
                 <template x-for="(ex, exIndex) in activeDayExercises" :key="exIndex">
                     <div class="bg-[#0d1117] border border-[#30363d] p-3.5 rounded-2xl space-y-3 modal-enter">
                         
                         <!-- Exercise Header / Input -->
                         <div class="flex items-center justify-between">
-                            <input type="text" x-model="ex.name" placeholder="Название упражнения/дела..." class="bg-[#161b22] border border-[#30363d] text-white text-sm font-semibold rounded-xl px-3.5 py-1.5 focus:outline-none focus:border-emerald-500 w-2/3">
+                            <div class="flex items-center w-2/3">
+                                <template x-if="ex.isCheckbox">
+                                    <button @click="toggleCheckbox(ex)" class="mr-2">
+                                        <i data-lucide="check-square" class="w-5 h-5" :class="ex.completed ? 'text-emerald-400' : 'text-zinc-600'"></i>
+                                    </button>
+                                </template>
+                                <input type="text" x-model="ex.name" placeholder="Название упражнения/дела..." class="bg-[#161b22] border border-[#30363d] text-white text-sm font-semibold rounded-xl px-3.5 py-1.5 focus:outline-none focus:border-emerald-500 w-full" :class="ex.isCheckbox && ex.completed ? 'line-through text-zinc-500' : ''">
+                            </div>
                             
                             <div class="flex items-center space-x-2 relative" x-data="{ openExMenu: false }">
                                 <button @click="openExMenu = !openExMenu" class="text-zinc-400 hover:text-white p-1 transition">
@@ -251,20 +446,20 @@
                                 </button>
                                 
                                 <div x-show="openExMenu" @click.away="openExMenu = false" class="absolute right-0 mt-2 w-44 bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl p-1 z-50 modal-enter" x-cloak>
-                                    <button @click="isExerciseInTemplates(ex.name) ? null : saveAsTemplate(ex); openExMenu = false" 
+                                    <button x-show="!ex.isCheckbox" @click="isExerciseInTemplates(ex.name) ? null : saveAsTemplate(ex); openExMenu = false" 
                                             class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center justify-between transition"
                                             :class="isExerciseInTemplates(ex.name) ? 'text-zinc-500 cursor-default' : 'text-emerald-400 hover:bg-[#21262d]'">
                                         <span x-text="isExerciseInTemplates(ex.name) ? 'В шаблонах ✓' : 'Сохранить в шаблоны'"></span>
                                     </button>
                                     <button @click="removeExercise(exIndex); openExMenu = false" class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
-                                        Удалить упражнение
+                                        Удалить
                                     </button>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Sets List -->
-                        <div class="space-y-2 pt-1">
+                        <div x-show="!ex.isCheckbox" class="space-y-2 pt-1">
                             <template x-for="(set, setIndex) in ex.setsList" :key="setIndex">
                                 <div class="flex items-center justify-between bg-[#161b22] border border-[#30363d] px-3 py-2 rounded-xl">
                                     <span class="text-xs text-zinc-400 font-medium">Подход <span x-text="setIndex + 1"></span></span>
@@ -277,51 +472,213 @@
                                             <span x-text="set.reps"></span> <span x-text="activeHabitUnit"></span>
                                         </div>
 
-                                        <!-- Delete set -->
-                                        <button @click="removeSet(exIndex, setIndex)" class="text-zinc-600 hover:text-red-400 p-1">
-                                            <i data-lucide="minus-circle" class="w-4 h-4"></i>
-                                        </button>
+                                        <!-- Three dots menu for set actions -->
+                                        <div class="relative" x-data="{ openSetMenu: false }">
+                                            <button @click="openSetMenu = !openSetMenu" class="text-zinc-600 hover:text-white p-1">
+                                                <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                                            </button>
+                                            <div x-show="openSetMenu" @click.away="openSetMenu = false" class="absolute right-0 mt-2 w-32 bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl p-1 z-50 modal-enter" x-cloak>
+                                                <button @click="removeSet(exIndex, setIndex); openSetMenu = false" class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
+                                                    Удалить
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </template>
 
-                            <!-- Add Set Button (+) -->
-                            <button @click="addSet(exIndex)" class="w-full py-2 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] rounded-xl text-zinc-300 flex items-center justify-center transition active:scale-95">
-                                <i data-lucide="plus" class="w-4 h-4"></i>
-                            </button>
+                            <!-- Task List -->
+                            <template x-for="(task, taskIndex) in ex.tasksList" :key="'t'+taskIndex">
+                                <div class="bg-[#161b22] border border-[#30363d] p-3 rounded-xl space-y-3">
+                                    
+                                    <!-- 1. Главная задача -->
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="flex items-start space-x-2 flex-1 min-w-0">
+                                            <!-- Круговой индикатор прогресса -->
+                                            <div @click.stop="toggleTask(task)" class="relative flex items-center justify-center w-6 h-6 flex-shrink-0 mt-0.5 cursor-pointer" title="Переключить статус">
+                                                <svg class="w-6 h-6 -rotate-90" viewBox="0 0 36 36">
+                                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#21262d" stroke-width="4"></circle>
+                                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" stroke-width="4" 
+                                                            :stroke-dasharray="getTaskProgress(task) + ', 100'" stroke-dashoffset="0" 
+                                                            class="transition-all duration-300"></circle>
+                                                </svg>
+                                                <i data-lucide="check" class="absolute w-3 h-3 text-emerald-400" x-show="getTaskProgress(task) === 100"></i>
+                                            </div>
+                                            <!-- Поле ввода главной задачи -->
+                                            <textarea x-effect="autoResize($el)" x-model="task.name" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Название задачи..." class="bg-transparent text-sm font-semibold text-white focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="getTaskProgress(task) === 100 ? 'line-through text-zinc-500' : ''"></textarea>
+                                            <!-- Число справа -->
+                                            <div @click.stop="openTaskPicker(exIndex, taskIndex)" class="cursor-pointer text-sm font-bold text-white hover:text-zinc-300 transition select-none px-2 py-0.5 flex-shrink-0 mt-0.5" title="Нажми для изменения">
+                                                <span x-text="task.reps"></span>
+                                            </div>
+                                        </div>
+                                        <!-- Меню три точки -->
+                                        <div class="relative flex-shrink-0 mt-0.5" x-data="{ openTaskMenu: false }">
+                                            <button @click.stop="openTaskMenu = !openTaskMenu" class="text-zinc-600 hover:text-white p-1">
+                                                <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                                            </button>
+                                            <div x-show="openTaskMenu" @click.away="openTaskMenu = false" class="absolute right-0 mt-2 w-32 bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl p-1 z-50 modal-enter" x-cloak>
+                                                <button @click.stop="ex.tasksList.splice(taskIndex, 1); openTaskMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
+                                                    Удалить
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 2. Шаги главной задачи (ВВЕРХУ) -->
+                                    <div class="space-y-1.5 pl-2">
+                                        <template x-for="(subTask, subIndex) in task.subTasks" :key="'st'+subIndex">
+                                            <div class="flex items-start justify-between bg-[#0d1117] border border-[#30363d] px-2.5 py-1.5 rounded-lg gap-2">
+                                                <div class="flex items-start space-x-2 flex-1 min-w-0">
+                                                    <button @click.stop="toggleTask(subTask)" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition flex-shrink-0 mt-0.5" :class="subTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#161b22]'">
+                                                        <i data-lucide="check" class="w-2.5 h-2.5 text-white" x-show="subTask.completed"></i>
+                                                    </button>
+                                                    <textarea x-effect="autoResize($el)" x-model="subTask.name" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Шаг задачи..." class="bg-transparent text-xs text-zinc-300 focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="subTask.completed ? 'line-through text-zinc-500' : ''"></textarea>
+                                                    <div @click.stop="openTaskPicker(exIndex, taskIndex, subIndex)" class="cursor-pointer text-xs font-bold text-white hover:text-zinc-300 transition select-none px-1 flex-shrink-0 mt-0.5" title="Изменить">
+                                                        <span x-text="subTask.reps"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="relative flex-shrink-0 mt-0.5" x-data="{ openSubMenu: false }">
+                                                    <button @click.stop="openSubMenu = !openSubMenu" class="text-zinc-600 hover:text-white p-0.5 ml-1">
+                                                        <i data-lucide="more-horizontal" class="w-3 h-3"></i>
+                                                    </button>
+                                                    <div x-show="openSubMenu" @click.away="openSubMenu = false" class="absolute right-0 mt-2 w-32 bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl p-1 z-50 modal-enter" x-cloak>
+                                                        <button @click.stop="task.subTasks.splice(subIndex, 1); openSubMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
+                                                            Удалить
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <!-- Кнопка добавления шага -->
+                                        <button @click.stop="addSubTask(task, $event)" class="text-xs text-zinc-400 hover:text-white flex items-center space-x-1 pt-0.5">
+                                            <i data-lucide="plus" class="w-3 h-3"></i>
+                                            <span>Добавить шаг</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- 3. Замер (под шагами) -->
+                                    <div class="border-t border-[#30363d]/60 pt-2 space-y-2">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Замер</span>
+                                            <div class="flex items-center space-x-1.5 bg-[#0d1117] border border-[#30363d] rounded-lg px-2 py-0.5">
+                                                <i data-lucide="calendar" class="w-3.5 h-3.5 text-zinc-400"></i>
+                                                <input type="date" x-model="task.measurementBlock.date" @change="saveDayData()" @click.stop class="bg-transparent text-xs text-white focus:outline-none cursor-pointer">
+                                            </div>
+                                        </div>
+                                        <textarea x-effect="autoResize($el)" x-model="task.measurementBlock.description" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Показатели замера..." class="bg-[#0d1117] border border-[#30363d] text-xs text-zinc-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-zinc-500 w-full resize-none leading-relaxed"></textarea>
+                                    </div>
+
+                                    <!-- 4. Решение -->
+                                    <div class="border-t border-[#30363d]/60 pt-2 space-y-2">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Решение</span>
+                                            <!-- Дата решения для календаря -->
+                                            <div class="flex items-center space-x-1.5 bg-[#0d1117] border border-[#30363d] rounded-lg px-2 py-0.5">
+                                                <i data-lucide="calendar" class="w-3.5 h-3.5 text-zinc-400"></i>
+                                                <input type="date" x-model="task.solutionBlock.date" @change="saveDayData()" @click.stop class="bg-transparent text-xs text-white focus:outline-none cursor-pointer">
+                                            </div>
+                                        </div>
+
+                                        <!-- Заголовок решения как "мини-задача" -->
+                                        <div class="flex items-start space-x-2 w-full pl-1">
+                                            <div class="relative flex items-center justify-center w-5 h-5 flex-shrink-0 mt-0.5">
+                                                <svg class="w-5 h-5 -rotate-90" viewBox="0 0 36 36">
+                                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#21262d" stroke-width="4"></circle>
+                                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" stroke-width="4" 
+                                                            :stroke-dasharray="getTaskProgress(task) + ', 100'" stroke-dashoffset="0" 
+                                                            class="transition-all duration-300"></circle>
+                                                </svg>
+                                            </div>
+                                            <textarea x-effect="autoResize($el)" x-model="task.solutionBlock.title" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Заголовок решения..." class="bg-transparent text-xs font-semibold text-white focus:outline-none w-full resize-none leading-relaxed py-0.5"></textarea>
+                                        </div>
+
+                                        <!-- Шаги решения -->
+                                        <div class="space-y-1.5 pt-1 pl-2">
+                                            <template x-for="(solStep, solIndex) in task.solutionBlock.steps" :key="'sol'+solIndex">
+                                                <div class="flex items-start justify-between bg-[#0d1117] border border-[#30363d] px-2.5 py-1.5 rounded-lg gap-2">
+                                                    <div class="flex items-start space-x-2 flex-1 min-w-0">
+                                                        <button @click.stop="toggleTask(solStep)" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition flex-shrink-0 mt-0.5" :class="solStep.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#161b22]'">
+                                                            <i data-lucide="check" class="w-2.5 h-2.5 text-white" x-show="solStep.completed"></i>
+                                                        </button>
+                                                        <textarea x-effect="autoResize($el)" x-model="solStep.name" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Шаг решения..." class="bg-transparent text-xs text-zinc-300 focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="solStep.completed ? 'line-through text-zinc-500' : ''"></textarea>
+                                                        
+                                                        <div @click.stop="openTaskPicker(exIndex, taskIndex, null, solIndex)" class="cursor-pointer text-xs font-bold text-white hover:text-zinc-300 transition select-none px-1 flex-shrink-0 mt-0.5" title="Изменить">
+                                                            <span x-text="solStep.reps"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="relative flex-shrink-0 mt-0.5" x-data="{ openSolMenu: false }">
+                                                        <button @click.stop="openSolMenu = !openSolMenu" class="text-zinc-600 hover:text-white p-0.5 ml-1">
+                                                            <i data-lucide="more-horizontal" class="w-3 h-3"></i>
+                                                        </button>
+                                                        <div x-show="openSolMenu" @click.away="openSolMenu = false" class="absolute right-0 mt-2 w-32 bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl p-1 z-50 modal-enter" x-cloak>
+                                                            <button @click.stop="task.solutionBlock.steps.splice(solIndex, 1); openSolMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
+                                                                Удалить
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+
+                                            <!-- Кнопка добавления шага решения -->
+                                            <button @click.stop="addSolutionStep(task, $event)" class="text-xs text-zinc-400 hover:text-white flex items-center space-x-1 pt-0.5">
+                                                <i data-lucide="plus" class="w-3 h-3"></i>
+                                                <span>Добавить шаг решения</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </template>
+
+                            <!-- Add Set & Task Buttons -->
+                            <div class="flex space-x-2">
+                                <button @click="addCheckboxTask(exIndex)" class="flex-1 py-2 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] rounded-xl text-zinc-300 flex items-center justify-center transition active:scale-95">
+                                    <i data-lucide="check-square" class="w-4 h-4"></i>
+                                </button>
+                                <button @click="addSet(exIndex)" class="flex-1 py-2 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] rounded-xl text-zinc-300 flex items-center justify-center transition active:scale-95">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                            </div>
                         </div>
 
                     </div>
                 </template>
 
-                <!-- Action buttons row (Templates + Add Exercise) -->
-                <div class="flex space-x-2 pt-1">
-                    <!-- Templates Dropdown Button -->
-                    <div class="relative flex-1" x-data="{ openTemplates: false }">
-                        <button @click="openTemplates = !openTemplates; $nextTick(() => lucide.createIcons())" class="w-full py-3 bg-[#161b22] border border-[#30363d] hover:bg-[#21262d] rounded-2xl text-xs font-semibold text-zinc-300 flex items-center justify-center space-x-2 transition active:scale-95">
-                            <i data-lucide="bookmark" class="w-4 h-4 text-zinc-400"></i>
-                            <span>Шаблоны</span>
-                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200" :class="openTemplates ? 'rotate-180' : ''"></i>
-                        </button>
+                                <!-- Action buttons row (Templates + Add Exercise) -->
+                                <div class="flex space-x-2 pt-1">
+                                    <!-- Templates Dropdown Button -->
+                                    <div class="relative flex-1" x-data="{ openTemplates: false }">
+                                        <button @click="openTemplates = !openTemplates; $nextTick(() => lucide.createIcons())" class="w-full py-3 bg-[#161b22] border border-[#30363d] hover:bg-[#21262d] rounded-2xl text-xs font-semibold text-zinc-300 flex items-center justify-center space-x-2 transition active:scale-95">
+                                            <i data-lucide="bookmark" class="w-4 h-4 text-zinc-400"></i>
+                                            <span>Шаблоны</span>
+                                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200" :class="openTemplates ? 'rotate-180' : ''"></i>
+                                        </button>
 
-                        <div x-show="openTemplates" @click.away="openTemplates = false" class="absolute left-0 right-0 bottom-full mb-2 bg-[#161b22] border border-[#30363d] rounded-2xl shadow-2xl p-2 z-50 space-y-1 modal-enter" x-cloak>
-                            <template x-if="activeHabitTemplates.length === 0">
-                                <div class="text-center py-2 text-xs text-zinc-500">Нет сохраненных шаблонов</div>
-                            </template>
-                            <template x-for="(t, tIdx) in activeHabitTemplates" :key="tIdx">
-                                <div class="flex items-center justify-between px-3 py-2 rounded-xl text-xs text-white hover:bg-[#21262d] transition">
-                                    <span @click="addExerciseFromTemplate(t); openTemplates = false; $nextTick(() => lucide.createIcons())" class="cursor-pointer font-medium flex-1 truncate mr-2" x-text="t.name"></span>
-                                    <button @click="removeTemplate(tIdx)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-500/10 text-zinc-400 hover:text-red-400 text-base font-bold transition">×</button>
+                                        <div x-show="openTemplates" @click.away="openTemplates = false" class="absolute left-0 right-0 bottom-full mb-2 bg-[#161b22] border border-[#30363d] rounded-2xl shadow-2xl p-2 z-50 space-y-1 modal-enter" x-cloak>
+                                            <template x-if="activeHabitTemplates.length === 0">
+                                                <div class="text-center py-2 text-xs text-zinc-500">Нет сохраненных шаблонов</div>
+                                            </template>
+                                            <template x-for="(t, tIdx) in activeHabitTemplates" :key="tIdx">
+                                                <div class="flex items-center justify-between px-3 py-2 rounded-xl text-xs text-white hover:bg-[#21262d] transition">
+                                                    <span @click="addExerciseFromTemplate(t); openTemplates = false; $nextTick(() => lucide.createIcons())" class="cursor-pointer font-medium flex-1 truncate mr-2" x-text="t.name"></span>
+                                                    <button @click="removeTemplate(tIdx)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-500/10 text-zinc-400 hover:text-red-400 text-base font-bold transition">×</button>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <!-- Add Task Button -->
+                                    <button @click="addEmptyTaskRow()" class="px-3.5 py-3 bg-[#161b22] border border-[#30363d] hover:bg-[#21262d] rounded-2xl text-zinc-300 hover:text-white flex items-center justify-center space-x-1.5 transition active:scale-95 text-xs font-semibold" title="Новая задача">
+                                        <i data-lucide="check-square" class="w-4 h-4 text-zinc-400"></i>
+                                        <span>Задача</span>
+                                    </button>
+
+                                    <!-- Add Exercise Button -->
+                                    <button @click="addExerciseRow()" class="w-12 py-3 bg-[#161b22] border border-[#30363d] hover:bg-[#21262d] rounded-2xl text-white flex items-center justify-center transition active:scale-95" title="Новое упражнение">
+                                        <i data-lucide="plus" class="w-5 h-5 text-zinc-300"></i>
+                                    </button>
                                 </div>
-                            </template>
-                        </div>
-                    </div>
-
-                    <!-- Add Exercise Button -->
-                    <button @click="addExerciseRow()" class="w-14 py-3 bg-[#161b22] border border-[#30363d] hover:bg-[#21262d] rounded-2xl text-white flex items-center justify-center transition active:scale-95" title="Новое упражнение">
-                        <i data-lucide="plus" class="w-5 h-5 text-zinc-300"></i>
-                    </button>
-                </div>
             </div>
 
         </div>
@@ -341,7 +698,7 @@
 
         <!-- Done checkmark button in bottom-right corner -->
         <div class="absolute bottom-8 right-8 z-[70]">
-            <button @click.stop="closePicker()" class="w-16 h-16 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-zinc-400 hover:text-white rounded-full flex items-center justify-center shadow-2xl transition active:scale-90">
+            <button @click.stop.prevent="closePicker()" class="w-16 h-16 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-zinc-400 hover:text-white rounded-full flex items-center justify-center shadow-2xl transition active:scale-90">
                 <i data-lucide="check" class="w-8 h-8 stroke-[3]"></i>
             </button>
         </div>
@@ -473,8 +830,10 @@
                 gistId: '',
                 syncStatus: 'local',
 
+                pickerTargetObj: null,
                 pickerExIndex: null,
                 pickerSetIndex: null,
+                pickerTaskIndex: null,
                 pickerCurrentVal: 0,
                 pickerStartY: 0,
                 pickerStartVal: 0,
@@ -695,9 +1054,10 @@
                 },
 
                 openPicker(exIdx, setIdx) {
+                    this.pickerTargetObj = this.activeDayExercises[exIdx].setsList[setIdx];
                     this.pickerExIndex = exIdx;
                     this.pickerSetIndex = setIdx;
-                    this.pickerCurrentVal = Number(this.activeDayExercises[exIdx].setsList[setIdx].reps || 0);
+                    this.pickerCurrentVal = Number(this.pickerTargetObj.reps || 0);
                     this.openPickerModal = true;
                     this.$nextTick(() => lucide.createIcons());
                 },
@@ -723,8 +1083,18 @@
                         setTimeout(() => this.animatingPop = false, 100);
                     }
 
-                    if (this.pickerExIndex !== null && this.pickerSetIndex !== null) {
-                        this.activeDayExercises[this.pickerExIndex].setsList[this.pickerSetIndex].reps = newVal;
+                    if (this.pickerTargetObj) {
+                        this.pickerTargetObj.reps = newVal;
+                    } else if (this.pickerExIndex !== null) {
+                        if (this.pickerSetIndex !== null) {
+                            this.activeDayExercises[this.pickerExIndex].setsList[this.pickerSetIndex].reps = newVal;
+                        } else if (this.pickerSolutionStepIndex !== null) {
+                            this.activeDayExercises[this.pickerExIndex].tasksList[this.pickerTaskIndex].solutionBlock.steps[this.pickerSolutionStepIndex].reps = newVal;
+                        } else if (this.pickerSubTaskIndex !== null) {
+                            this.activeDayExercises[this.pickerExIndex].tasksList[this.pickerTaskIndex].subTasks[this.pickerSubTaskIndex].reps = newVal;
+                        } else if (this.pickerTaskIndex !== null) {
+                            this.activeDayExercises[this.pickerExIndex].tasksList[this.pickerTaskIndex].reps = newVal;
+                        }
                     }
                 },
 
@@ -734,8 +1104,13 @@
 
                 closePicker() {
                     this.openPickerModal = false;
+                    this.pickerTargetObj = null;
                     this.pickerExIndex = null;
                     this.pickerSetIndex = null;
+                    this.pickerTaskIndex = null;
+                    this.pickerSubTaskIndex = null;
+                    this.pickerSolutionStepIndex = null;
+                    this.saveDayData();
                 },
 
                 saveToStorageLocally() {
@@ -776,12 +1151,53 @@
 
                 getIntensityForHabit(habitId, dateStr) {
                     const habitWorkouts = this.allData[habitId] || {};
-                    const dayExs = habitWorkouts[dateStr];
-                    if (!dayExs || !dayExs.length) return 0;
-                    let totalReps = 0;
-                    dayExs.forEach(ex => {
-                        if (ex.setsList) ex.setsList.forEach(s => totalReps += Number(s.reps || 0));
+                    
+                    let hasPlannedTaskOnDate = false;
+                    Object.values(habitWorkouts).forEach(dayExs => {
+                        if (Array.isArray(dayExs)) {
+                            dayExs.forEach(ex => {
+                                if (ex.tasksList) {
+                                    ex.tasksList.forEach(task => {
+                                        // Проверка даты Замера (с поддержкой старого и нового формата)
+                                        const mDate = (task.measurementBlock && task.measurementBlock.date) || task.measurementDate;
+                                        if (mDate === dateStr) {
+                                            hasPlannedTaskOnDate = true;
+                                        }
+                                        // Проверка даты Решения
+                                        const sDate = (task.solutionBlock && task.solutionBlock.date);
+                                        if (sDate === dateStr) {
+                                            hasPlannedTaskOnDate = true;
+                                        }
+                                        // Проверка дат шагов решения
+                                        if (task.solutionBlock && task.solutionBlock.steps) {
+                                            task.solutionBlock.steps.forEach(solStep => {
+                                                if (solStep.date === dateStr) {
+                                                    hasPlannedTaskOnDate = true;
+                                                }
+                                            });
+                                        }
+                                        // Проверка дат подзадач основной задачи (если нужно, хотя обычно они не привязаны к дате)
+                                        // if (task.subTasks) { /* ... */ }
+                                    });
+                                }
+                            });
+                        }
                     });
+
+                    const dayExs = habitWorkouts[dateStr];
+                    if ((!dayExs || !dayExs.length) && !hasPlannedTaskOnDate) return 0;
+                    
+                    let totalReps = 0;
+                    let hasExercises = false;
+                    if (dayExs && dayExs.length) {
+                        dayExs.forEach(ex => {
+                            hasExercises = true;
+                            if (ex.setsList) ex.setsList.forEach(s => totalReps += Number(s.reps || 0));
+                            if (ex.tasksList && ex.tasksList.length > 0) hasExercises = true;
+                        });
+                    }
+
+                    if (totalReps === 0 && (hasExercises || hasPlannedTaskOnDate)) return 0.5; // Запланировано
                     if (totalReps === 0) return 0;
                     if (totalReps <= 25) return 1;
                     if (totalReps <= 60) return 2;
@@ -853,13 +1269,15 @@
                     if (existing && existing.length > 0) {
                         this.activeDayExercises = JSON.parse(JSON.stringify(existing));
                     } else {
-                        const h = this.habits.find(item => item.id === habitId);
-                        this.activeDayExercises = [
-                            { name: h ? h.name : 'Тренировки', setsList: [{reps: 0}] }
-                        ];
+                        this.activeDayExercises = [];
                     }
+                    this.normalizeDayExercises(this.activeDayExercises);
                     this.openModal = true;
-                    this.$nextTick(() => lucide.createIcons());
+                    document.body.style.overflow = 'hidden';
+                    this.$nextTick(() => {
+                        lucide.createIcons();
+                        document.querySelectorAll('textarea').forEach(autoResize);
+                    });
                 },
 
                 isExerciseInTemplates(name) {
@@ -912,6 +1330,7 @@
 
                 getColorClass(intensity) {
                     switch (intensity) {
+                        case 0.5: return 'bg-[#21262d]';
                         case 1: return 'bg-github-1';
                         case 2: return 'bg-github-2';
                         case 3: return 'bg-github-3';
@@ -1073,8 +1492,59 @@
                     localStorage.setItem('gym_all_habits_data_v3', JSON.stringify(this.allData));
                 },
 
-                saveAndCloseModal() {
-                    this.saveDayData();
+                normalizeDayExercises(exercises) {
+                    if (!Array.isArray(exercises)) return [];
+                    exercises.forEach(ex => {
+                        if (ex.tasksList && Array.isArray(ex.tasksList)) {
+                            ex.tasksList.forEach(task => {
+                                if (task.measurementDate && (!task.measurementBlock || !task.measurementBlock.date)) {
+                                    if (!task.measurementBlock) task.measurementBlock = {};
+                                    task.measurementBlock.date = task.measurementDate;
+                                }
+                                if (task.measurement && (!task.measurementBlock || !task.measurementBlock.description)) {
+                                    if (!task.measurementBlock) task.measurementBlock = {};
+                                    task.measurementBlock.description = task.measurement;
+                                }
+                                if (!task.measurementBlock) task.measurementBlock = { description: '', date: null };
+                                if (!task.solutionBlock) task.solutionBlock = { title: '', date: null, steps: [] };
+                                if (!task.solutionBlock.steps) task.solutionBlock.steps = [];
+                                if (!task.subTasks) task.subTasks = [];
+                            });
+                        }
+                    });
+                    return exercises;
+                },
+
+                get plannedTasksForSelectedDate() {
+                    if (!this.selectedDate) return [];
+                    const habitId = this.modalHabitId || (this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId);
+                    const habitData = this.allData[habitId] || {};
+                    const list = [];
+                    Object.entries(habitData).forEach(([dateStr, dayExs]) => {
+                        if (dateStr === this.selectedDate) return;
+                        if (Array.isArray(dayExs)) {
+                            dayExs.forEach(ex => {
+                                if (ex.tasksList && Array.isArray(ex.tasksList)) {
+                                    ex.tasksList.forEach(task => {
+                                        const mDate = (task.measurementBlock && task.measurementBlock.date) || task.measurementDate;
+                                        const sDate = (task.solutionBlock && task.solutionBlock.date);
+                                        let hasStepDate = false;
+                                        if (task.solutionBlock && task.solutionBlock.steps) {
+                                            hasStepDate = task.solutionBlock.steps.some(st => st.date === this.selectedDate);
+                                        }
+                                        if (mDate === this.selectedDate || sDate === this.selectedDate || hasStepDate) {
+                                            list.push({
+                                                task: task,
+                                                sourceDate: dateStr,
+                                                habitId: habitId
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                    return list;
                 },
 
                 selectDay(dateStr) {
@@ -1088,19 +1558,48 @@
                     if (existing && existing.length > 0) {
                         this.activeDayExercises = JSON.parse(JSON.stringify(existing));
                     } else {
-                        const h = this.habits.find(item => item.id === this.modalHabitId);
-                        const name = h ? h.name : 'Тренировки';
-                        this.activeDayExercises = [
-                            { name: name, setsList: [{reps: 0}] }
-                        ];
+                        this.activeDayExercises = [];
                     }
+                    this.normalizeDayExercises(this.activeDayExercises);
                     this.openModal = true;
                     document.body.style.overflow = 'hidden';
-                    this.$nextTick(() => lucide.createIcons());
+                    this.$nextTick(() => {
+                        lucide.createIcons();
+                        document.querySelectorAll('textarea').forEach(autoResize);
+                    });
+                },
+
+                addEmptyTaskRow() {
+                    this.activeDayExercises.push({
+                        name: this.activeHabitName,
+                        setsList: [],
+                        tasksList: [{ 
+                            name: 'Новая задача', 
+                            completed: false, 
+                            reps: 0,
+                            subTasks: [],
+                            measurementBlock: { description: '', date: null },
+                            solutionBlock: { title: '', date: null, steps: [] }
+                        }]
+                    });
+                    this.$nextTick(() => {
+                        lucide.createIcons();
+                        document.querySelectorAll('textarea').forEach(autoResize);
+                    });
                 },
 
                 addExerciseRow() {
                     this.activeDayExercises.push({ name: this.activeHabitName, setsList: [{reps: 0}] });
+                    this.$nextTick(() => lucide.createIcons());
+                },
+
+                addSet(exIndex) {
+                    if (!this.activeDayExercises[exIndex]) return;
+                    if (!this.activeDayExercises[exIndex].setsList) {
+                        this.activeDayExercises[exIndex].setsList = [];
+                    }
+                    this.activeDayExercises[exIndex].setsList.push({ reps: 0 });
+                    this.saveDayData();
                     this.$nextTick(() => lucide.createIcons());
                 },
 
@@ -1110,8 +1609,115 @@
                     }
                 },
 
-                addSet(exIndex) {
-                    this.activeDayExercises[exIndex].setsList.push({ reps: 0 });
+                addCheckboxTask(exIndex) {
+                    if (!this.activeDayExercises[exIndex].tasksList) {
+                        this.activeDayExercises[exIndex].tasksList = [];
+                    }
+                    this.activeDayExercises[exIndex].tasksList.push({ 
+                        name: 'Новая задача', 
+                        completed: false, 
+                        reps: 0,
+                        subTasks: [], // Шаги основной задачи
+                        measurementBlock: { // Объект для Замера
+                            description: '',
+                            date: null
+                        },
+                        solutionBlock: { // Объект для Решения
+                            title: '',
+                            date: null,
+                            steps: [] // Шаги решения
+                        }
+                    });
+                    this.$nextTick(() => lucide.createIcons());
+                },
+                // Расчет прогресса для задачи по выполненным шагам (включая шаги решения)
+                getTaskProgress(task) {
+                    const allSteps = [];
+                    if (task.subTasks) allSteps.push(...task.subTasks);
+                    if (task.solutionBlock && task.solutionBlock.steps) allSteps.push(...task.solutionBlock.steps);
+
+                    if (allSteps.length === 0) return task.completed ? 100 : 0;
+                    
+                    const completedSteps = allSteps.filter(step => step.completed).length;
+                    return Math.round((completedSteps / allSteps.length) * 100);
+                },
+                toggleTask(task, event) {
+                    if (event) {
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                    }
+                    task.completed = !task.completed;
+                    
+                    // Обновляем состояние всех подзадач и шагов решения
+                    if (task.subTasks) {
+                        task.subTasks.forEach(st => st.completed = task.completed);
+                    }
+                    if (task.solutionBlock && task.solutionBlock.steps) {
+                        task.solutionBlock.steps.forEach(solStep => solStep.completed = task.completed);
+                    }
+                    this.saveDayData();
+                },
+                // Метод для добавления подзадачи (шага) внутрь задачи
+                addSubTask(task, event) {
+                    if (event) {
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                    }
+                    if (!task.subTasks) {
+                        task.subTasks = [];
+                    }
+                    task.subTasks.push({ name: 'Шаг', completed: false, reps: 0 });
+                    this.saveDayData();
+                    this.$nextTick(() => {
+                        lucide.createIcons();
+                        // Находим только что созданную textarea и применяем автосайз
+                        const textareas = document.querySelectorAll('textarea');
+                        autoResize(textareas[textareas.length - 1]);
+                    });
+                },
+                // Метод для добавления шага решения внутрь решения
+                addSolutionStep(task, event) {
+                    if (event) {
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                    }
+                    if (!task.solutionBlock) {
+                        task.solutionBlock = { title: '', date: null, steps: [] };
+                    }
+                    if (!task.solutionBlock.steps) {
+                        task.solutionBlock.steps = [];
+                    }
+                    task.solutionBlock.steps.push({ name: 'Шаг решения', completed: false, reps: 0, date: null });
+                    this.saveDayData();
+                    this.$nextTick(() => {
+                        lucide.createIcons();
+                        const textareas = document.querySelectorAll('textarea');
+                        if (textareas.length) autoResize(textareas[textareas.length - 1]);
+                    });
+                },
+                openTaskPicker(targetOrExIdx, taskIndex = null, subTaskIndex = null, solutionStepIndex = null) {
+                    let target;
+                    if (typeof targetOrExIdx === 'object' && targetOrExIdx !== null) {
+                        target = targetOrExIdx;
+                    } else {
+                        const exIdx = targetOrExIdx;
+                        this.pickerExIndex = exIdx;
+                        this.pickerTaskIndex = taskIndex;
+                        this.pickerSubTaskIndex = subTaskIndex; 
+                        this.pickerSolutionStepIndex = solutionStepIndex;
+                        if (solutionStepIndex !== null) {
+                            target = this.activeDayExercises[exIdx].tasksList[taskIndex].solutionBlock.steps[solutionStepIndex];
+                        } else if (subTaskIndex !== null) {
+                            target = this.activeDayExercises[exIdx].tasksList[taskIndex].subTasks[subTaskIndex];
+                        } else {
+                            target = this.activeDayExercises[exIdx].tasksList[taskIndex];
+                        }
+                    }
+                    
+                    this.pickerTargetObj = target;
+                    this.pickerCurrentVal = Number(target.reps || 0);
+                    this.openPickerModal = true;
+                    this.$nextTick(() => lucide.createIcons());
                 },
 
                 removeSet(exIndex, setIndex) {
@@ -1133,19 +1739,32 @@
                 },
 
                 saveDayData() {
-                    this.activeDayExercises = this.activeDayExercises.filter(ex => ex.setsList && ex.setsList.length > 0);
-                    if (this.activeDayExercises.length > 0) {
-                        this.workouts[this.selectedDate] = JSON.parse(JSON.stringify(this.activeDayExercises));
+                    const validExercises = this.activeDayExercises.filter(ex => {
+                        const hasSets = ex.setsList && ex.setsList.some(s => Number(s.reps || 0) > 0);
+                        const hasTasks = ex.tasksList && ex.tasksList.length > 0;
+                        return hasSets || hasTasks;
+                    });
+                    if (validExercises.length > 0) {
+                        this.workouts[this.selectedDate] = JSON.parse(JSON.stringify(validExercises));
                     } else {
                         delete this.workouts[this.selectedDate];
                     }
                     this.saveToStorage();
+                },
+
+                saveAndCloseModal() {
+                    this.activeDayExercises = this.activeDayExercises.filter(ex => {
+                        const hasSets = ex.setsList && ex.setsList.some(s => Number(s.reps || 0) > 0);
+                        const hasTasks = ex.tasksList && ex.tasksList.length > 0;
+                        return hasSets || hasTasks;
+                    });
+                    this.saveDayData();
                     this.openModal = false;
+                    document.body.style.overflow = '';
                 },
 
                 exportData() {
                     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.workouts, null, 2));
-                    constdlAnchorElem = document.createElement('a');
                     const dlAnchorElem = document.createElement('a');
                     dlAnchorElem.setAttribute("href", dataStr);
                     dlAnchorElem.setAttribute("download", `gym_backup.json`);

@@ -12,6 +12,10 @@
     <!-- Favicon: green square matching calendar day -->
     
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='4' fill='%2339d353'/%3E%3C/svg%3E">
+    <!-- Google Font: Outfit for distinct category headers -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -19,6 +23,9 @@
             darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: {
+                        heading: ['Outfit', 'system-ui', 'sans-serif']
+                    },
                     colors: {
                         github: {
                             0: '#161b22',
@@ -94,6 +101,10 @@
                 opacity: 1;
                 transform: translateY(0) scale(1);
             }
+        }
+        /* Плавная анимация перемещения разделов выше/ниже */
+        .category-move-anim {
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease-in-out;
         }
     </style>
 </head>
@@ -421,33 +432,81 @@
                     <!-- Clean Timeline connecting from task to task (iOS layout, compact margins) -->
                     <div class="relative overflow-y-auto overflow-x-hidden flex-1 py-1.5 px-1 space-y-3 scroll-mask">
                         <!-- Vertical dual line: Task completion (green) & Week time (gray) running down the entire timeline -->
-                        <div class="absolute rounded-full bg-zinc-800/80 overflow-hidden flex items-start pointer-events-none"
-                             style="left: 14px; width: 4px; top: 12px; bottom: 12px;">
-                            <!-- Green fill (completed tasks) -->
-                            <div class="bg-emerald-500 transition-all duration-300"
-                                 :style="'width: 2px; height: ' + activeHabitWeekProgress + '%'"></div>
-                            <!-- Neutral Gray fill (time of week) -->
-                            <div class="bg-zinc-500 transition-all duration-300 ml-auto"
-                                 :style="'width: 2px; height: ' + weekTimeElapsedPercent + '%'"></div>
+                        <div x-show="currentWeeklyCategories.length > 0"
+                             class="absolute rounded-full bg-zinc-800/80 overflow-hidden flex items-start pointer-events-none"
+                             style="left: 13px; width: 6px; top: 12px; bottom: 12px;">
+                            <!-- Green fill (completed tasks) with rounded end -->
+                            <div class="bg-emerald-500 rounded-full transition-all duration-300"
+                                 :style="'width: 3px; height: ' + activeHabitWeekProgress + '%'"></div>
+                            <!-- Neutral Gray fill (time of week) with rounded end -->
+                            <div class="bg-zinc-500 rounded-full transition-all duration-300 ml-auto"
+                                 :style="'width: 3px; height: ' + weekTimeElapsedPercent + '%'"></div>
                         </div>
 
-                        <template x-for="cat in currentWeeklyCategories" :key="cat">
-                            <div class="space-y-1">
-                                <!-- Stage / Category title (larger, iOS bold uppercase, sleek action buttons) -->
+                        <!-- Empty state when no categories created yet -->
+                        <template x-if="currentWeeklyCategories.length === 0">
+                            <div class="py-12 text-center text-zinc-500 text-xs flex flex-col items-center justify-center space-y-2">
+                                <div class="w-10 h-10 rounded-2xl bg-[#21262d] flex items-center justify-center text-zinc-400">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                </div>
+                                <p class="font-medium text-zinc-300 text-[14px]">План недели пуст</p>
+                                <p class="text-[12px] text-zinc-500 max-w-[240px]">Нажми «+ Добавить раздел», чтобы создать этапы под это дело</p>
+                            </div>
+                        </template>
+
+                        <template x-for="(cat, catIndex) in currentWeeklyCategories" :key="cat">
+                            <div class="space-y-1 category-move-anim">
+                                <!-- Stage / Category title with 3-dots menu (no '+' and 'x' cluttering the header) -->
                                 <div class="flex items-center justify-between pt-1.5 pb-0.5">
                                     <div class="flex items-center space-x-2 min-w-0">
                                         <div class="w-6 flex-shrink-0"></div>
-                                        <span class="text-[13px] font-bold text-zinc-200 uppercase tracking-wider truncate" x-text="cat"></span>
+                                        <span class="text-[15px] font-bold text-white tracking-tight font-heading truncate" x-text="cat"></span>
                                     </div>
-                                    <div class="flex items-center space-x-1 flex-shrink-0">
-                                        <!-- Just '+' as requested -->
-                                        <button @click="addWeeklyTask(cat)" class="p-1 rounded-lg text-zinc-400 hover:text-emerald-400 hover:bg-white/5 transition active:scale-90" title="Добавить задачу">
-                                            <svg class="w-4 h-4 stroke-[2.2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                                    
+                                    <!-- Category 3-dots menu -->
+                                    <div class="relative flex-shrink-0" x-data="{ openCatMenu: false }">
+                                        <button @click.stop="openCatMenu = !openCatMenu" class="p-1 rounded-lg text-zinc-500 hover:text-white hover:bg-white/5 transition active:scale-90" title="Опции раздела">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                <circle cx="12" cy="12" r="1.5"/>
+                                                <circle cx="6" cy="12" r="1.5"/>
+                                                <circle cx="18" cy="12" r="1.5"/>
+                                            </svg>
                                         </button>
-                                        <!-- Delete category -->
-                                        <button @click="removeCategory(cat)" class="p-1 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-white/5 transition active:scale-90" title="Удалить раздел">
-                                            <svg class="w-3.5 h-3.5 stroke-[2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                                        </button>
+                                        <div x-show="openCatMenu" @click.away="openCatMenu = false"
+                                             class="absolute right-0 mt-1 w-44 bg-[#1c2128] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/70"
+                                             x-cloak>
+                                            <!-- Add task -->
+                                            <button @click.stop="addWeeklyTask(cat); openCatMenu = false"
+                                                    class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 hover:bg-[#282e36] transition flex items-center space-x-2 active:scale-95">
+                                                <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                                                <span>Добавить задачу</span>
+                                            </button>
+
+                                            <!-- Move Up -->
+                                            <button x-show="catIndex > 0"
+                                                    @click.stop="moveCategoryUp(cat); openCatMenu = false"
+                                                    class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#282e36] transition flex items-center space-x-2 active:scale-95">
+                                                <svg class="w-3.5 h-3.5 stroke-[2.2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+                                                <span>Поднять выше</span>
+                                            </button>
+
+                                            <!-- Move Down -->
+                                            <button x-show="catIndex < currentWeeklyCategories.length - 1"
+                                                    @click.stop="moveCategoryDown(cat); openCatMenu = false"
+                                                    class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#282e36] transition flex items-center space-x-2 active:scale-95">
+                                                <svg class="w-3.5 h-3.5 stroke-[2.2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                                <span>Опустить ниже</span>
+                                            </button>
+
+                                            <div class="h-px bg-[#30363d]/40 my-1"></div>
+
+                                            <!-- Delete category -->
+                                            <button @click.stop="removeCategory(cat); openCatMenu = false"
+                                                    class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#282e36] transition flex items-center space-x-2 active:scale-95">
+                                                <svg class="w-3.5 h-3.5 stroke-[2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                <span>Удалить раздел</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -472,10 +531,20 @@
                                                 </button>
                                             </div>
 
-                                            <!-- Task Name Input (iOS style) -->
-                                            <input type="text" x-model="wTask.name" @change="saveWeeklyPlans()" placeholder="Название задачи..."
-                                                   class="bg-transparent text-[15px] font-normal tracking-tight focus:outline-none flex-1 truncate pr-1 placeholder:text-zinc-600"
-                                                   :class="wTask.completed ? 'text-zinc-500 line-through' : 'text-zinc-100'">
+                                            <!-- Task Name Input (No line-through when completed) -->
+                                            <input type="text" x-model="wTask.name" @change="saveWeeklyPlans(); syncWeeklyTaskToDay(wTask)" placeholder="Название задачи..."
+                                                   class="bg-transparent text-[15px] font-normal tracking-tight focus:outline-none flex-1 truncate pr-1 placeholder:text-zinc-600 transition-colors"
+                                                   :class="wTask.completed ? 'text-zinc-400' : 'text-zinc-100'">
+
+                                            <!-- Assigned Day Badge (Clickable to change date directly) -->
+                                            <div x-show="wTask.assignedDate" class="relative flex-shrink-0 cursor-pointer"
+                                                 @click.stop="$refs.badgeDateInput.showPicker ? $refs.badgeDateInput.showPicker() : $refs.badgeDateInput.click()">
+                                                <span class="text-[10px] text-zinc-400 hover:text-white bg-zinc-800/80 hover:bg-zinc-700/80 px-1.5 py-0.5 rounded-md select-none font-mono transition"
+                                                      x-text="getAssignedDayShort(wTask.assignedDate)"></span>
+                                                <input type="date" x-ref="badgeDateInput" :value="wTask.assignedDate"
+                                                       @change="assignWeeklyTaskToDate(wTask, $event.target.value)"
+                                                       class="absolute inset-0 opacity-0 pointer-events-none w-full h-full">
+                                            </div>
 
                                             <!-- Actions: Inside 3 horizontal dots menu -->
                                             <div class="relative flex-shrink-0" x-data="{ openTaskMenu: false }">
@@ -487,13 +556,37 @@
                                                     </svg>
                                                 </button>
                                                 <div x-show="openTaskMenu" @click.away="openTaskMenu = false"
-                                                     class="absolute right-0 mt-1 w-44 bg-[#1c2128] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/70"
+                                                     class="absolute right-0 mt-1 w-48 bg-[#1c2128] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/70"
                                                      x-cloak>
-                                                    <button @click.stop="addWeeklyTaskToDay(wTask); openTaskMenu = false"
-                                                            class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 hover:bg-[#282e36] transition flex items-center space-x-2 active:scale-95">
-                                                        <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                                                        <span>Вставить в сегодня</span>
+                                                    
+                                                    <!-- Fast insert into today -->
+                                                    <button @click.stop="assignWeeklyTaskToDate(wTask, todayStr); openTaskMenu = false"
+                                                            class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 hover:bg-[#282e36] transition flex items-center justify-between active:scale-95">
+                                                        <div class="flex items-center space-x-2">
+                                                            <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                                                            <span>Вставить в сегодня</span>
+                                                        </div>
+                                                        <span x-show="wTask.assignedDate === todayStr" class="text-[10px] text-emerald-400 font-bold">✓</span>
                                                     </button>
+
+                                                    <!-- Choose date via native calendar picker (same as in tasks) -->
+                                                    <div class="relative w-full">
+                                                        <button @click.stop="$refs.dateInputRef.showPicker ? $refs.dateInputRef.showPicker() : $refs.dateInputRef.click()"
+                                                                class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#282e36] transition flex items-center justify-between active:scale-95">
+                                                            <div class="flex items-center space-x-2 pointer-events-none">
+                                                                <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                                                <span>Выбрать дату</span>
+                                                            </div>
+                                                            <span x-show="wTask.assignedDate" class="text-[10px] text-zinc-400 font-mono pointer-events-none" x-text="getAssignedDayShort(wTask.assignedDate)"></span>
+                                                        </button>
+                                                        <input type="date" x-ref="dateInputRef" :value="wTask.assignedDate || todayStr"
+                                                               @change="assignWeeklyTaskToDate(wTask, $event.target.value); openTaskMenu = false"
+                                                               class="absolute inset-0 opacity-0 pointer-events-none w-full h-full">
+                                                    </div>
+
+                                                    <div class="h-px bg-[#30363d]/40 my-1"></div>
+
+                                                    <!-- Delete task -->
                                                     <button @click.stop="removeWeeklyTask(wTask); openTaskMenu = false"
                                                             class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#282e36] transition flex items-center space-x-2 active:scale-95">
                                                         <svg class="w-3.5 h-3.5 stroke-[2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -507,13 +600,12 @@
                             </div>
                         </template>
 
-                        <!-- Add category button (iOS style) -->
-                        <div class="pt-2 flex items-center">
-                            <button @click="promptNewCategory()" class="text-xs font-medium text-zinc-400 hover:text-zinc-200 flex items-center space-x-2 py-1 px-1 rounded-xl transition active:scale-95">
-                                <div class="w-6 flex items-center justify-center flex-shrink-0 text-zinc-500">
-                                    <svg class="w-4 h-4 stroke-[2.2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                                </div>
-                                <span>Добавить раздел</span>
+                        <!-- Add category button: prominent plus on the right without text -->
+                        <div class="pt-3 pb-2 flex items-center justify-end pr-1">
+                            <button @click="promptNewCategory()"
+                                    class="w-10 h-10 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-zinc-300 hover:text-white flex items-center justify-center transition active:scale-90 border border-[#30363d]/60 shadow-lg"
+                                    title="Добавить раздел">
+                                <svg class="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                             </button>
                         </div>
                     </div>
@@ -2096,6 +2188,35 @@
                     const months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
                     return `${mon.getDate()} ${months[mon.getMonth()]} — ${sun.getDate()} ${months[sun.getMonth()]}`;
                 },
+                get currentWeekDays() {
+                    if (!this.currentWeekKey) return [];
+                    const parts = this.currentWeekKey.split('-');
+                    const mon = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+                    const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+                    const months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+                    const days = [];
+                    for (let i = 0; i < 7; i++) {
+                        const cur = new Date(mon);
+                        cur.setDate(mon.getDate() + i);
+                        const iso = this.formatDateIso(cur);
+                        days.push({
+                            date: iso,
+                            dayName: dayNames[i],
+                            label: `${dayNames[i]}, ${cur.getDate()} ${months[cur.getMonth()]}`,
+                            isToday: iso === this.todayStr
+                        });
+                    }
+                    return days;
+                },
+                getAssignedDayShort(dateStr) {
+                    if (!dateStr) return '';
+                    if (dateStr === this.todayStr) return 'Сегодня';
+                    const parts = dateStr.split('-');
+                    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+                    const dayNames = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+                    const months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+                    return `${dayNames[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}`;
+                },
                 get weekTimeElapsedPercent() {
                     const now = new Date();
                     const day = now.getDay();
@@ -2112,42 +2233,28 @@
                 getHabitWeekData(habitId) {
                     const hid = habitId || this.weeklyHubHabitId || this.activeHabitId || 'workout_default';
                     if (!this.weeklyPlans[hid]) {
-                        const h = this.habits.find(item => item.id === hid);
-                        const hName = (h ? h.name : '').toLowerCase();
-                        let defaultCats = ['Планирование', 'Копирайтинг', 'Съемка', 'Публикации', 'Замер'];
-                        let defaultTasks = [
-                            { id: 'wt_1', category: 'Планирование', name: 'Выбрать 3 темы недели', completed: false },
-                            { id: 'wt_2', category: 'Копирайтинг', name: 'Сценарий 1 (Боль / Ошибка)', completed: false },
-                            { id: 'wt_3', category: 'Копирайтинг', name: 'Сценарий 2 (Кейс клиента)', completed: false },
-                            { id: 'wt_4', category: 'Съемка', name: 'Снять ролик 1', completed: false },
-                            { id: 'wt_5', category: 'Публикации', name: 'Выложить во Вторник', completed: false },
-                            { id: 'wt_6', category: 'Замер', name: 'Зафиксировать лиды в воскресенье', completed: false }
-                        ];
-                        if (hName.includes('тренировк') || hName.includes('спорт')) {
-                            defaultCats = ['Силовые', 'Кардио', 'Восстановление', 'Замеры'];
-                            defaultTasks = [
-                                { id: 'wt_1', category: 'Силовые', name: 'Тренировка верха', completed: false },
-                                { id: 'wt_2', category: 'Силовые', name: 'Тренировка низа', completed: false },
-                                { id: 'wt_3', category: 'Кардио', name: 'Бег 5 км', completed: false },
-                                { id: 'wt_4', category: 'Замеры', name: 'Взвешивание в воскресенье', completed: false }
-                            ];
-                        }
                         this.weeklyPlans[hid] = {
-                            categories: defaultCats,
+                            categories: [],
                             weeks: {}
                         };
-                        this.weeklyPlans[hid].weeks[this.currentWeekKey] = defaultTasks;
+                        this.weeklyPlans[hid].weeks[this.currentWeekKey] = [];
                     }
                     const hData = this.weeklyPlans[hid];
                     const wk = this.currentWeekKey;
                     if (!hData.weeks) hData.weeks = {};
                     if (!hData.weeks[wk]) {
-                        hData.weeks[wk] = (hData.categories || []).map((cat, idx) => ({
-                            id: 'wt_' + Date.now() + '_' + idx,
-                            category: cat,
-                            name: '',
-                            completed: false
-                        }));
+                        hData.weeks[wk] = [];
+                    }
+                    // Auto-cleanup legacy mock content steps if user never modified them
+                    if (hData.categories && hData.categories.length === 5 && 
+                        hData.categories[0] === 'Планирование' && hData.categories[1] === 'Копирайтинг') {
+                        const tasks = hData.weeks[wk] || [];
+                        const isMock = tasks.some(t => t.id && String(t.id).startsWith('wt_') && (t.name === 'Выбрать 3 темы недели' || t.name === 'Сценарий 1 (Боль / Ошибка)'));
+                        if (isMock) {
+                            hData.categories = [];
+                            hData.weeks[wk] = [];
+                            this.saveWeeklyPlans();
+                        }
                     }
                     return hData;
                 },
@@ -2198,19 +2305,176 @@
                         id: 'wt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
                         category: catName,
                         name: '',
-                        completed: false
+                        completed: false,
+                        assignedDate: null
                     });
                     this.saveWeeklyPlans();
                     this.$nextTick(() => {
                         if (window.lucide) lucide.createIcons();
                     });
                 },
+                findWeeklyTaskById(taskId) {
+                    if (!taskId) return null;
+                    for (const hid in this.weeklyPlans) {
+                        const plan = this.weeklyPlans[hid];
+                        if (plan && plan.weeks) {
+                            for (const wk in plan.weeks) {
+                                const list = plan.weeks[wk];
+                                if (Array.isArray(list)) {
+                                    const found = list.find(t => t.id === taskId);
+                                    if (found) return found;
+                                }
+                            }
+                        }
+                    }
+                    return null;
+                },
+                syncWeeklyTaskToDay(wTask) {
+                    if (!wTask || !wTask.assignedDate) return;
+                    const targetDate = wTask.assignedDate;
+                    if (this.selectedDate === targetDate && this.openModal) {
+                        for (const ex of this.activeDayExercises) {
+                            if (ex.tasksList) {
+                                const t = ex.tasksList.find(item => item.weeklyTaskId === wTask.id);
+                                if (t) {
+                                    t.name = wTask.name || 'Задача недели';
+                                    t.completed = !!wTask.completed;
+                                }
+                            }
+                        }
+                        this.saveDayData();
+                    }
+                    if (this.workouts[targetDate]) {
+                        for (const ex of this.workouts[targetDate]) {
+                            if (ex.tasksList) {
+                                const t = ex.tasksList.find(item => item.weeklyTaskId === wTask.id);
+                                if (t) {
+                                    t.name = wTask.name || 'Задача недели';
+                                    t.completed = !!wTask.completed;
+                                }
+                            }
+                        }
+                        this.saveToStorage();
+                    }
+                },
+                syncDayTaskToWeekly(dayTask) {
+                    if (!dayTask || !dayTask.weeklyTaskId) return;
+                    const wTask = this.findWeeklyTaskById(dayTask.weeklyTaskId);
+                    if (wTask) {
+                        wTask.completed = !!dayTask.completed;
+                        this.saveWeeklyPlans();
+                    }
+                },
                 toggleWeeklyTask(wTask) {
                     wTask.completed = !wTask.completed;
+                    this.syncWeeklyTaskToDay(wTask);
                     this.saveWeeklyPlans();
                     this.$nextTick(() => {
                         if (window.lucide) lucide.createIcons();
                     });
+                },
+                assignWeeklyTaskToDate(wTask, targetDate) {
+                    if (!wTask || !targetDate) return;
+                    const oldDate = wTask.assignedDate;
+                    if (oldDate && oldDate !== targetDate) {
+                        if (this.selectedDate === oldDate && this.openModal) {
+                            this.activeDayExercises = this.activeDayExercises.map(ex => {
+                                if (ex.tasksList) {
+                                    ex.tasksList = ex.tasksList.filter(t => t.weeklyTaskId !== wTask.id);
+                                }
+                                return ex;
+                            }).filter(ex => (ex.tasksList && ex.tasksList.length > 0) || (ex.setsList && ex.setsList.length > 0) || ex.isCheckbox);
+                            this.saveDayData();
+                        } else if (this.workouts[oldDate]) {
+                            this.workouts[oldDate] = this.workouts[oldDate].map(ex => {
+                                if (ex.tasksList) {
+                                    ex.tasksList = ex.tasksList.filter(t => t.weeklyTaskId !== wTask.id);
+                                }
+                                return ex;
+                            }).filter(ex => (ex.tasksList && ex.tasksList.length > 0) || (ex.setsList && ex.setsList.length > 0) || ex.isCheckbox);
+                            if (this.workouts[oldDate].length === 0) delete this.workouts[oldDate];
+                            this.saveToStorage();
+                        }
+                    }
+
+                    wTask.assignedDate = targetDate;
+                    this.saveWeeklyPlans();
+
+                    const hid = this.weeklyHubHabitId || this.activeHabitId || 'workout_default';
+                    const habit = this.habits.find(item => item.id === hid);
+                    const habitName = habit ? habit.name : 'План недели';
+
+                    if (this.selectedDate === targetDate && this.openModal) {
+                        let found = false;
+                        for (const ex of this.activeDayExercises) {
+                            if (ex.tasksList) {
+                                const t = ex.tasksList.find(item => item.weeklyTaskId === wTask.id);
+                                if (t) {
+                                    t.name = wTask.name || 'Задача недели';
+                                    t.completed = !!wTask.completed;
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!found) {
+                            this.activeDayExercises.push({
+                                name: habitName,
+                                setsList: [],
+                                tasksList: [{
+                                    name: wTask.name || 'Задача недели',
+                                    weeklyTaskId: wTask.id,
+                                    weeklyHabitId: hid,
+                                    weeklyKey: this.currentWeekKey,
+                                    hasMainTask: true,
+                                    completed: !!wTask.completed,
+                                    reps: 0,
+                                    subTasks: [],
+                                    measurementBlock: { description: '', date: null, metrics: [] },
+                                    solutionBlock: { title: wTask.category || '', date: null, steps: [] }
+                                }]
+                            });
+                        }
+                        this.saveDayData();
+                    } else {
+                        if (!this.workouts[targetDate]) {
+                            this.workouts[targetDate] = [];
+                        }
+                        let found = false;
+                        for (const ex of this.workouts[targetDate]) {
+                            if (ex.tasksList) {
+                                const t = ex.tasksList.find(item => item.weeklyTaskId === wTask.id);
+                                if (t) {
+                                    t.name = wTask.name || 'Задача недели';
+                                    t.completed = !!wTask.completed;
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!found) {
+                            this.workouts[targetDate].push({
+                                name: habitName,
+                                setsList: [],
+                                tasksList: [{
+                                    name: wTask.name || 'Задача недели',
+                                    weeklyTaskId: wTask.id,
+                                    weeklyHabitId: hid,
+                                    weeklyKey: this.currentWeekKey,
+                                    hasMainTask: true,
+                                    completed: !!wTask.completed,
+                                    reps: 0,
+                                    subTasks: [],
+                                    measurementBlock: { description: '', date: null, metrics: [] },
+                                    solutionBlock: { title: wTask.category || '', date: null, steps: [] }
+                                }]
+                            });
+                        }
+                        this.saveToStorage();
+                    }
+                },
+                addWeeklyTaskToDay(wTask) {
+                    this.assignWeeklyTaskToDate(wTask, this.todayStr || this.selectedDate);
                 },
                 removeWeeklyTask(wTask) {
                     const list = this.currentWeeklyTasks;
@@ -2219,9 +2483,30 @@
                         list.splice(idx, 1);
                         this.saveWeeklyPlans();
                     }
+                    if (wTask.assignedDate) {
+                        const d = wTask.assignedDate;
+                        if (this.selectedDate === d && this.openModal) {
+                            this.activeDayExercises = this.activeDayExercises.map(ex => {
+                                if (ex.tasksList) {
+                                    ex.tasksList = ex.tasksList.filter(t => t.weeklyTaskId !== wTask.id);
+                                }
+                                return ex;
+                            }).filter(ex => (ex.tasksList && ex.tasksList.length > 0) || (ex.setsList && ex.setsList.length > 0) || ex.isCheckbox);
+                            this.saveDayData();
+                        } else if (this.workouts[d]) {
+                            this.workouts[d] = this.workouts[d].map(ex => {
+                                if (ex.tasksList) {
+                                    ex.tasksList = ex.tasksList.filter(t => t.weeklyTaskId !== wTask.id);
+                                }
+                                return ex;
+                            }).filter(ex => (ex.tasksList && ex.tasksList.length > 0) || (ex.setsList && ex.setsList.length > 0) || ex.isCheckbox);
+                            if (this.workouts[d].length === 0) delete this.workouts[d];
+                            this.saveToStorage();
+                        }
+                    }
                 },
                 promptNewCategory() {
-                    const name = prompt('Введите название дела / этапа (например: Дизайн, Реклама, Офферы):');
+                    const name = prompt('Введите название раздела (например: Тренировки, Съемка, План):');
                     if (name && name.trim().length > 0) {
                         const cat = name.trim();
                         if (!this.currentWeeklyCategories.includes(cat)) {
@@ -2238,32 +2523,32 @@
                         const hData = this.activeHabitWeekData;
                         hData.categories = hData.categories.filter(c => c !== catName);
                         if (hData.weeks && hData.weeks[this.currentWeekKey]) {
+                            const tasksToRemove = hData.weeks[this.currentWeekKey].filter(t => t.category === catName);
+                            tasksToRemove.forEach(t => this.removeWeeklyTask(t));
                             hData.weeks[this.currentWeekKey] = hData.weeks[this.currentWeekKey].filter(t => t.category !== catName);
                         }
                         this.saveWeeklyPlans();
                     }
                 },
-                addWeeklyTaskToDay(wTask) {
-                    const exName = this.activeWeeklyHabitName;
-                    this.activeDayExercises.push({
-                        name: exName,
-                        setsList: [],
-                        tasksList: [{
-                            name: wTask.name || 'Задача недели',
-                            hasMainTask: true,
-                            completed: !!wTask.completed,
-                            reps: 0,
-                            subTasks: [],
-                            measurementBlock: { description: '', date: null, metrics: [] },
-                            solutionBlock: { title: wTask.category || '', date: null, steps: [] }
-                        }]
-                    });
-                    this.saveDayData();
-                    this.showTemplatesSlide = false;
-                    this.$nextTick(() => {
-                        if (window.lucide) lucide.createIcons();
-                        document.querySelectorAll('textarea').forEach(autoResize);
-                    });
+                moveCategoryUp(catName) {
+                    const hData = this.activeHabitWeekData;
+                    if (!hData || !hData.categories) return;
+                    const idx = hData.categories.indexOf(catName);
+                    if (idx > 0) {
+                        const item = hData.categories.splice(idx, 1)[0];
+                        hData.categories.splice(idx - 1, 0, item);
+                        this.saveWeeklyPlans();
+                    }
+                },
+                moveCategoryDown(catName) {
+                    const hData = this.activeHabitWeekData;
+                    if (!hData || !hData.categories) return;
+                    const idx = hData.categories.indexOf(catName);
+                    if (idx !== -1 && idx < hData.categories.length - 1) {
+                        const item = hData.categories.splice(idx, 1)[0];
+                        hData.categories.splice(idx + 1, 0, item);
+                        this.saveWeeklyPlans();
+                    }
                 },
                 saveWeeklyPlans() {
                     localStorage.setItem('gym_weekly_plans_v1', JSON.stringify(this.weeklyPlans));
@@ -2454,6 +2739,13 @@
                                 if (!task.solutionBlock) task.solutionBlock = { title: '', date: null, steps: [] };
                                 if (!task.solutionBlock.steps) task.solutionBlock.steps = [];
                                 if (!task.subTasks) task.subTasks = [];
+                                if (task.weeklyTaskId) {
+                                    const wTask = this.findWeeklyTaskById(task.weeklyTaskId);
+                                    if (wTask) {
+                                        task.completed = !!wTask.completed;
+                                        if (wTask.name) task.name = wTask.name;
+                                    }
+                                }
                             });
                         }
                     });
@@ -2643,6 +2935,9 @@
                     }
                     if (task.solutionBlock && task.solutionBlock.steps) {
                         task.solutionBlock.steps.forEach(solStep => solStep.completed = task.completed);
+                    }
+                    if (task.weeklyTaskId) {
+                        this.syncDayTaskToWeekly(task);
                     }
                     this.saveDayData();
                     if (this.$nextTick) {

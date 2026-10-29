@@ -119,17 +119,20 @@
 <body class="min-h-screen font-sans antialiased pb-24" x-data="trackerApp()" x-init="initApp(); $nextTick(() => document.querySelectorAll('textarea').forEach(autoResize))">
 
     <!-- Minimal Header -->
-    <header class="sticky top-0 z-30 px-4 py-3 max-w-md mx-auto flex items-center justify-between bg-[#0d1117]">
-        <div class="flex space-x-1 items-center">
-            <button @click="setViewMode('week')" :class="viewMode === 'week' ? 'bg-[#21262d] text-white' : 'text-zinc-500 hover:text-zinc-300'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition active:scale-95">Week</button>
-            <button @click="setViewMode('month')" :class="viewMode === 'month' ? 'bg-[#21262d] text-white' : 'text-zinc-500 hover:text-zinc-300'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition active:scale-95">Month</button>
-            <button @click="setViewMode('year')" :class="viewMode === 'year' ? 'bg-[#21262d] text-white' : 'text-zinc-500 hover:text-zinc-300'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition active:scale-95">Year</button>
+    <header class="sticky top-0 z-30 px-3 sm:px-4 py-2.5 max-w-md mx-auto flex items-center justify-between bg-[#0d1117]/95 backdrop-blur-md w-full select-none">
+        <div class="flex items-center space-x-1.5 min-w-0">
+            <!-- Compact Segmented View Switcher -->
+            <div class="flex items-center bg-[#161b22] p-0.5 rounded-xl border border-[#30363d]/60 flex-shrink-0">
+                <button @click="setViewMode('week')" :class="viewMode === 'week' ? 'bg-[#282e36] text-white shadow-sm font-semibold' : 'text-zinc-400 hover:text-white'" class="px-2 py-1 rounded-lg text-[11px] transition active:scale-95">Week</button>
+                <button @click="setViewMode('month')" :class="viewMode === 'month' ? 'bg-[#282e36] text-white shadow-sm font-semibold' : 'text-zinc-400 hover:text-white'" class="px-2 py-1 rounded-lg text-[11px] transition active:scale-95">Month</button>
+                <button @click="setViewMode('year')" :class="viewMode === 'year' ? 'bg-[#282e36] text-white shadow-sm font-semibold' : 'text-zinc-400 hover:text-white'" class="px-2 py-1 rounded-lg text-[11px] transition active:scale-95">Year</button>
+            </div>
             
             <!-- Habit Selector Dropdown -->
-            <div class="relative ml-1" x-data="{ openHabitMenu: false }">
-                <button @click="openHabitMenu = !openHabitMenu" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#21262d] text-white hover:bg-[#30363d] transition flex items-center space-x-1.5 active:scale-95">
-                    <span x-text="activeHabitName"></span>
-                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-zinc-400"></i>
+            <div class="relative min-w-0" x-data="{ openHabitMenu: false }">
+                <button @click="openHabitMenu = !openHabitMenu" class="px-2.5 py-1 rounded-xl text-[11px] font-medium bg-[#161b22] border border-[#30363d]/60 text-white hover:bg-[#21262d] transition flex items-center space-x-1 active:scale-95">
+                    <span class="max-w-[75px] sm:max-w-[120px] truncate" x-text="activeHabitName"></span>
+                    <i data-lucide="chevron-down" class="w-3 h-3 text-zinc-400 flex-shrink-0"></i>
                 </button>
 
                 <!-- iOS-style Popover Menu -->
@@ -158,11 +161,11 @@
             </div>
         </div>
         
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-1.5 flex-shrink-0">
             <!-- Cloud sync status indicator -->
-            <span class="w-2.5 h-2.5 rounded-full" :class="syncStatusClass" :title="syncStatusText"></span>
-            <button @click="openSettings = true" class="p-2 text-zinc-400 hover:text-white transition">
-                <i data-lucide="settings" class="w-5 h-5"></i>
+            <span class="w-2 h-2 rounded-full" :class="syncStatusClass" :title="syncStatusText"></span>
+            <button @click="openSettings = true" class="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-[#21262d] transition active:scale-95" title="Настройки">
+                <i data-lucide="settings" class="w-4 h-4"></i>
             </button>
         </div>
     </header>
@@ -1666,16 +1669,52 @@
                                 let data = await res.json();
                                 if (data.files && data.files['workouts.json']) {
                                     let remoteState = JSON.parse(data.files['workouts.json'].content);
-                                    if (remoteState && remoteState.habits && remoteState.allData) {
-                                        this.habits = remoteState.habits;
-                                        this.allData = remoteState.allData;
-                                        if (remoteState.weeklyPlans) {
-                                            this.weeklyPlans = remoteState.weeklyPlans;
+                                    if (remoteState && remoteState.allData) {
+                                        // Smart non-destructive merge: preserve all local and remote data
+                                        if (Array.isArray(remoteState.habits) && remoteState.habits.length > 0) {
+                                            const map = new Map();
+                                            this.habits.forEach(h => map.set(h.id, h));
+                                            remoteState.habits.forEach(h => {
+                                                if (!map.has(h.id)) map.set(h.id, h);
+                                            });
+                                            this.habits = Array.from(map.values());
                                         }
-                                         if (remoteState.activeHabitId && this.activeHabitId !== 'all') {
-                                             this.activeHabitId = remoteState.activeHabitId;
-                                         }
+
+                                        Object.keys(remoteState.allData).forEach(hid => {
+                                            if (!this.allData[hid]) {
+                                                this.allData[hid] = remoteState.allData[hid];
+                                            } else {
+                                                Object.keys(remoteState.allData[hid]).forEach(dStr => {
+                                                    if (!this.allData[hid][dStr] || this.allData[hid][dStr].length === 0) {
+                                                        this.allData[hid][dStr] = remoteState.allData[hid][dStr];
+                                                    }
+                                                });
+                                            }
+                                        });
+
+                                        if (remoteState.weeklyPlans) {
+                                            Object.keys(remoteState.weeklyPlans).forEach(hid => {
+                                                if (!this.weeklyPlans[hid]) {
+                                                    this.weeklyPlans[hid] = remoteState.weeklyPlans[hid];
+                                                } else {
+                                                    const rPlan = remoteState.weeklyPlans[hid];
+                                                    if (rPlan.categories) {
+                                                        const set = new Set([...(this.weeklyPlans[hid].categories || []), ...rPlan.categories]);
+                                                        this.weeklyPlans[hid].categories = Array.from(set);
+                                                    }
+                                                    if (rPlan.weeks) {
+                                                        if (!this.weeklyPlans[hid].weeks) this.weeklyPlans[hid].weeks = {};
+                                                        Object.keys(rPlan.weeks).forEach(wk => {
+                                                            if (!this.weeklyPlans[hid].weeks[wk] || this.weeklyPlans[hid].weeks[wk].length === 0) {
+                                                                this.weeklyPlans[hid].weeks[wk] = rPlan.weeks[wk];
+                                                            }
+                                                        });
+                                                    }
+                                                }
+                                            });
+                                        }
                                         this.saveToStorageLocally();
+                                        this.pushToGist(true);
                                     } else if (remoteState && typeof remoteState === 'object') {
                                         // Legacy single workout format fallback
                                         this.allData['workout_default'] = remoteState;
@@ -1699,7 +1738,8 @@
                                                 habits: this.habits,
                                                 allData: this.allData,
                                                 weeklyPlans: this.weeklyPlans,
-                                                activeHabitId: this.activeHabitId
+                                                activeHabitId: this.activeHabitId,
+                                                updatedAt: Date.now()
                                             })
                                         }
                                     }
@@ -1718,11 +1758,12 @@
                     }
                 },
 
-                pushToGist() {
+                pushToGist(immediate = false) {
                     if (!this.githubToken || !this.gistId) return;
                     if (this._gistTimer) clearTimeout(this._gistTimer);
                     this.syncStatus = 'syncing';
-                    this._gistTimer = setTimeout(async () => {
+
+                    const doPush = async () => {
                         try {
                             let res = await fetch(`https://api.github.com/gists/${this.gistId}`, {
                                 method: 'PATCH',
@@ -1737,7 +1778,8 @@
                                                 habits: this.habits,
                                                 allData: this.allData,
                                                 weeklyPlans: this.weeklyPlans,
-                                                activeHabitId: this.activeHabitId
+                                                activeHabitId: this.activeHabitId,
+                                                updatedAt: Date.now()
                                             })
                                         }
                                     }
@@ -1754,7 +1796,13 @@
                             console.error('Gist Exception:', e);
                             this.syncStatus = 'error';
                         }
-                    }, 1200);
+                    };
+
+                    if (immediate) {
+                        doPush();
+                    } else {
+                        this._gistTimer = setTimeout(doPush, 1000);
+                    }
                 },
 
                 scrollToToday() {
@@ -2022,17 +2070,15 @@
                         });
                     });
 
-                    if (!hasActivities && !hasPlannedTaskOnDate) return 0;
-                    
-                    // Если есть хотя бы одна невыполненная задача дня — не красим в зелёный
-                    if (hasUncompletedTasks) return 0.5;
-
                     const totalScore = totalReps + completedScore;
-                    if (totalScore === 0) return 0.5; // Запланировано / без очков
-                    if (totalScore <= 30) return 1;
-                    if (totalScore <= 75) return 2;
-                    if (totalScore <= 120) return 3;
-                    return 4;
+                    if (totalScore > 0) {
+                        if (totalScore <= 30) return 1;
+                        if (totalScore <= 75) return 2;
+                        if (totalScore <= 120) return 3;
+                        return 4;
+                    }
+                    if (hasUncompletedTasks || hasActivities || hasPlannedTaskOnDate) return 0.5;
+                    return 0;
                 },
 
                 getHabitWeekDays(habitId) {
@@ -3116,7 +3162,10 @@
                 },
 
                 clearDayData() {
-                    delete this.workouts[this.selectedDate];
+                    const hid = this.modalHabitId || (this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId);
+                    if (this.allData[hid]) {
+                        delete this.allData[hid][this.selectedDate];
+                    }
                     this.saveToStorage();
                     this.openModal = false;
                     if (this.lastActiveHabitBeforeModal === 'all') {
@@ -3131,7 +3180,7 @@
                         const hasName = !!(ex.name && ex.name.trim().length > 0);
                         const hasSets = ex.setsList && (ex.setsList.some(s => Number(s.reps || 0) > 0) || (hasName && ex.setsList.length > 0));
                         const hasTasks = ex.tasksList && ex.tasksList.some(task => {
-                            const hasTaskName = !!(task.name && task.name.trim().length > 0 && task.name !== 'Новая задача');
+                            const hasTaskName = !!(task.name && task.name.trim().length > 0);
                             const hasSubTasks = !!(task.subTasks && task.subTasks.length > 0);
                             const hasMeas = this.hasMeasurementContent(task);
                             const hasSol = this.hasSolutionContent(task);
@@ -3140,13 +3189,18 @@
                         const hasCheckbox = ex.isCheckbox && hasName;
                         return hasSets || hasTasks || hasCheckbox;
                     });
-                    if (validExercises.length > 0) {
-                        this.workouts[this.selectedDate] = JSON.parse(JSON.stringify(validExercises));
-                    } else {
-                        delete this.workouts[this.selectedDate];
-                    }
-                    this.saveToStorage();
+
                     const hid = this.modalHabitId || (this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId);
+                    if (!this.allData[hid]) this.allData[hid] = {};
+
+                    if (validExercises.length > 0) {
+                        this.allData[hid][this.selectedDate] = JSON.parse(JSON.stringify(validExercises));
+                    } else {
+                        delete this.allData[hid][this.selectedDate];
+                    }
+
+                    this.saveToStorage();
+
                     const wk = this.selectedDate ? this.getWeekStart(this.selectedDate) : this.currentWeekKey;
                     if (this.syncDayExercisesToWeekly && hid && wk) {
                         this.syncDayExercisesToWeekly(hid, wk);
@@ -3304,6 +3358,7 @@
                     this.closeGraphView();
                     this.showTemplatesSlide = false;
                     this.saveDayData();
+                    this.pushToGist(true);
                     this.openModal = false;
                     document.body.style.overflow = '';
                 },

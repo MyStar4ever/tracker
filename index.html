@@ -350,6 +350,104 @@
                     Нажимай на плашки сверху, чтобы скрывать или показывать показатели
                 </div>
             </div>
+
+            <!-- TELEGRAM-STYLE SLIDE-OVER WEEKLY HUB & TEMPLATES SCREEN -->
+            <div x-show="showTemplatesSlide"
+                 x-transition:enter="transition transform ease-out duration-300"
+                 x-transition:enter-start="translate-x-full"
+                 x-transition:enter-end="translate-x-0"
+                 x-transition:leave="transition transform ease-in duration-200"
+                 x-transition:leave-start="translate-x-0"
+                 x-transition:leave-end="translate-x-full"
+                 class="absolute inset-0 bg-[#161b22] z-40 rounded-[38px] p-4 sm:p-5 flex flex-col shadow-2xl overflow-hidden"
+                 x-cloak>
+                
+                <!-- Weekly Hub Header -->
+                <div class="flex items-center justify-between pb-2.5 border-b border-[#30363d]/50 flex-shrink-0">
+                    <div class="flex items-center space-x-2 min-w-0">
+                        <button @click="closeTemplatesSlide()" class="p-1.5 rounded-xl bg-[#21262d] text-zinc-300 hover:text-white transition flex-shrink-0 active:scale-95" title="Назад">
+                            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                        </button>
+                        <div class="min-w-0">
+                            <h3 class="font-semibold text-white text-[15px] truncate">План недели</h3>
+                            <div class="text-[11px] text-zinc-400 truncate" x-text="currentWeekRangeText"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-1.5 flex-shrink-0">
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-[#21262d] text-emerald-400" x-text="currentWeekProgress + '%'"></span>
+                        <button @click="closeTemplatesSlide()" class="p-1.5 rounded-xl bg-[#21262d] text-zinc-400 hover:text-white transition flex-shrink-0 active:scale-95" title="Закрыть">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Progress bar -->
+                <div class="w-full bg-[#0d1117] h-1.5 rounded-full overflow-hidden mt-2 mb-1 flex-shrink-0">
+                    <div class="bg-emerald-500 h-full transition-all duration-300" :style="'width: ' + currentWeekProgress + '%'"></div>
+                </div>
+
+                <!-- Scrollable categories & tasks list -->
+                <div class="space-y-3 overflow-y-auto overflow-x-hidden pr-1 flex-1 py-1.5 scroll-mask">
+                    <template x-for="(cat, cIdx) in currentWeeklyCategories" :key="cat">
+                        <div class="bg-[#0d1117]/80 rounded-2xl p-3 border border-[#30363d]/40 space-y-2">
+                            <!-- Category Header -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2 min-w-0">
+                                    <span class="text-xs font-bold text-white uppercase tracking-wider truncate" x-text="cat"></span>
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-[#21262d] text-zinc-400" x-text="getCategoryProgressText(cat)"></span>
+                                </div>
+                                <div class="flex items-center space-x-1 flex-shrink-0">
+                                    <button @click="addWeeklyTask(cat)" class="text-[11px] font-medium text-emerald-400 hover:text-emerald-300 px-2 py-0.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-90 transition">
+                                        + Задача
+                                    </button>
+                                    <button @click="removeCategory(cat)" class="p-1 text-zinc-500 hover:text-red-400 transition" title="Удалить раздел">
+                                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Tasks list under this category -->
+                            <div class="space-y-1.5">
+                                <template x-if="getTasksForCategory(cat).length === 0">
+                                    <div class="text-[11px] text-zinc-600 italic py-1 px-1">Нет задач в этом разделе</div>
+                                </template>
+                                <template x-for="wTask in getTasksForCategory(cat)" :key="wTask.id">
+                                    <div class="flex items-center justify-between bg-[#161b22] px-2.5 py-2 rounded-xl gap-2 transition">
+                                        <!-- Checkbox -->
+                                        <button @click.stop="toggleWeeklyTask(wTask)" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition active:scale-90 flex-shrink-0" :class="wTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0d1117]'">
+                                            <i data-lucide="check" class="w-2.5 h-2.5 text-white" x-show="wTask.completed"></i>
+                                        </button>
+
+                                        <!-- Task Name Input -->
+                                        <input type="text" x-model="wTask.name" @change="saveWeeklyPlans()" placeholder="Название задачи..." class="bg-transparent text-xs focus:outline-none flex-1 truncate" :class="wTask.completed ? 'text-zinc-500' : 'text-zinc-100'">
+
+                                        <!-- Action buttons -->
+                                        <div class="flex items-center space-x-1 flex-shrink-0">
+                                            <!-- Insert into day -->
+                                            <button @click.stop="addWeeklyTaskToDay(wTask)" class="p-1 rounded-lg hover:bg-[#21262d] text-zinc-400 hover:text-emerald-400 transition active:scale-90" title="Вставить в сегодняшний день">
+                                                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                                            </button>
+                                            <!-- Remove task -->
+                                            <button @click.stop="removeWeeklyTask(wTask)" class="p-1 rounded-lg hover:bg-red-500/10 text-zinc-500 hover:text-red-400 transition" title="Удалить задачу">
+                                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Add new category button -->
+                    <div class="pt-1 flex items-center justify-between px-1">
+                        <button @click="promptNewCategory()" class="text-xs font-medium text-zinc-400 hover:text-white flex items-center space-x-1.5 py-1.5 transition active:scale-95">
+                            <i data-lucide="folder-plus" class="w-4 h-4"></i>
+                            <span>+ Добавить дело / этап</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
             
             <!-- Modal Header -->
             <div class="flex items-center justify-between pb-2 border-b border-[#30363d]/50 flex-shrink-0">
@@ -962,38 +1060,10 @@
 
                 <!-- Action buttons row (Templates + Add Exercise) -->
                 <div class="flex space-x-2 pt-1 flex-shrink-0">
-                    <!-- Templates Dropdown Button -->
-                    <div class="relative flex-1" x-data="{ openTemplates: false, manageTemplates: false }">
-                        <button @click="openTemplates = !openTemplates; manageTemplates = false; $nextTick(() => lucide.createIcons())" class="w-full py-3.5 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-zinc-300 flex items-center justify-center space-x-1 transition active:scale-90" title="Шаблоны">
-                            <i data-lucide="bookmark" class="w-7 h-7 text-zinc-300 stroke-[2.2]"></i>
-                            <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-500 transition-transform duration-200" :class="openTemplates ? 'rotate-180' : ''"></i>
-                        </button>
-
-                        <div x-show="openTemplates" @click.away="openTemplates = false; manageTemplates = false" class="absolute left-0 bottom-full mb-3 w-72 max-w-[85vw] bg-[#161b22] rounded-2xl shadow-2xl p-2.5 z-50 modal-enter border border-[#30363d]/60 space-y-2" x-cloak>
-                            <!-- Header with 3 dots menu -->
-                            <div class="flex items-center justify-between px-2 pt-1 pb-1.5 border-b border-[#30363d]/40">
-                                <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Шаблоны</span>
-                                <button @click.stop="manageTemplates = !manageTemplates; $nextTick(() => lucide.createIcons())" class="p-1 rounded-lg text-zinc-400 hover:text-white transition active:scale-90" :class="manageTemplates ? 'text-red-400' : ''" :title="manageTemplates ? 'Завершить' : 'Управление шаблонами'">
-                                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-
-                            <template x-if="activeHabitTemplates.length === 0">
-                                <div class="text-center py-3 text-xs text-zinc-500">Нет сохраненных шаблонов</div>
-                            </template>
-
-                            <div class="max-h-60 overflow-y-auto space-y-1 pr-0.5" x-show="activeHabitTemplates.length > 0">
-                                <template x-for="(t, tIdx) in activeHabitTemplates" :key="tIdx">
-                                    <div class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm bg-[#0d1117]/50 hover:bg-[#21262d] transition group">
-                                        <span @click="if (!manageTemplates) { addExerciseFromTemplate(t); openTemplates = false; $nextTick(() => lucide.createIcons()); }" class="cursor-pointer font-medium flex-1 truncate text-zinc-200 group-hover:text-white mr-2" x-text="t.name"></span>
-                                        <button x-show="manageTemplates" @click.stop="removeTemplate(tIdx); $nextTick(() => lucide.createIcons())" class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition flex-shrink-0" title="Удалить шаблон">
-                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                        </button>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Templates & Weekly Hub Slide-over Button -->
+                    <button @click="openTemplatesSlide()" class="flex-1 py-3.5 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-zinc-300 hover:text-white flex items-center justify-center transition active:scale-90" title="План недели и шаблоны">
+                        <i data-lucide="bookmark" class="w-7 h-7 text-zinc-300 stroke-[2.2]"></i>
+                    </button>
 
                     <!-- Add Task Button -->
                     <button @click="addEmptyTaskRow()" class="flex-1 py-3.5 bg-[#161b22] hover:bg-[#21262d] rounded-2xl text-zinc-300 hover:text-white flex items-center justify-center transition active:scale-90" title="Новая задача">
@@ -1210,6 +1280,8 @@
                 openHabitManager: false,
                 openMetricPicker: false,
                 showGraphView: false,
+                showTemplatesSlide: false,
+                weeklyPlans: {},
                 graphTitle: '',
                 graphDatasets: [],
                 graphLabels: [],
@@ -1291,6 +1363,10 @@
                     const savedCustom = localStorage.getItem('gym_custom_metrics_v1');
                     if (savedCustom) {
                         try { this.customMetricsList = JSON.parse(savedCustom); } catch(e) {}
+                    }
+                    const savedWeekly = localStorage.getItem('gym_weekly_plans_v1');
+                    if (savedWeekly) {
+                        try { this.weeklyPlans = JSON.parse(savedWeekly); } catch(e) {}
                     }
                     const savedAll = localStorage.getItem('gym_all_habits_data_v3');
                     if (savedAll) {
@@ -1582,6 +1658,7 @@
                     localStorage.setItem('gym_habits_list_v3', JSON.stringify(this.habits));
                     localStorage.setItem('gym_active_habit_v3', this.activeHabitId);
                     localStorage.setItem('gym_view_mode_v3', this.viewMode);
+                    localStorage.setItem('gym_weekly_plans_v1', JSON.stringify(this.weeklyPlans));
                 },
 
                 saveToStorage() {
@@ -1895,6 +1972,161 @@
                             this.saveHabitsConfig();
                         }
                     }
+                },
+
+                openTemplatesSlide() {
+                    this.showTemplatesSlide = true;
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
+                },
+                closeTemplatesSlide() {
+                    this.showTemplatesSlide = false;
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
+                },
+                getWeekStart(dateStr) {
+                    if (!dateStr) return '';
+                    const parts = dateStr.split('-');
+                    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+                    const day = d.getDay();
+                    const diff = day === 0 ? -6 : 1 - day;
+                    d.setDate(d.getDate() + diff);
+                    return this.formatDateIso(d);
+                },
+                get currentWeekKey() {
+                    return this.getWeekStart(this.selectedDate || this.formatDateIso(new Date()));
+                },
+                get currentWeekRangeText() {
+                    if (!this.currentWeekKey) return '';
+                    const parts = this.currentWeekKey.split('-');
+                    const mon = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+                    const sun = new Date(mon);
+                    sun.setDate(sun.getDate() + 6);
+                    const months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+                    return `${mon.getDate()} ${months[mon.getMonth()]} — ${sun.getDate()} ${months[sun.getMonth()]}`;
+                },
+                get activeHabitWeekData() {
+                    const idToUse = this.modalHabitId || (this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId);
+                    if (!this.weeklyPlans[idToUse]) {
+                        this.weeklyPlans[idToUse] = {
+                            categories: ['Планирование', 'Копирайтинг', 'Съемка', 'Публикации', 'Замер'],
+                            weeks: {}
+                        };
+                    }
+                    const hData = this.weeklyPlans[idToUse];
+                    const wk = this.currentWeekKey;
+                    if (!hData.weeks) hData.weeks = {};
+                    if (!hData.weeks[wk]) {
+                        hData.weeks[wk] = [
+                            { id: 'wt_1', category: 'Планирование', name: 'Выбрать 3 темы недели', completed: false },
+                            { id: 'wt_2', category: 'Копирайтинг', name: 'Сценарий 1 (Боль / Ошибка)', completed: false },
+                            { id: 'wt_3', category: 'Копирайтинг', name: 'Сценарий 2 (Кейс клиента)', completed: false },
+                            { id: 'wt_4', category: 'Съемка', name: 'Снять ролик 1', completed: false },
+                            { id: 'wt_5', category: 'Публикации', name: 'Выложить во Вторник', completed: false },
+                            { id: 'wt_6', category: 'Замер', name: 'Зафиксировать лиды в воскресенье', completed: false }
+                        ];
+                    }
+                    return hData;
+                },
+                get currentWeeklyCategories() {
+                    return this.activeHabitWeekData.categories || [];
+                },
+                get currentWeeklyTasks() {
+                    return (this.activeHabitWeekData.weeks && this.activeHabitWeekData.weeks[this.currentWeekKey]) ? this.activeHabitWeekData.weeks[this.currentWeekKey] : [];
+                },
+                getTasksForCategory(catName) {
+                    return this.currentWeeklyTasks.filter(t => t.category === catName);
+                },
+                getCategoryProgressText(catName) {
+                    const tasks = this.getTasksForCategory(catName);
+                    if (!tasks || tasks.length === 0) return '0/0';
+                    const done = tasks.filter(t => t.completed).length;
+                    return `${done}/${tasks.length}`;
+                },
+                get currentWeekProgress() {
+                    const list = this.currentWeeklyTasks;
+                    if (!list || list.length === 0) return 0;
+                    const done = list.filter(t => t.completed).length;
+                    return Math.round((done / list.length) * 100);
+                },
+                addWeeklyTask(catName) {
+                    const list = this.currentWeeklyTasks;
+                    list.push({
+                        id: 'wt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                        category: catName,
+                        name: '',
+                        completed: false
+                    });
+                    this.saveWeeklyPlans();
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
+                },
+                toggleWeeklyTask(wTask) {
+                    wTask.completed = !wTask.completed;
+                    this.saveWeeklyPlans();
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
+                },
+                removeWeeklyTask(wTask) {
+                    const list = this.currentWeeklyTasks;
+                    const idx = list.findIndex(t => t.id === wTask.id);
+                    if (idx !== -1) {
+                        list.splice(idx, 1);
+                        this.saveWeeklyPlans();
+                    }
+                },
+                promptNewCategory() {
+                    const name = prompt('Введите название дела / этапа (например: Дизайн, Реклама, Офферы):');
+                    if (name && name.trim().length > 0) {
+                        const cat = name.trim();
+                        if (!this.currentWeeklyCategories.includes(cat)) {
+                            this.currentWeeklyCategories.push(cat);
+                            this.saveWeeklyPlans();
+                            this.$nextTick(() => {
+                                if (window.lucide) lucide.createIcons();
+                            });
+                        }
+                    }
+                },
+                removeCategory(catName) {
+                    if (confirm('Удалить раздел \"' + catName + '\" со всеми задачами?')) {
+                        const hData = this.activeHabitWeekData;
+                        hData.categories = hData.categories.filter(c => c !== catName);
+                        if (hData.weeks && hData.weeks[this.currentWeekKey]) {
+                            hData.weeks[this.currentWeekKey] = hData.weeks[this.currentWeekKey].filter(t => t.category !== catName);
+                        }
+                        this.saveWeeklyPlans();
+                    }
+                },
+                addWeeklyTaskToDay(wTask) {
+                    const exName = this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].name : '') : this.activeHabitName;
+                    this.activeDayExercises.push({
+                        name: exName,
+                        setsList: [],
+                        tasksList: [{
+                            name: wTask.name || 'Задача недели',
+                            hasMainTask: true,
+                            completed: !!wTask.completed,
+                            reps: 0,
+                            subTasks: [],
+                            measurementBlock: { description: '', date: null, metrics: [] },
+                            solutionBlock: { title: wTask.category || '', date: null, steps: [] }
+                        }]
+                    });
+                    this.saveDayData();
+                    this.showTemplatesSlide = false;
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                        document.querySelectorAll('textarea').forEach(autoResize);
+                    });
+                },
+                saveWeeklyPlans() {
+                    localStorage.setItem('gym_weekly_plans_v1', JSON.stringify(this.weeklyPlans));
+                    this.saveToStorage();
                 },
 
                 getColorClass(intensity) {
@@ -2380,6 +2612,7 @@
 
                 saveAndCloseModal() {
                     this.closeGraphView();
+                    this.showTemplatesSlide = false;
                     this.saveDayData();
                     this.openModal = false;
                     document.body.style.overflow = '';

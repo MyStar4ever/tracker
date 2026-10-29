@@ -304,7 +304,7 @@
              x-transition:leave="transition-all duration-150 ease-in"
              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
              x-transition:leave-end="opacity-0 scale-95 translate-y-3"
-             class="bg-[#161b22] w-full max-w-sm rounded-[38px] px-4 pt-3 pb-4 sm:px-5 sm:pt-3.5 sm:pb-5 space-y-3 shadow-2xl overflow-hidden overflow-x-hidden max-h-[85vh] flex flex-col relative">
+             class="bg-[#161b22] w-full max-w-md rounded-[38px] px-4 pt-3 pb-4 sm:px-5 sm:pt-3.5 sm:pb-5 space-y-3 shadow-2xl overflow-hidden overflow-x-hidden h-[90vh] max-h-[92vh] flex flex-col relative">
 
             <!-- TELEGRAM-STYLE SLIDE-OVER GRAPH SCREEN -->
             <div x-show="showGraphView"
@@ -2332,6 +2332,7 @@
                 syncWeeklyTaskToDay(wTask) {
                     if (!wTask || !wTask.assignedDate) return;
                     const targetDate = wTask.assignedDate;
+                    const hid = this.weeklyHubHabitId || this.activeHabitId || 'workout_default';
                     if (this.selectedDate === targetDate && this.openModal) {
                         for (const ex of this.activeDayExercises) {
                             if (ex.tasksList) {
@@ -2344,8 +2345,8 @@
                         }
                         this.saveDayData();
                     }
-                    if (this.workouts[targetDate]) {
-                        for (const ex of this.workouts[targetDate]) {
+                    if (this.allData[hid] && this.allData[hid][targetDate]) {
+                        for (const ex of this.allData[hid][targetDate]) {
                             if (ex.tasksList) {
                                 const t = ex.tasksList.find(item => item.weeklyTaskId === wTask.id);
                                 if (t) {
@@ -2376,6 +2377,10 @@
                 assignWeeklyTaskToDate(wTask, targetDate) {
                     if (!wTask || !targetDate) return;
                     const oldDate = wTask.assignedDate;
+                    const hid = this.weeklyHubHabitId || this.activeHabitId || 'workout_default';
+                    const habit = this.habits.find(item => item.id === hid);
+                    const habitName = habit ? habit.name : 'План недели';
+
                     if (oldDate && oldDate !== targetDate) {
                         if (this.selectedDate === oldDate && this.openModal) {
                             this.activeDayExercises = this.activeDayExercises.map(ex => {
@@ -2385,24 +2390,21 @@
                                 return ex;
                             }).filter(ex => (ex.tasksList && ex.tasksList.length > 0) || (ex.setsList && ex.setsList.length > 0) || ex.isCheckbox);
                             this.saveDayData();
-                        } else if (this.workouts[oldDate]) {
-                            this.workouts[oldDate] = this.workouts[oldDate].map(ex => {
+                        }
+                        if (this.allData[hid] && this.allData[hid][oldDate]) {
+                            this.allData[hid][oldDate] = this.allData[hid][oldDate].map(ex => {
                                 if (ex.tasksList) {
                                     ex.tasksList = ex.tasksList.filter(t => t.weeklyTaskId !== wTask.id);
                                 }
                                 return ex;
                             }).filter(ex => (ex.tasksList && ex.tasksList.length > 0) || (ex.setsList && ex.setsList.length > 0) || ex.isCheckbox);
-                            if (this.workouts[oldDate].length === 0) delete this.workouts[oldDate];
+                            if (this.allData[hid][oldDate].length === 0) delete this.allData[hid][oldDate];
                             this.saveToStorage();
                         }
                     }
 
                     wTask.assignedDate = targetDate;
                     this.saveWeeklyPlans();
-
-                    const hid = this.weeklyHubHabitId || this.activeHabitId || 'workout_default';
-                    const habit = this.habits.find(item => item.id === hid);
-                    const habitName = habit ? habit.name : 'План недели';
 
                     if (this.selectedDate === targetDate && this.openModal) {
                         let found = false;
@@ -2437,11 +2439,10 @@
                         }
                         this.saveDayData();
                     } else {
-                        if (!this.workouts[targetDate]) {
-                            this.workouts[targetDate] = [];
-                        }
+                        if (!this.allData[hid]) this.allData[hid] = {};
+                        if (!this.allData[hid][targetDate]) this.allData[hid][targetDate] = [];
                         let found = false;
-                        for (const ex of this.workouts[targetDate]) {
+                        for (const ex of this.allData[hid][targetDate]) {
                             if (ex.tasksList) {
                                 const t = ex.tasksList.find(item => item.weeklyTaskId === wTask.id);
                                 if (t) {
@@ -2453,7 +2454,7 @@
                             }
                         }
                         if (!found) {
-                            this.workouts[targetDate].push({
+                            this.allData[hid][targetDate].push({
                                 name: habitName,
                                 setsList: [],
                                 tasksList: [{
@@ -2485,6 +2486,7 @@
                     }
                     if (wTask.assignedDate) {
                         const d = wTask.assignedDate;
+                        const hid = this.weeklyHubHabitId || this.activeHabitId || 'workout_default';
                         if (this.selectedDate === d && this.openModal) {
                             this.activeDayExercises = this.activeDayExercises.map(ex => {
                                 if (ex.tasksList) {
@@ -2493,14 +2495,15 @@
                                 return ex;
                             }).filter(ex => (ex.tasksList && ex.tasksList.length > 0) || (ex.setsList && ex.setsList.length > 0) || ex.isCheckbox);
                             this.saveDayData();
-                        } else if (this.workouts[d]) {
-                            this.workouts[d] = this.workouts[d].map(ex => {
+                        }
+                        if (this.allData[hid] && this.allData[hid][d]) {
+                            this.allData[hid][d] = this.allData[hid][d].map(ex => {
                                 if (ex.tasksList) {
                                     ex.tasksList = ex.tasksList.filter(t => t.weeklyTaskId !== wTask.id);
                                 }
                                 return ex;
                             }).filter(ex => (ex.tasksList && ex.tasksList.length > 0) || (ex.setsList && ex.setsList.length > 0) || ex.isCheckbox);
-                            if (this.workouts[d].length === 0) delete this.workouts[d];
+                            if (this.allData[hid][d].length === 0) delete this.allData[hid][d];
                             this.saveToStorage();
                         }
                     }

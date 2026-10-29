@@ -1669,6 +1669,9 @@
                                     if (remoteState && remoteState.habits && remoteState.allData) {
                                         this.habits = remoteState.habits;
                                         this.allData = remoteState.allData;
+                                        if (remoteState.weeklyPlans) {
+                                            this.weeklyPlans = remoteState.weeklyPlans;
+                                        }
                                          if (remoteState.activeHabitId && this.activeHabitId !== 'all') {
                                              this.activeHabitId = remoteState.activeHabitId;
                                          }
@@ -1695,6 +1698,7 @@
                                             content: JSON.stringify({
                                                 habits: this.habits,
                                                 allData: this.allData,
+                                                weeklyPlans: this.weeklyPlans,
                                                 activeHabitId: this.activeHabitId
                                             })
                                         }
@@ -1732,6 +1736,7 @@
                                             content: JSON.stringify({
                                                 habits: this.habits,
                                                 allData: this.allData,
+                                                weeklyPlans: this.weeklyPlans,
                                                 activeHabitId: this.activeHabitId
                                             })
                                         }
@@ -3130,12 +3135,10 @@
                             const hasSubTasks = !!(task.subTasks && task.subTasks.length > 0);
                             const hasMeas = this.hasMeasurementContent(task);
                             const hasSol = this.hasSolutionContent(task);
-                            const hasWeekly = !!task.weeklyTaskId;
-                            return hasTaskName || hasSubTasks || hasMeas || hasSol || hasWeekly;
+                            return hasTaskName || hasSubTasks || hasMeas || hasSol;
                         });
-                        const hasWeeklyEx = !!ex.weeklyTaskId;
                         const hasCheckbox = ex.isCheckbox && hasName;
-                        return hasSets || hasTasks || hasCheckbox || hasWeeklyEx;
+                        return hasSets || hasTasks || hasCheckbox;
                     });
                     if (validExercises.length > 0) {
                         this.workouts[this.selectedDate] = JSON.parse(JSON.stringify(validExercises));
@@ -3184,12 +3187,16 @@
 
                         dayExs.forEach(ex => {
                             if (ex.setsList && Array.isArray(ex.setsList) && ex.setsList.length > 0) {
+                                const hasExName = !!(ex.name && ex.name.trim().length > 0);
+                                const hasReps = ex.setsList.some(s => Number(s.reps || 0) > 0);
+                                if (!hasExName && !hasReps) return;
+
                                 if (!ex.weeklyTaskId) {
                                     ex.weeklyTaskId = 'wt_ex_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
                                 }
                                 activeDayIds.add(ex.weeklyTaskId);
-                                const exName = (ex.name && ex.name.trim()) ? ex.name.trim() : 'Тренировка';
-                                const isDone = ex.setsList.some(s => Number(s.reps || 0) > 0) || !!ex.completed;
+                                const exName = hasExName ? ex.name.trim() : 'Тренировка';
+                                const isDone = hasReps || !!ex.completed;
                                 const cat = 'Тренировки';
 
                                 let existing = wTasks.find(t => t.id === ex.weeklyTaskId);

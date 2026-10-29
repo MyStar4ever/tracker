@@ -295,7 +295,7 @@
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
          @click.self="saveAndCloseModal()" 
-         class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm overflow-x-hidden" 
+         class="fixed inset-0 z-50 flex items-center justify-center p-1 sm:p-4 bg-black/70 backdrop-blur-sm overflow-x-hidden" 
          x-cloak>
         <div x-show="openModal"
              x-transition:enter="transition-all duration-200 ease-out"
@@ -305,7 +305,7 @@
              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
              x-transition:leave-end="opacity-0 scale-95 translate-y-3"
              :class="(showTemplatesSlide || showGraphView) ? 'h-[90vh] max-h-[92vh]' : 'max-h-[85vh] h-auto'"
-             class="bg-[#161b22] w-full max-w-md rounded-[38px] px-4 pt-3 pb-4 sm:px-5 sm:pt-3.5 sm:pb-5 space-y-3 shadow-2xl overflow-hidden overflow-x-hidden flex flex-col relative transition-all duration-300">
+             class="bg-[#161b22] w-full max-w-md rounded-[32px] sm:rounded-[38px] px-2.5 pt-3 pb-3.5 sm:px-5 sm:pt-3.5 sm:pb-5 space-y-3 shadow-2xl overflow-hidden overflow-x-hidden flex flex-col relative transition-all duration-300">
 
             <!-- TELEGRAM-STYLE SLIDE-OVER GRAPH SCREEN -->
             <div x-show="showGraphView"
@@ -653,7 +653,7 @@
 
                 <!-- WEEKLY PLAN SECTION IN DAY MODAL -->
                 <template x-if="weeklyTasksForSelectedWeek.length > 0">
-                    <div class="space-y-3 pb-2 border-b border-[#30363d]/40">
+                    <div class="space-y-3">
                         <div class="flex items-center justify-between px-1">
                             <span class="text-xs font-semibold text-zinc-400">План на неделю</span>
                             <span class="text-[11px] text-zinc-500 font-mono" x-text="currentWeekRangeText"></span>
@@ -661,7 +661,7 @@
 
                         <template x-for="(wItem, wIdx) in weeklyTasksForSelectedWeek" :key="'wPlan'+wIdx">
                             <div x-data="{ isExpanded: false }" 
-                                 class="bg-[#0d1117] rounded-[26px] overflow-hidden transition-all shadow-lg border border-emerald-500/20">
+                                 class="bg-[#0d1117] rounded-[26px] overflow-hidden transition-all shadow-lg">
                                 
                                 <!-- Card Header (when collapsed) -->
                                 <div x-show="!isExpanded"
@@ -678,6 +678,10 @@
                                             <i data-lucide="check" class="absolute w-3 h-3 text-emerald-400 check-pop" x-show="getTaskProgress(wItem.task) === 100"></i>
                                         </div>
                                         <div class="text-[15px] font-semibold truncate flex-1 min-w-0" :class="getTaskProgress(wItem.task) === 100 ? 'text-zinc-500' : 'text-white'" x-text="wItem.task.name || 'Без названия'"></div>
+                                        <div x-show="hasItemReps(wItem.task)" class="text-xs font-medium text-zinc-300 flex items-baseline space-x-0.5 mr-1 flex-shrink-0">
+                                            <span x-text="wItem.task.reps"></span>
+                                            <span class="text-[10px] text-zinc-500" x-text="wItem.task.unit || activeHabitUnit"></span>
+                                        </div>
                                     </div>
 
                                     <div class="flex items-center space-x-2 flex-shrink-0 cursor-pointer" 
@@ -702,8 +706,9 @@
                                                 <i data-lucide="check" class="absolute w-3 h-3 text-emerald-400 check-pop" x-show="getTaskProgress(wItem.task) === 100"></i>
                                             </div>
                                             <textarea x-effect="autoResize($el)" x-model="wItem.task.name" @input="autoResize($event.target); saveDayData()" @change="saveDayData()" @click.stop rows="1" placeholder="Название задачи..." class="bg-transparent text-[15px] font-semibold focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="getTaskProgress(wItem.task) === 100 ? 'text-zinc-500' : 'text-white'"></textarea>
-                                            <div @click.stop="openTaskPicker(wItem.task)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-2 py-0.5 flex-shrink-0 mt-0.5 active:scale-90" :class="wItem.task._justUpdated ? 'number-pop text-emerald-400' : ''" title="Нажми для изменения">
-                                                <span x-text="wItem.task.reps"></span>
+                                            <div x-show="hasItemReps(wItem.task)" @click.stop="openTaskPicker(wItem.task)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-1.5 py-0.5 flex-shrink-0 mt-0.5 active:scale-90 flex items-baseline space-x-0.5" :class="wItem.task._justUpdated ? 'number-pop text-emerald-400' : ''" title="Нажми для изменения">
+                                                <span x-text="wItem.task.reps || 0"></span>
+                                                <span class="text-xs font-normal text-zinc-400 ml-0.5" x-text="wItem.task.unit || activeHabitUnit"></span>
                                             </div>
                                         </div>
                                         <div class="flex items-center space-x-1 flex-shrink-0 mt-0.5">
@@ -711,7 +716,13 @@
                                                 <button @click.stop="openWMenu = !openWMenu" class="text-zinc-500 hover:text-white p-1">
                                                     <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                                                 </button>
-                                                <div x-show="openWMenu" @click.away="openWMenu = false" class="absolute right-0 mt-2 w-44 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/50" x-cloak>
+                                                <div x-show="openWMenu" @click.away="openWMenu = false" class="absolute right-0 mt-2 w-48 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/50" x-cloak>
+                                                    <button @click.stop="toggleTaskReps(wItem.task); openWMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                        <span x-text="hasItemReps(wItem.task) ? 'Удалить показатель' : 'Добавить показатель'"></span>
+                                                    </button>
+                                                    <button x-show="hasItemReps(wItem.task)" @click.stop="editItemUnit(wItem.task); openWMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                        Изменить ед. (<span x-text="wItem.task.unit || activeHabitUnit"></span>)
+                                                    </button>
                                                     <button @click.stop="toggleTaskWeekly(wItem.task); openWMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
                                                         Снять с недели
                                                     </button>
@@ -734,15 +745,22 @@
                                                     </button>
                                                     <textarea x-effect="autoResize($el)" x-model="subTask.name" @input="autoResize($event.target); saveDayData()" @click.stop rows="1" placeholder="Шаг задачи..." class="bg-transparent text-sm focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="subTask.completed ? 'text-zinc-500' : 'text-zinc-100'"></textarea>
                                                     <span x-show="subTask.completed && subTask.completedDate" class="text-[10px] text-zinc-500 font-mono self-center px-1" x-text="getAssignedDayShort(subTask.completedDate)"></span>
-                                                    <div @click.stop="openTaskPicker(subTask)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-1.5 flex-shrink-0 mt-0.5 active:scale-90" :class="subTask._justUpdated ? 'number-pop text-emerald-400' : ''" title="Изменить">
-                                                        <span x-text="subTask.reps"></span>
+                                                    <div x-show="hasItemReps(subTask)" @click.stop="openTaskPicker(subTask)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-1.5 flex-shrink-0 mt-0.5 active:scale-90 flex items-baseline space-x-0.5" :class="subTask._justUpdated ? 'number-pop text-emerald-400' : ''" title="Изменить">
+                                                        <span x-text="subTask.reps || 0"></span>
+                                                        <span class="text-xs font-normal text-zinc-400 ml-0.5" x-text="subTask.unit || activeHabitUnit"></span>
                                                     </div>
                                                 </div>
                                                 <div class="relative flex-shrink-0 mt-0.5" x-data="{ openSubMenu: false }">
                                                     <button @click.stop="openSubMenu = !openSubMenu" class="text-zinc-500 hover:text-white p-0.5 ml-1">
                                                         <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
                                                     </button>
-                                                    <div x-show="openSubMenu" @click.away="openSubMenu = false" class="absolute right-0 mt-2 w-32 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/50" x-cloak>
+                                                    <div x-show="openSubMenu" @click.away="openSubMenu = false" class="absolute right-0 mt-2 w-48 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/50" x-cloak>
+                                                        <button @click.stop="toggleTaskReps(subTask); openSubMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                            <span x-text="hasItemReps(subTask) ? 'Удалить показатель' : 'Добавить показатель'"></span>
+                                                        </button>
+                                                        <button x-show="hasItemReps(subTask)" @click.stop="editItemUnit(subTask); openSubMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                            Изменить ед. (<span x-text="subTask.unit || activeHabitUnit"></span>)
+                                                        </button>
                                                         <button @click.stop="wItem.task.subTasks.splice(subIndex, 1); openSubMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
                                                             Удалить
                                                         </button>
@@ -750,11 +768,10 @@
                                                 </div>
                                             </div>
                                         </template>
-                                        <!-- Add step button -->
-                                        <div class="flex justify-end pt-0.5">
-                                            <button @click.stop="addSubTask(wItem.task, $event)" class="text-xs font-medium text-zinc-400 hover:text-white flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#161b22] transition">
-                                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                                                <span>Добавить шаг</span>
+                                        <!-- Add step button: big plus icon only -->
+                                        <div class="flex justify-end pt-1">
+                                            <button @click.stop="addSubTask(wItem.task, $event)" class="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-[#161b22] transition active:scale-90" title="Добавить шаг">
+                                                <i data-lucide="plus" class="w-5 h-5 stroke-[2.5]"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -1144,8 +1161,9 @@
                                                 <!-- Поле ввода главной задачи -->
                                                 <textarea x-effect="autoResize($el)" x-model="task.name" @input="autoResize($event.target); saveDayData()" @change="saveDayData()" @click.stop rows="1" placeholder="Название задачи..." class="bg-transparent text-[15px] font-semibold focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="getTaskProgress(task) === 100 ? 'text-zinc-500' : 'text-white'"></textarea>
                                                 <!-- Число справа -->
-                                                <div @click.stop="openTaskPicker(exIndex, taskIndex)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-2 py-0.5 flex-shrink-0 mt-0.5 active:scale-90" :class="task._justUpdated ? 'number-pop text-emerald-400' : ''" title="Нажми для изменения">
-                                                    <span x-text="task.reps"></span>
+                                                <div x-show="hasItemReps(task)" @click.stop="openTaskPicker(exIndex, taskIndex)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-2 py-0.5 flex-shrink-0 mt-0.5 active:scale-90 flex items-baseline space-x-0.5" :class="task._justUpdated ? 'number-pop text-emerald-400' : ''" title="Нажми для изменения">
+                                                    <span x-text="task.reps || 0"></span>
+                                                    <span class="text-xs font-normal text-zinc-400 ml-0.5" x-text="task.unit || activeHabitUnit"></span>
                                                 </div>
                                             </div>
                                             <!-- Меню три точки -->
@@ -1153,7 +1171,13 @@
                                                 <button @click.stop="openTaskMenu = !openTaskMenu" class="text-zinc-500 hover:text-white p-1">
                                                     <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                                                 </button>
-                                                <div x-show="openTaskMenu" @click.away="openTaskMenu = false" class="absolute right-0 mt-2 w-44 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter" x-cloak>
+                                                <div x-show="openTaskMenu" @click.away="openTaskMenu = false" class="absolute right-0 mt-2 w-48 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/50" x-cloak>
+                                                    <button @click.stop="toggleTaskReps(task); openTaskMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                        <span x-text="hasItemReps(task) ? 'Удалить показатель' : 'Добавить показатель'"></span>
+                                                    </button>
+                                                    <button x-show="hasItemReps(task)" @click.stop="editItemUnit(task); openTaskMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                        Изменить ед. (<span x-text="task.unit || activeHabitUnit"></span>)
+                                                    </button>
                                                     <button @click.stop="toggleTaskWeekly(task); openTaskMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 hover:bg-[#21262d] transition">
                                                         <span x-text="task.isWeekly ? 'Снять с недели' : 'Назначить на неделю'"></span>
                                                     </button>
@@ -1174,15 +1198,22 @@
                                                             <i data-lucide="check" class="w-2.5 h-2.5 text-white check-pop" x-show="subTask.completed"></i>
                                                         </button>
                                                         <textarea x-effect="autoResize($el)" x-model="subTask.name" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Шаг задачи..." class="bg-transparent text-sm focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="subTask.completed ? 'text-zinc-500' : 'text-zinc-100'"></textarea>
-                                                        <div @click.stop="openTaskPicker(exIndex, taskIndex, subIndex)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-1.5 flex-shrink-0 mt-0.5 active:scale-90" :class="subTask._justUpdated ? 'number-pop text-emerald-400' : ''" title="Изменить">
-                                                            <span x-text="subTask.reps"></span>
+                                                        <div x-show="hasItemReps(subTask)" @click.stop="openTaskPicker(exIndex, taskIndex, subIndex)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-1.5 flex-shrink-0 mt-0.5 active:scale-90 flex items-baseline space-x-0.5" :class="subTask._justUpdated ? 'number-pop text-emerald-400' : ''" title="Изменить">
+                                                            <span x-text="subTask.reps || 0"></span>
+                                                            <span class="text-xs font-normal text-zinc-400 ml-0.5" x-text="subTask.unit || activeHabitUnit"></span>
                                                         </div>
                                                     </div>
                                                     <div class="relative flex-shrink-0 mt-0.5" x-data="{ openSubMenu: false }">
                                                         <button @click.stop="openSubMenu = !openSubMenu" class="text-zinc-500 hover:text-white p-0.5 ml-1">
                                                             <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
                                                         </button>
-                                                        <div x-show="openSubMenu" @click.away="openSubMenu = false" class="absolute right-0 mt-2 w-32 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter" x-cloak>
+                                                        <div x-show="openSubMenu" @click.away="openSubMenu = false" class="absolute right-0 mt-2 w-48 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/50" x-cloak>
+                                                            <button @click.stop="toggleTaskReps(subTask); openSubMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                                <span x-text="hasItemReps(subTask) ? 'Удалить показатель' : 'Добавить показатель'"></span>
+                                                            </button>
+                                                            <button x-show="hasItemReps(subTask)" @click.stop="editItemUnit(subTask); openSubMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                                Изменить ед. (<span x-text="subTask.unit || activeHabitUnit"></span>)
+                                                            </button>
                                                             <button @click.stop="task.subTasks.splice(subIndex, 1); openSubMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
                                                                 Удалить
                                                             </button>
@@ -1192,10 +1223,9 @@
                                             </template>
 
                                             <!-- Кнопка добавления шага (прижата вправо) -->
-                                            <div class="flex justify-end pt-0.5">
-                                                <button @click.stop="addSubTask(task, $event)" class="text-xs font-medium flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#161b22] transition" :class="(!task.subTasks || task.subTasks.length === 0) ? 'text-zinc-600 hover:text-zinc-400' : 'text-zinc-400 hover:text-white'">
-                                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                                                    <span>Добавить шаг</span>
+                                            <div class="flex justify-end pt-1">
+                                                <button @click.stop="addSubTask(task, $event)" class="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-[#161b22] transition active:scale-90" title="Добавить шаг">
+                                                    <i data-lucide="plus" class="w-5 h-5 stroke-[2.5]"></i>
                                                 </button>
                                             </div>
                                         </div>
@@ -1388,9 +1418,10 @@
          class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md select-none cursor-ns-resize" 
          x-cloak>
         
-        <!-- Big white number with pop animation -->
+        <!-- Big white number with pop animation and unit -->
         <div class="text-center">
             <div class="text-8xl font-black text-white transition-transform duration-75" :class="animatingPop ? 'number-pop' : ''" x-text="pickerCurrentVal"></div>
+            <div class="text-base font-semibold text-zinc-400 mt-2 select-none" x-text="(pickerTargetObj && pickerTargetObj.unit) ? pickerTargetObj.unit : activeHabitUnit"></div>
         </div>
 
         <!-- Done checkmark button in bottom-right corner -->
@@ -3150,6 +3181,41 @@
                     this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
                 },
 
+                hasItemReps(item) {
+                    if (!item) return false;
+                    if (item.hasReps === true) return true;
+                    if (item.hasReps === false) return false;
+                    return Number(item.reps || 0) > 0;
+                },
+
+                toggleTaskReps(item) {
+                    if (!item) return;
+                    if (this.hasItemReps(item)) {
+                        item.hasReps = false;
+                        item.reps = 0;
+                    } else {
+                        item.hasReps = true;
+                        if (!item.unit) item.unit = this.activeHabitUnit || 'пов.';
+                        this.openTaskPicker(item);
+                    }
+                    this.saveDayData();
+                    this.saveToStorage();
+                    this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+                },
+
+                editItemUnit(item) {
+                    if (!item) return;
+                    const current = item.unit || this.activeHabitUnit || 'пов.';
+                    const val = prompt('Единица измерения (пов., мин., раз, км, стр...):', current);
+                    if (val !== null && val.trim().length > 0) {
+                        item.unit = val.trim();
+                        item.hasReps = true;
+                        this.saveDayData();
+                        this.saveToStorage();
+                        this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+                    }
+                },
+
                 selectDay(dateStr) {
                     if (!dateStr) return;
                     this.selectedDate = dateStr;
@@ -3206,6 +3272,7 @@
                             hasMainTask: false,
                             completed: false, 
                             reps: 0,
+                            hasReps: false,
                             subTasks: [],
                             measurementBlock: { description: '', date: null, metrics: [] },
                             solutionBlock: { title: '', date: null, steps: [] }
@@ -3258,6 +3325,7 @@
                         hasMainTask: false,
                         completed: false, 
                         reps: 0,
+                        hasReps: false,
                         subTasks: [], // Шаги основной задачи
                         measurementBlock: { // Объект для Замера
                             description: '',
@@ -3341,7 +3409,7 @@
                     if (!task.subTasks) {
                         task.subTasks = [];
                     }
-                    task.subTasks.push({ name: 'Шаг', completed: false, reps: 0 });
+                    task.subTasks.push({ name: 'Шаг', completed: false, reps: 0, hasReps: false });
                     this.saveDayData();
                     this.$nextTick(() => {
                         lucide.createIcons();
@@ -3391,6 +3459,8 @@
                     
                     this.pickerTargetObj = target;
                     this.pickerCurrentVal = Number(target.reps || 0);
+                    target.hasReps = true;
+                    if (!target.unit) target.unit = this.activeHabitUnit || 'пов.';
                     this.openPickerModal = true;
                     this.$nextTick(() => lucide.createIcons());
                 },

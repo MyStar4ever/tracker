@@ -23209,7 +23209,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
              x-transition:leave-end="opacity-0 scale-95 translate-y-3"
              :class="(showTemplatesSlide || showGraphView) ? 'h-[90vh] max-h-[92vh]' : 'max-h-[85vh] h-auto'"
-             class="bg-[#161b22] w-full max-w-md rounded-[32px] sm:rounded-[38px] px-2.5 pt-3 pb-3.5 sm:px-5 sm:pt-3.5 sm:pb-5 space-y-3 shadow-2xl overflow-hidden overflow-x-hidden flex flex-col relative transition-all duration-300">
+             class="bg-[#0f0f11] w-full max-w-md rounded-[32px] sm:rounded-[38px] px-2.5 pt-3 pb-3.5 sm:px-5 sm:pt-3.5 sm:pb-5 space-y-3 shadow-2xl overflow-hidden overflow-x-hidden flex flex-col relative transition-all duration-300">
 
             <!-- TELEGRAM-STYLE SLIDE-OVER GRAPH SCREEN -->
             <div x-show="showGraphView"
@@ -23219,19 +23219,19 @@ Check your Browserslist config to be sure that your targets are set up correctly
                  x-transition:leave="transition transform ease-in duration-200"
                  x-transition:leave-start="translate-x-0"
                  x-transition:leave-end="translate-x-full"
-                 class="absolute inset-0 bg-[#161b22] z-40 rounded-[38px] p-4 sm:p-5 flex flex-col shadow-2xl overflow-hidden"
+                 class="absolute inset-0 bg-[#0f0f11] z-40 rounded-[38px] p-4 sm:p-5 flex flex-col shadow-2xl overflow-hidden"
                  x-cloak>
                 
                 <!-- Graph Header -->
-                <div class="flex items-center justify-between pb-2.5 border-b border-[#30363d]/50 flex-shrink-0">
+                <div class="flex items-center justify-between pb-2.5 border-b border-white/10 flex-shrink-0">
                     <div class="flex items-center space-x-2 min-w-0">
-                        <button @click="closeGraphView()" class="p-1.5 rounded-xl bg-[#21262d] text-zinc-300 hover:text-white transition flex-shrink-0" title="Назад">
+                        <button @click="closeGraphView()" class="p-1.5 rounded-xl bg-[#18181b] text-zinc-300 hover:text-white transition flex-shrink-0" title="Назад">
                             <i data-lucide="chevron-left" class="w-5 h-5"></i>
                         </button>
                         <h3 class="font-semibold text-white text-[15px] truncate" x-text="graphTitle"></h3>
                     </div>
                     
-                    <button @click="closeGraphView()" class="p-1.5 rounded-xl bg-[#21262d] text-zinc-400 hover:text-white transition flex-shrink-0" title="Закрыть">
+                    <button @click="closeGraphView()" class="p-1.5 rounded-xl bg-[#18181b] text-zinc-400 hover:text-white transition flex-shrink-0" title="Закрыть">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -23241,7 +23241,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     <template x-for="(ds, idx) in graphDatasets" :key="idx">
                         <button @click="toggleDataset(idx)"
                                 class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition flex-shrink-0 active:scale-95"
-                                :class="ds.visible ? 'bg-[#21262d] text-white ring-1' : 'bg-[#0d1117] text-zinc-500 opacity-60 line-through'"
+                                :class="ds.visible ? 'bg-[#18181b] text-white ring-1' : 'bg-[#0f0f11] text-zinc-500 opacity-60 line-through'"
                                 :style="{ borderColor: ds.color, ringColor: ds.visible ? ds.color : 'transparent' }">
                             <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ backgroundColor: ds.color }"></span>
                             <span x-text="ds.label + (ds.unit ? ' (' + ds.unit + ')' : '')"></span>
@@ -23275,7 +23275,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                  x-transition:leave="transition transform ease-in duration-200"
                  x-transition:leave-start="translate-x-0"
                  x-transition:leave-end="translate-x-full"
-                 class="absolute inset-0 bg-[#161b22] z-40 rounded-[38px] px-2.5 py-3.5 sm:px-3 sm:py-4 flex flex-col shadow-2xl overflow-hidden"
+                 class="absolute inset-0 bg-[#0f0f11] z-40 rounded-[38px] px-2.5 py-3.5 sm:px-3 sm:py-4 flex flex-col shadow-2xl overflow-hidden"
                  x-cloak>
 
                 <!-- ================= SCREEN 1: CHATS LIST (ТОЛЬКО ЗАГОЛОВКИ ДЕЛ) ================= -->
@@ -23285,20 +23285,20 @@ Check your Browserslist config to be sure that your targets are set up correctly
                      x-transition:enter-end="opacity-100 translate-x-0">
                     
                     <!-- Clean Minimal Header -->
-                    <div class="flex items-center justify-between pb-3 border-b border-[#30363d]/50 flex-shrink-0 px-1">
+                    <div class="flex items-center justify-between pb-3 border-b border-white/10 flex-shrink-0 px-1">
                         <div class="flex items-center space-x-2 min-w-0">
-                            <button @click="closeTemplatesSlide()" class="p-1.5 rounded-xl bg-[#21262d] text-zinc-300 hover:text-white transition flex-shrink-0 active:scale-95" title="Назад к дню">
+                            <button @click="closeTemplatesSlide()" class="p-1.5 rounded-xl bg-[#18181b] text-zinc-300 hover:text-white transition flex-shrink-0 active:scale-95" title="Назад к дню">
                                 <i data-lucide="chevron-left" class="w-5 h-5"></i>
                             </button>
                             <h3 class="font-semibold text-white text-[16px] truncate">Дела</h3>
                         </div>
-                        <button @click="closeTemplatesSlide()" class="p-1.5 rounded-xl bg-[#21262d] text-zinc-400 hover:text-white transition flex-shrink-0 active:scale-95" title="Закрыть">
+                        <button @click="closeTemplatesSlide()" class="p-1.5 rounded-xl bg-[#18181b] text-zinc-400 hover:text-white transition flex-shrink-0 active:scale-95" title="Закрыть">
                             <i data-lucide="x" class="w-4 h-4"></i>
                         </button>
                     </div>
 
                     <!-- Only Habit Titles (clean list, no extra backgrounds) -->
-                    <div class="divide-y divide-[#30363d]/30 overflow-y-auto overflow-x-hidden flex-1 py-1 scroll-mask">
+                    <div class="divide-y divide-white/10 overflow-y-auto overflow-x-hidden flex-1 py-1 scroll-mask">
                         <template x-for="h in habits" :key="h.id">
                             <div @click="openHabitWeeklyPlan(h.id)"
                                  class="flex items-center justify-between py-3 px-2 hover:bg-white/5 rounded-xl cursor-pointer transition active:scale-[0.99] group">
@@ -23316,9 +23316,9 @@ Check your Browserslist config to be sure that your targets are set up correctly
                      x-transition:enter-end="opacity-100 translate-x-0">
 
                     <!-- Header -->
-                    <div class="flex items-center justify-between pb-2.5 border-b border-[#30363d]/50 flex-shrink-0 px-1">
+                    <div class="flex items-center justify-between pb-2.5 border-b border-white/10 flex-shrink-0 px-1">
                         <div class="flex items-center space-x-2 min-w-0">
-                            <button @click="backToHabitsList()" class="p-1.5 rounded-xl bg-[#21262d] text-zinc-300 hover:text-white transition flex-shrink-0 active:scale-95" title="Ко всем делам">
+                            <button @click="backToHabitsList()" class="p-1.5 rounded-xl bg-[#18181b] text-zinc-300 hover:text-white transition flex-shrink-0 active:scale-95" title="Ко всем делам">
                                 <i data-lucide="chevron-left" class="w-5 h-5"></i>
                             </button>
                             <div class="min-w-0">
@@ -23328,7 +23328,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                         </div>
                         
                         <div class="flex items-center space-x-1.5 flex-shrink-0">
-                            <button @click="closeTemplatesSlide()" class="p-1.5 rounded-xl bg-[#21262d] text-zinc-400 hover:text-white transition flex-shrink-0 active:scale-95" title="Закрыть">
+                            <button @click="closeTemplatesSlide()" class="p-1.5 rounded-xl bg-[#18181b] text-zinc-400 hover:text-white transition flex-shrink-0 active:scale-95" title="Закрыть">
                                 <i data-lucide="x" class="w-4 h-4"></i>
                             </button>
                         </div>
@@ -23351,7 +23351,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                         <!-- Empty state when no categories created yet -->
                         <template x-if="currentWeeklyCategories.length === 0">
                             <div class="py-12 text-center text-zinc-500 text-xs flex flex-col items-center justify-center space-y-2">
-                                <div class="w-10 h-10 rounded-2xl bg-[#21262d] flex items-center justify-center text-zinc-400">
+                                <div class="w-10 h-10 rounded-2xl bg-[#18181b] flex items-center justify-center text-zinc-400">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                                 </div>
                                 <p class="font-medium text-zinc-300 text-[14px]">План недели пуст</p>
@@ -23378,11 +23378,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                             </svg>
                                         </button>
                                         <div x-show="openCatMenu" @click.away="openCatMenu = false"
-                                             class="absolute right-0 mt-1 w-44 bg-[#1c2128] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/70"
+                                             class="absolute right-0 mt-1 w-44 bg-[#18181b] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-white/10"
                                              x-cloak>
                                             <!-- Add task -->
                                             <button @click.stop="addWeeklyTask(cat); openCatMenu = false"
-                                                    class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 hover:bg-[#282e36] transition flex items-center space-x-2 active:scale-95">
+                                                    class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 hover:bg-[#27272a] transition flex items-center space-x-2 active:scale-95">
                                                 <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                                                 <span>Добавить задачу</span>
                                             </button>
@@ -23390,7 +23390,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                             <!-- Move Up -->
                                             <button x-show="catIndex > 0"
                                                     @click.stop="moveCategoryUp(cat); openCatMenu = false"
-                                                    class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#282e36] transition flex items-center space-x-2 active:scale-95">
+                                                    class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#27272a] transition flex items-center space-x-2 active:scale-95">
                                                 <svg class="w-3.5 h-3.5 stroke-[2.2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
                                                 <span>Поднять выше</span>
                                             </button>
@@ -23398,16 +23398,16 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                             <!-- Move Down -->
                                             <button x-show="catIndex < currentWeeklyCategories.length - 1"
                                                     @click.stop="moveCategoryDown(cat); openCatMenu = false"
-                                                    class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#282e36] transition flex items-center space-x-2 active:scale-95">
+                                                    class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#27272a] transition flex items-center space-x-2 active:scale-95">
                                                 <svg class="w-3.5 h-3.5 stroke-[2.2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                                                 <span>Опустить ниже</span>
                                             </button>
 
-                                            <div class="h-px bg-[#30363d]/40 my-1"></div>
+                                            <div class="h-px bg-white/10 my-1"></div>
 
                                             <!-- Delete category -->
                                             <button @click.stop="removeCategory(cat); openCatMenu = false"
-                                                    class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#282e36] transition flex items-center space-x-2 active:scale-95">
+                                                    class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#27272a] transition flex items-center space-x-2 active:scale-95">
                                                 <svg class="w-3.5 h-3.5 stroke-[2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                                 <span>Удалить раздел</span>
                                             </button>
@@ -23429,7 +23429,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                             <div class="w-6 flex-shrink-0 flex items-center justify-center relative z-10">
                                                 <button @click.stop="wTask.completed ? toggleWeeklyTask(wTask) : (openCompletePopup = !openCompletePopup)"
                                                         class="w-4 h-4 rounded-full border-[1.5px] transition active:scale-90 flex items-center justify-center flex-shrink-0"
-                                                        :class="wTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#161b22] border-zinc-500 hover:border-zinc-300'">
+                                                        :class="wTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0f0f11] border-zinc-500 hover:border-zinc-300'">
                                                     <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3" x-show="wTask.completed">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                                                     </svg>
@@ -23437,7 +23437,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                                                 <!-- Animated Complete Options Popover (Сегодня / Выбрать день) -->
                                                 <div x-show="openCompletePopup" @click.away="openCompletePopup = false"
-                                                     class="absolute left-6 -top-2.5 z-50 bg-[#1c2128] border border-[#30363d] rounded-2xl shadow-2xl p-1.5 flex items-center space-x-1.5 modal-enter whitespace-nowrap"
+                                                     class="absolute left-6 -top-2.5 z-50 bg-[#18181b] border border-white/10 rounded-2xl shadow-2xl p-1.5 flex items-center space-x-1.5 modal-enter whitespace-nowrap"
                                                      x-cloak>
                                                     <!-- Option 1: Сегодня -->
                                                     <button @click.stop="completeTaskWithDate(wTask, todayStr); openCompletePopup = false"
@@ -23448,7 +23448,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                     </button>
 
                                                     <!-- Option 2: Выбрать день (нативный календарь) -->
-                                                    <div class="relative flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#282e36] text-zinc-200 font-medium text-xs transition active:scale-95 cursor-pointer">
+                                                    <div class="relative flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-[#18181b] hover:bg-[#27272a] text-zinc-200 font-medium text-xs transition active:scale-95 cursor-pointer">
                                                         <svg class="w-3.5 h-3.5 text-emerald-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                                                         <span class="pointer-events-none">Выбрать день</span>
                                                         <input type="date" :value="wTask.assignedDate || todayStr"
@@ -23482,12 +23482,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                     </svg>
                                                 </button>
                                                 <div x-show="openTaskMenu" @click.away="openTaskMenu = false"
-                                                     class="absolute right-0 mt-1 w-48 bg-[#1c2128] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/70"
+                                                     class="absolute right-0 mt-1 w-48 bg-[#18181b] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-white/10"
                                                      x-cloak>
                                                     
                                                     <!-- Fast insert into today -->
                                                     <button @click.stop="assignWeeklyTaskToDate(wTask, todayStr); openTaskMenu = false"
-                                                            class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 hover:bg-[#282e36] transition flex items-center justify-between active:scale-95">
+                                                            class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 hover:bg-[#27272a] transition flex items-center justify-between active:scale-95">
                                                         <div class="flex items-center space-x-2">
                                                             <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                                                             <span>Вставить в сегодня</span>
@@ -23496,7 +23496,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                     </button>
 
                                                     <!-- Choose date via native calendar picker -->
-                                                    <div class="relative w-full px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#282e36] transition flex items-center justify-between cursor-pointer active:scale-95">
+                                                    <div class="relative w-full px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#27272a] transition flex items-center justify-between cursor-pointer active:scale-95">
                                                         <div class="flex items-center space-x-2 pointer-events-none">
                                                             <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                                                             <span>Выбрать дату</span>
@@ -23507,11 +23507,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                                class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-30">
                                                     </div>
 
-                                                    <div class="h-px bg-[#30363d]/40 my-1"></div>
+                                                    <div class="h-px bg-white/10 my-1"></div>
 
                                                     <!-- Delete task -->
                                                     <button @click.stop="removeWeeklyTask(wTask); openTaskMenu = false"
-                                                            class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#282e36] transition flex items-center space-x-2 active:scale-95">
+                                                            class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#27272a] transition flex items-center space-x-2 active:scale-95">
                                                         <svg class="w-3.5 h-3.5 stroke-[2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                                         <span>Удалить</span>
                                                     </button>
@@ -23526,7 +23526,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                         <!-- Add category button: prominent plus on the right without text -->
                         <div class="pt-3 pb-2 flex items-center justify-end pr-1">
                             <button @click="promptNewCategory()"
-                                    class="w-10 h-10 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-zinc-300 hover:text-white flex items-center justify-center transition active:scale-90 border border-[#30363d]/60 shadow-lg"
+                                    class="w-10 h-10 rounded-2xl bg-[#18181b] hover:bg-[#27272a] text-zinc-300 hover:text-white flex items-center justify-center transition active:scale-90 border border-white/10 shadow-lg"
                                     title="Добавить раздел">
                                 <svg class="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                             </button>
@@ -23536,7 +23536,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             </div>
             
             <!-- Modal Header -->
-            <div class="flex items-center justify-between pb-2 border-b border-[#30363d]/50 flex-shrink-0">
+            <div class="flex items-center justify-between pb-2 border-b border-white/10 flex-shrink-0">
                 <h3 class="font-semibold text-white text-[17px] tracking-tight" x-text="formatDateHuman(selectedDate)"></h3>
                 
                 <!-- Three dots menu (horizontal, no background) -->
@@ -23544,8 +23544,8 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     <button @click="openMenu = !openMenu" class="p-1 text-zinc-400 hover:text-white transition active:scale-95 flex items-center justify-center" title="Меню">
                         <i data-lucide="more-horizontal" class="w-5 h-5"></i>
                     </button>
-                    <div x-show="openMenu" @click.away="openMenu = false" class="absolute right-0 mt-2 w-36 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/50" x-cloak>
-                        <button @click="clearDayData(); openMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
+                    <div x-show="openMenu" @click.away="openMenu = false" class="absolute right-0 mt-2 w-36 bg-[#18181b] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-white/10" x-cloak>
+                        <button @click="clearDayData(); openMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#27272a] transition">
                             Очистить день
                         </button>
                     </div>
@@ -23553,7 +23553,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             </div>
 
             <!-- Exercises List with smooth iOS scroll dissolve -->
-            <div class="space-y-4 overflow-y-auto overflow-x-hidden pr-1 flex-1 min-h-0 py-2 scroll-mask">
+            <div class="space-y-4 overflow-y-auto overflow-x-hidden pr-1 flex-1 min-h-0 py-2 pb-16 scroll-mask">
 
                 <!-- WEEKLY PLAN SECTION IN DAY MODAL -->
                 <template x-if="weeklyTasksForSelectedWeek.length > 0">
@@ -23565,7 +23565,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                         <template x-for="(wItem, wIdx) in weeklyTasksForSelectedWeek" :key="'wPlan'+wIdx">
                             <div x-data="{ isExpanded: false }" 
-                                 class="bg-[#0d1117] rounded-[26px] overflow-hidden transition-all shadow-lg">
+                                 class="bg-[#18181b] rounded-[26px] overflow-hidden transition-all shadow-lg">
                                 
                                 <!-- Card Header (when collapsed) -->
                                 <div x-show="!isExpanded"
@@ -23574,7 +23574,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                          @click="isExpanded = true; $nextTick(() => { if (window.lucide) lucide.createIcons(); document.querySelectorAll('textarea').forEach(autoResize); })">
                                         <div @click.stop="toggleTask(wItem.task); saveDayData(); saveToStorage()" class="relative flex items-center justify-center w-6 h-6 flex-shrink-0 cursor-pointer active:scale-90 transition-transform" title="Переключить статус">
                                             <svg class="w-6 h-6 -rotate-90" viewBox="0 0 36 36">
-                                                <circle cx="18" cy="18" r="15.915" fill="none" stroke="#21262d" stroke-width="4"></circle>
+                                                <circle cx="18" cy="18" r="15.915" fill="none" stroke="#27272a" stroke-width="4"></circle>
                                                 <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" stroke-width="4" 
                                                         :stroke-dasharray="getTaskProgress(wItem.task) + ', 100'" stroke-dashoffset="0" 
                                                         class="transition-all duration-300"></circle>
@@ -23602,7 +23602,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                         <div class="flex items-start space-x-2 flex-1 min-w-0">
                                             <div @click.stop="toggleTask(wItem.task); saveDayData(); saveToStorage()" class="relative flex items-center justify-center w-6 h-6 flex-shrink-0 mt-0.5 cursor-pointer active:scale-90 transition-transform" title="Переключить статус">
                                                 <svg class="w-6 h-6 -rotate-90" viewBox="0 0 36 36">
-                                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#21262d" stroke-width="4"></circle>
+                                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#27272a" stroke-width="4"></circle>
                                                     <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" stroke-width="4" 
                                                             :stroke-dasharray="getTaskProgress(wItem.task) + ', 100'" stroke-dashoffset="0" 
                                                             class="transition-all duration-300"></circle>
@@ -23620,14 +23620,14 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                 <button @click.stop="openWMenu = !openWMenu" class="text-zinc-500 hover:text-white p-1">
                                                     <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                                                 </button>
-                                                <div x-show="openWMenu" @click.away="openWMenu = false" class="absolute right-0 mt-2 w-48 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/50" x-cloak>
-                                                    <button @click.stop="toggleTaskReps(wItem.task); openWMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                <div x-show="openWMenu" @click.away="openWMenu = false" class="absolute right-0 mt-2 w-48 bg-[#18181b] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-white/10" x-cloak>
+                                                    <button @click.stop="toggleTaskReps(wItem.task); openWMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#27272a] transition">
                                                         <span x-text="hasItemReps(wItem.task) ? 'Удалить показатель' : 'Добавить показатель'"></span>
                                                     </button>
-                                                    <button x-show="hasItemReps(wItem.task)" @click.stop="editItemUnit(wItem.task); openWMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                    <button x-show="hasItemReps(wItem.task)" @click.stop="editItemUnit(wItem.task); openWMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#27272a] transition">
                                                         Изменить ед. (<span x-text="wItem.task.unit || activeHabitUnit"></span>)
                                                     </button>
-                                                    <button @click.stop="toggleTaskWeekly(wItem.task); openWMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                    <button @click.stop="toggleTaskWeekly(wItem.task); openWMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#27272a] transition">
                                                         Снять с недели
                                                     </button>
                                                 </div>
@@ -23642,9 +23642,9 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                     <div class="space-y-1.5 pl-1">
                                         <div class="text-xs font-medium tracking-wide text-zinc-400">Шаги задачи</div>
                                         <template x-for="(subTask, subIndex) in wItem.task.subTasks" :key="'wSt'+subIndex">
-                                            <div class="flex items-start justify-between bg-[#161b22] px-3.5 py-2.5 rounded-2xl gap-2 ios-item-enter">
+                                            <div class="flex items-start justify-between bg-[#0f0f11] px-3.5 py-2.5 rounded-2xl gap-2 ios-item-enter">
                                                 <div class="flex items-start space-x-2 flex-1 min-w-0">
-                                                    <button @click.stop="toggleTask(subTask)" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition active:scale-90 flex-shrink-0 mt-0.5" :class="subTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0d1117]'">
+                                                    <button @click.stop="toggleTask(subTask)" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition active:scale-90 flex-shrink-0 mt-0.5" :class="subTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0f0f11]'">
                                                         <i data-lucide="check" class="w-2.5 h-2.5 text-white check-pop" x-show="subTask.completed"></i>
                                                     </button>
                                                     <textarea x-effect="autoResize($el)" x-model="subTask.name" @input="autoResize($event.target); saveDayData()" @click.stop rows="1" placeholder="Шаг задачи..." class="bg-transparent text-sm focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="subTask.completed ? 'text-zinc-500' : 'text-zinc-100'"></textarea>
@@ -23658,14 +23658,14 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                     <button @click.stop="openSubMenu = !openSubMenu" class="text-zinc-500 hover:text-white p-0.5 ml-1">
                                                         <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
                                                     </button>
-                                                    <div x-show="openSubMenu" @click.away="openSubMenu = false" class="absolute right-0 mt-2 w-48 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/50" x-cloak>
-                                                        <button @click.stop="toggleTaskReps(subTask); openSubMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                    <div x-show="openSubMenu" @click.away="openSubMenu = false" class="absolute right-0 mt-2 w-48 bg-[#18181b] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-white/10" x-cloak>
+                                                        <button @click.stop="toggleTaskReps(subTask); openSubMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#27272a] transition">
                                                             <span x-text="hasItemReps(subTask) ? 'Удалить показатель' : 'Добавить показатель'"></span>
                                                         </button>
-                                                        <button x-show="hasItemReps(subTask)" @click.stop="editItemUnit(subTask); openSubMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                        <button x-show="hasItemReps(subTask)" @click.stop="editItemUnit(subTask); openSubMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#27272a] transition">
                                                             Изменить ед. (<span x-text="subTask.unit || activeHabitUnit"></span>)
                                                         </button>
-                                                        <button @click.stop="wItem.task.subTasks.splice(subIndex, 1); openSubMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
+                                                        <button @click.stop="wItem.task.subTasks.splice(subIndex, 1); openSubMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#27272a] transition">
                                                             Удалить
                                                         </button>
                                                     </div>
@@ -23674,7 +23674,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                         </template>
                                         <!-- Add step button: big plus icon only -->
                                         <div class="flex justify-end pt-1">
-                                            <button @click.stop="addSubTask(wItem.task, $event)" class="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-[#161b22] transition active:scale-90" title="Добавить шаг">
+                                            <button @click.stop="addSubTask(wItem.task, $event)" class="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-[#0f0f11] transition active:scale-90" title="Добавить шаг">
                                                 <i data-lucide="plus" class="w-5 h-5 stroke-[2.5]"></i>
                                             </button>
                                         </div>
@@ -23694,7 +23694,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                         </div>
 
                         <template x-for="(plan, pIdx) in plannedTasksForSelectedDate" :key="'plan'+pIdx">
-                            <div x-data="{ isExpanded: false }" class="bg-[#0d1117] rounded-[26px] overflow-hidden transition-all shadow-lg ios-item-enter">
+                            <div x-data="{ isExpanded: false }" class="bg-[#18181b] rounded-[26px] overflow-hidden transition-all shadow-lg ios-item-enter">
                                 
                                 <!-- Card Collapsible Header -->
                                 <div @click="isExpanded = !isExpanded; $nextTick(() => { lucide.createIcons(); document.querySelectorAll('textarea').forEach(autoResize); })" 
@@ -23703,7 +23703,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                         <!-- Круговой индикатор прогресса -->
                                         <div @click.stop="toggleTask(plan.task); saveToStorage()" class="relative flex items-center justify-center w-6 h-6 flex-shrink-0 cursor-pointer active:scale-90 transition-transform" title="Переключить статус">
                                             <svg class="w-6 h-6 -rotate-90" viewBox="0 0 36 36">
-                                                <circle cx="18" cy="18" r="15.915" fill="none" stroke="#21262d" stroke-width="4"></circle>
+                                                <circle cx="18" cy="18" r="15.915" fill="none" stroke="#27272a" stroke-width="4"></circle>
                                                 <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" stroke-width="4" 
                                                         :stroke-dasharray="getTaskProgress(plan.task) + ', 100'" stroke-dashoffset="0" 
                                                         class="transition-all duration-300"></circle>
@@ -23712,7 +23712,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                         </div>
                                         <div class="min-w-0 flex-1">
                                             <div class="flex items-center space-x-1.5">
-                                                <span class="text-[11px] font-medium px-2 py-0.5 rounded-md bg-[#21262d] text-zinc-300">План</span>
+                                                <span class="text-[11px] font-medium px-2 py-0.5 rounded-md bg-[#0f0f11] text-zinc-300">План</span>
                                                 <span class="text-xs text-zinc-400 truncate" x-text="'из ' + formatDateHuman(plan.sourceDate)"></span>
                                             </div>
                                             <div class="text-[15px] font-semibold truncate mt-0.5" :class="getTaskProgress(plan.task) === 100 ? 'text-zinc-500' : 'text-white'" x-text="plan.task.name || 'Без названия'"></div>
@@ -23733,8 +23733,8 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                     <!-- 1. Название главной задачи и число -->
                                     <div class="flex items-start justify-between gap-2 pt-2">
                                         <div class="flex items-start space-x-2 flex-1 min-w-0">
-                                            <textarea x-effect="autoResize($el)" x-model="plan.task.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Название задачи..." class="bg-[#161b22] text-[15px] font-semibold rounded-2xl px-3.5 py-2 focus:outline-none focus:ring-1 focus:ring-zinc-600 w-full resize-none leading-relaxed" :class="getTaskProgress(plan.task) === 100 ? 'text-zinc-500' : 'text-white'"></textarea>
-                                            <div @click.stop="openTaskPicker(plan.task)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-2.5 py-2 flex-shrink-0 bg-[#161b22] rounded-2xl active:scale-90" :class="plan.task._justUpdated ? 'number-pop text-emerald-400' : ''" title="Нажми для изменения">
+                                            <textarea x-effect="autoResize($el)" x-model="plan.task.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Название задачи..." class="bg-[#0f0f11] text-[15px] font-semibold rounded-2xl px-3.5 py-2 focus:outline-none focus:ring-1 focus:ring-zinc-600 w-full resize-none leading-relaxed" :class="getTaskProgress(plan.task) === 100 ? 'text-zinc-500' : 'text-white'"></textarea>
+                                            <div @click.stop="openTaskPicker(plan.task)" class="cursor-pointer text-sm font-semibold text-white hover:text-zinc-300 transition select-none px-2.5 py-2 flex-shrink-0 bg-[#0f0f11] rounded-2xl active:scale-90" :class="plan.task._justUpdated ? 'number-pop text-emerald-400' : ''" title="Нажми для изменения">
                                                 <span x-text="plan.task.reps"></span>
                                             </div>
                                         </div>
@@ -23744,9 +23744,9 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                     <div class="space-y-1.5 pl-1">
                                         <div class="text-xs font-medium tracking-wide transition-colors" :class="(!plan.task.subTasks || plan.task.subTasks.length === 0) ? 'text-zinc-600' : 'text-zinc-400'">Шаги задачи</div>
                                         <template x-for="(subTask, subIndex) in plan.task.subTasks" :key="'pst'+subIndex">
-                                            <div class="flex items-start justify-between bg-[#161b22] px-3.5 py-2.5 rounded-2xl gap-2 ios-item-enter">
+                                            <div class="flex items-start justify-between bg-[#0f0f11] px-3.5 py-2.5 rounded-2xl gap-2 ios-item-enter">
                                                 <div class="flex items-start space-x-2 flex-1 min-w-0">
-                                                    <button @click.stop="toggleTask(subTask); saveToStorage()" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition active:scale-90 flex-shrink-0 mt-0.5" :class="subTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0d1117]'">
+                                                    <button @click.stop="toggleTask(subTask); saveToStorage()" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition active:scale-90 flex-shrink-0 mt-0.5" :class="subTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0f0f11]'">
                                                         <i data-lucide="check" class="w-2.5 h-2.5 text-white check-pop" x-show="subTask.completed"></i>
                                                     </button>
                                                     <textarea x-effect="autoResize($el)" x-model="subTask.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Шаг задачи..." class="bg-transparent text-sm focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="subTask.completed ? 'text-zinc-500' : 'text-zinc-100'"></textarea>
@@ -23759,7 +23759,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                                         <!-- Кнопка добавления шага (прижата вправо) -->
                                         <div class="flex justify-end pt-0.5">
-                                            <button @click.stop="addSubTask(plan.task, $event)" class="text-xs font-medium flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#161b22] transition" :class="(!plan.task.subTasks || plan.task.subTasks.length === 0) ? 'text-zinc-600 hover:text-zinc-400' : 'text-zinc-400 hover:text-white'">
+                                            <button @click.stop="addSubTask(plan.task, $event)" class="text-xs font-medium flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#0f0f11] transition" :class="(!plan.task.subTasks || plan.task.subTasks.length === 0) ? 'text-zinc-600 hover:text-zinc-400' : 'text-zinc-400 hover:text-white'">
                                                 <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                                                 <span>Добавить шаг</span>
                                             </button>
@@ -23778,18 +23778,18 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                             <!-- Иконки прижаты вправо: график, календарь без фона, галочка (шеврон) -->
                                             <div class="flex items-center space-x-1 flex-shrink-0">
                                                 <!-- Значок графика -->
-                                                <button @click.stop="openMetricsGraph(plan.task)" class="p-1 rounded-xl transition hover:bg-[#161b22]" :class="(showMeasurement || hasMeasurementContent(plan.task)) ? 'text-zinc-400 hover:text-emerald-400' : 'text-zinc-600 hover:text-zinc-400'" title="Открыть график показателей">
+                                                <button @click.stop="openMetricsGraph(plan.task)" class="p-1 rounded-xl transition hover:bg-[#0f0f11]" :class="(showMeasurement || hasMeasurementContent(plan.task)) ? 'text-zinc-400 hover:text-emerald-400' : 'text-zinc-600 hover:text-zinc-400'" title="Открыть график показателей">
                                                     <i data-lucide="trending-up" class="w-4 h-4"></i>
                                                 </button>
 
                                                 <!-- Значок календаря без фона и без дд мм гггг -->
-                                                <div class="relative p-1 rounded-xl transition cursor-pointer hover:bg-[#161b22]" :class="plan.task.measurementBlock && plan.task.measurementBlock.date ? 'text-emerald-400' : ((showMeasurement || hasMeasurementContent(plan.task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400')" title="Дата замера">
+                                                <div class="relative p-1 rounded-xl transition cursor-pointer hover:bg-[#0f0f11]" :class="plan.task.measurementBlock && plan.task.measurementBlock.date ? 'text-emerald-400' : ((showMeasurement || hasMeasurementContent(plan.task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400')" title="Дата замера">
                                                     <i data-lucide="calendar" class="w-4 h-4"></i>
                                                     <input type="date" x-model="plan.task.measurementBlock.date" @change="saveToStorage()" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
                                                 </div>
 
                                                 <!-- Галочка (шеврон) для сворачивания/разворачивания -->
-                                                <button @click="showMeasurement = !showMeasurement" class="p-1 rounded-xl transition hover:bg-[#161b22]" :class="(showMeasurement || hasMeasurementContent(plan.task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400'" title="Развернуть/свернуть замер">
+                                                <button @click="showMeasurement = !showMeasurement" class="p-1 rounded-xl transition hover:bg-[#0f0f11]" :class="(showMeasurement || hasMeasurementContent(plan.task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400'" title="Развернуть/свернуть замер">
                                                     <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200" :class="showMeasurement ? 'rotate-180' : ''"></i>
                                                 </button>
                                             </div>
@@ -23799,11 +23799,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                         <div class="accordion-grid" :class="showMeasurement ? 'expanded' : ''">
                                             <div class="accordion-inner space-y-2 pt-1">
                                                 <!-- Показатели замера -->
-                                                <div class="bg-[#161b22] rounded-2xl p-2.5 space-y-2">
+                                                <div class="bg-[#0f0f11] rounded-2xl p-2.5 space-y-2">
                                                     <div class="flex items-center justify-between">
                                                         <span class="text-xs font-medium text-zinc-400">Показатели замера</span>
                                                         <!-- Кнопка плюсик справа -->
-                                                        <button @click.stop="openMetricPickerModal(plan.task)" class="p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-[#21262d] transition flex items-center space-x-1 text-xs" title="Добавить показатель">
+                                                        <button @click.stop="openMetricPickerModal(plan.task)" class="p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-[#27272a] transition flex items-center space-x-1 text-xs" title="Добавить показатель">
                                                             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                                                         </button>
                                                     </div>
@@ -23812,7 +23812,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                     <template x-if="plan.task.measurementBlock && plan.task.measurementBlock.metrics && plan.task.measurementBlock.metrics.length > 0">
                                                         <div class="flex flex-wrap gap-1.5 pt-0.5">
                                                             <template x-for="(m, mIdx) in plan.task.measurementBlock.metrics" :key="mIdx">
-                                                                <div class="inline-flex items-center space-x-1.5 bg-[#0d1117] px-2.5 py-1 rounded-xl text-xs text-zinc-200 ios-item-enter">
+                                                                <div class="inline-flex items-center space-x-1.5 bg-[#18181b] px-2.5 py-1 rounded-xl text-xs text-zinc-200 ios-item-enter">
                                                                     <span class="w-2 h-2 rounded-full flex-shrink-0" :style="{ backgroundColor: m.color || '#10b981' }"></span>
                                                                     <span class="font-medium text-zinc-300" x-text="m.name + ':'"></span>
                                                                     <span @click.stop="editMetricValue(plan.task, mIdx)" class="font-semibold text-emerald-400 cursor-pointer hover:underline" x-text="m.value !== null && m.value !== undefined ? (m.value + ' ' + (m.unit || '')) : '[План / —]'" title="Нажми, чтобы изменить"></span>
@@ -23823,7 +23823,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                     </template>
                                                 </div>
 
-                                                <textarea x-effect="autoResize($el)" x-model="plan.task.measurementBlock.description" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Показатели замера..." class="bg-[#161b22] text-sm text-zinc-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-1 focus:ring-zinc-600 w-full resize-none leading-relaxed"></textarea>
+                                                <textarea x-effect="autoResize($el)" x-model="plan.task.measurementBlock.description" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Показатели замера..." class="bg-[#0f0f11] text-sm text-zinc-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-1 focus:ring-zinc-600 w-full resize-none leading-relaxed"></textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -23840,13 +23840,13 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                             <!-- Иконки прижаты вправо: календарь без фона, галочка (шеврон) -->
                                             <div class="flex items-center space-x-1 flex-shrink-0">
                                                 <!-- Значок календаря без фона и без дд мм гггг -->
-                                                <div class="relative p-1 rounded-xl transition cursor-pointer hover:bg-[#161b22]" :class="plan.task.solutionBlock && plan.task.solutionBlock.date ? 'text-emerald-400' : ((showSolution || hasSolutionContent(plan.task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400')" title="Дата решения">
+                                                <div class="relative p-1 rounded-xl transition cursor-pointer hover:bg-[#0f0f11]" :class="plan.task.solutionBlock && plan.task.solutionBlock.date ? 'text-emerald-400' : ((showSolution || hasSolutionContent(plan.task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400')" title="Дата решения">
                                                     <i data-lucide="calendar" class="w-4 h-4"></i>
                                                     <input type="date" x-model="plan.task.solutionBlock.date" @change="saveToStorage()" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
                                                 </div>
 
                                                 <!-- Галочка (шеврон) для сворачивания/разворачивания -->
-                                                <button @click="showSolution = !showSolution" class="p-1 rounded-xl transition hover:bg-[#161b22]" :class="(showSolution || hasSolutionContent(plan.task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400'" title="Развернуть/свернуть решение">
+                                                <button @click="showSolution = !showSolution" class="p-1 rounded-xl transition hover:bg-[#0f0f11]" :class="(showSolution || hasSolutionContent(plan.task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400'" title="Развернуть/свернуть решение">
                                                     <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200" :class="showSolution ? 'rotate-180' : ''"></i>
                                                 </button>
                                             </div>
@@ -23859,7 +23859,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                 <div class="flex items-start space-x-2 w-full pl-1">
                                                     <div class="relative flex items-center justify-center w-5 h-5 flex-shrink-0 mt-0.5">
                                                         <svg class="w-5 h-5 -rotate-90" viewBox="0 0 36 36">
-                                                            <circle cx="18" cy="18" r="15.915" fill="none" stroke="#21262d" stroke-width="4"></circle>
+                                                            <circle cx="18" cy="18" r="15.915" fill="none" stroke="#27272a" stroke-width="4"></circle>
                                                             <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" stroke-width="4" 
                                                                     :stroke-dasharray="getTaskProgress(plan.task) + ', 100'" stroke-dashoffset="0" 
                                                                     class="transition-all duration-300"></circle>
@@ -23871,9 +23871,9 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                 <!-- Шаги решения -->
                                                 <div class="space-y-1.5 pt-1 pl-2">
                                                     <template x-for="(solStep, solIndex) in plan.task.solutionBlock.steps" :key="'psol'+solIndex">
-                                                        <div class="flex items-start justify-between bg-[#161b22] px-3.5 py-2.5 rounded-2xl gap-2 ios-item-enter">
+                                                        <div class="flex items-start justify-between bg-[#0f0f11] px-3.5 py-2.5 rounded-2xl gap-2 ios-item-enter">
                                                             <div class="flex items-start space-x-2 flex-1 min-w-0">
-                                                                <button @click.stop="toggleTask(solStep); saveToStorage()" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition active:scale-90 flex-shrink-0 mt-0.5" :class="solStep.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0d1117]'">
+                                                                <button @click.stop="toggleTask(solStep); saveToStorage()" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition active:scale-90 flex-shrink-0 mt-0.5" :class="solStep.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0f0f11]'">
                                                                     <i data-lucide="check" class="w-2.5 h-2.5 text-white check-pop" x-show="solStep.completed"></i>
                                                                 </button>
                                                                 <textarea x-effect="autoResize($el)" x-model="solStep.name" @input="autoResize($event.target)" @change="saveToStorage()" @click.stop rows="1" placeholder="Шаг решения..." class="bg-transparent text-sm focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="solStep.completed ? 'text-zinc-500' : 'text-zinc-100'"></textarea>
@@ -23887,7 +23887,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                                                     <!-- Кнопка добавления шага решения (прижата вправо) -->
                                                     <div class="flex justify-end pt-0.5">
-                                                        <button @click.stop="addSolutionStep(plan.task, $event)" class="text-xs font-medium text-zinc-400 hover:text-white flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#161b22] transition">
+                                                        <button @click.stop="addSolutionStep(plan.task, $event)" class="text-xs font-medium text-zinc-400 hover:text-white flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#0f0f11] transition">
                                                             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                                                             <span>Добавить шаг решения</span>
                                                         </button>
@@ -23914,7 +23914,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 </template>
 
                 <template x-for="(ex, exIndex) in activeDayExercises" :key="exIndex">
-                    <div :class="ex.setsList && ex.setsList.length > 0 ? 'bg-[#0d1117] p-4 rounded-[26px] space-y-3 shadow-lg ios-item-enter' : 'space-y-3 ios-item-enter'">
+                    <div :class="ex.setsList && ex.setsList.length > 0 ? 'bg-[#18181b] p-4 rounded-[26px] space-y-3 shadow-lg ios-item-enter' : 'space-y-3 ios-item-enter'">
                         
                         <!-- Exercise Header / Input (only for exercises with sets) -->
                         <div class="flex items-center justify-between gap-2" x-show="ex.setsList && ex.setsList.length > 0">
@@ -23933,37 +23933,37 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                     <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                                 </button>
                                 
-                                <div x-show="openExMenu" @click.away="openExMenu = false; openTemplatesMenu = false" class="absolute right-0 mt-2 w-52 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/50" x-cloak>
+                                <div x-show="openExMenu" @click.away="openExMenu = false; openTemplatesMenu = false" class="absolute right-0 mt-2 w-52 bg-[#18181b] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-white/10" x-cloak>
                                     <!-- Normal Menu View -->
                                     <div x-show="!openTemplatesMenu" class="space-y-0.5">
-                                        <button @click.stop="openTemplatesMenu = true; $nextTick(() => { if (window.lucide) lucide.createIcons(); })" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 hover:bg-[#21262d] transition flex items-center justify-between">
+                                        <button @click.stop="openTemplatesMenu = true; $nextTick(() => { if (window.lucide) lucide.createIcons(); })" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 hover:bg-[#27272a] transition flex items-center justify-between">
                                             <span class="flex items-center space-x-2">
                                                 <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
                                                 <span>Выбрать из шаблонов</span>
                                             </span>
                                             <span class="text-[10px] text-zinc-500" x-text="activeHabitTemplates.length"></span>
                                         </button>
-                                        <button @click="addCheckboxTask(exIndex); openExMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition flex items-center space-x-2">
+                                        <button @click="addCheckboxTask(exIndex); openExMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#27272a] transition flex items-center space-x-2">
                                             <i data-lucide="check-square" class="w-3.5 h-3.5 text-zinc-400"></i>
                                             <span>Добавить задачу</span>
                                         </button>
-                                        <button @click="openExerciseGraph(ex.name); openExMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition flex items-center space-x-2">
+                                        <button @click="openExerciseGraph(ex.name); openExMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#27272a] transition flex items-center space-x-2">
                                             <i data-lucide="trending-up" class="w-3.5 h-3.5 text-zinc-400"></i>
                                             <span>График повторений</span>
                                         </button>
                                         <button x-show="!ex.isCheckbox" @click="isExerciseInTemplates(ex.name) ? null : saveAsTemplate(ex); openExMenu = false" 
                                                 class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between transition"
-                                                :class="isExerciseInTemplates(ex.name) ? 'text-zinc-500 cursor-default' : 'text-zinc-300 hover:bg-[#21262d]'">
+                                                :class="isExerciseInTemplates(ex.name) ? 'text-zinc-500 cursor-default' : 'text-zinc-300 hover:bg-[#27272a]'">
                                             <span x-text="isExerciseInTemplates(ex.name) ? 'В шаблонах ✓' : 'Сохранить в шаблоны'"></span>
                                         </button>
-                                        <button @click="removeExercise(exIndex); openExMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
+                                        <button @click="removeExercise(exIndex); openExMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#27272a] transition">
                                             Удалить
                                         </button>
                                     </div>
 
                                     <!-- Submenu: Templates List -->
                                     <div x-show="openTemplatesMenu" class="space-y-1">
-                                        <div class="flex items-center justify-between px-2 py-1 border-b border-[#30363d]/50">
+                                        <div class="flex items-center justify-between px-2 py-1 border-b border-white/10">
                                             <button @click.stop="openTemplatesMenu = false" class="text-zinc-400 hover:text-white flex items-center space-x-1 text-xs">
                                                 <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
                                                 <span>Назад</span>
@@ -23976,7 +23976,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                         <div class="max-h-48 overflow-y-auto space-y-0.5">
                                             <template x-for="(t, tIdx) in activeHabitTemplates" :key="tIdx">
                                                 <button @click="applyTemplateToExercise(ex, t); openExMenu = false; openTemplatesMenu = false; $nextTick(() => { if (window.lucide) lucide.createIcons(); })" 
-                                                        class="w-full text-left px-2.5 py-2 rounded-xl text-xs text-zinc-200 hover:text-white hover:bg-[#21262d] transition flex items-center justify-between">
+                                                        class="w-full text-left px-2.5 py-2 rounded-xl text-xs text-zinc-200 hover:text-white hover:bg-[#27272a] transition flex items-center justify-between">
                                                     <span class="font-medium truncate mr-1.5" x-text="t.name"></span>
                                                     <span class="text-[10px] text-zinc-500 flex-shrink-0" x-text="(t.defaultSets ? t.defaultSets.length : 1) + ' подх.'"></span>
                                                 </button>
@@ -23990,7 +23990,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                         <!-- Sets List (only for exercises with sets) -->
                         <div x-show="!ex.isCheckbox && ex.setsList && ex.setsList.length > 0" class="space-y-2 pt-1">
                             <template x-for="(set, setIndex) in ex.setsList" :key="setIndex">
-                                <div class="flex items-center justify-between bg-[#161b22] px-3.5 py-2.5 rounded-2xl ios-item-enter">
+                                <div class="flex items-center justify-between bg-[#0f0f11] px-3.5 py-2.5 rounded-2xl ios-item-enter">
                                     <span class="text-sm text-zinc-400 font-medium">Подход <span x-text="setIndex + 1"></span></span>
                                     
                                     <div class="flex items-center space-x-3">
@@ -24007,8 +24007,8 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                             <button @click="openSetMenu = !openSetMenu" class="text-zinc-500 hover:text-white p-1">
                                                 <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                                             </button>
-                                            <div x-show="openSetMenu" @click.away="openSetMenu = false" class="absolute right-0 mt-2 w-32 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter" x-cloak>
-                                                <button @click="removeSet(exIndex, setIndex); openSetMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
+                                            <div x-show="openSetMenu" @click.away="openSetMenu = false" class="absolute right-0 mt-2 w-32 bg-[#18181b] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-white/10" x-cloak>
+                                                <button @click="removeSet(exIndex, setIndex); openSetMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#27272a] transition">
                                                     Удалить
                                                 </button>
                                             </div>
@@ -24020,14 +24020,14 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                         <!-- Task List -->
                         <template x-for="(task, taskIndex) in ex.tasksList" :key="'t'+taskIndex">
-                            <div x-show="!task.isWeekly" x-data="{ showMeasurement: hasMeasurementContent(task), showSolution: hasSolutionContent(task) }" class="bg-[#0d1117] p-4 rounded-[26px] space-y-3 shadow-lg ios-item-enter">
+                            <div x-show="!task.isWeekly" x-data="{ showMeasurement: hasMeasurementContent(task), showSolution: hasSolutionContent(task) }" class="bg-[#18181b] p-4 rounded-[26px] space-y-3 shadow-lg ios-item-enter">
                                     
                                     <!-- Верх карточки: когда главная задача еще не активирована -->
                                     <div class="flex items-center justify-between py-1.5" x-show="!taskHasMain(task)">
                                         <span class="text-sm font-semibold text-zinc-400">Задача</span>
                                         <div class="flex items-center space-x-3">
                                             <!-- Большой плюс как кнопка-галочка в календаре -->
-                                            <button @click="activateMainTask(task)" class="w-14 h-14 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-emerald-400 rounded-full flex items-center justify-center shadow-2xl transition active:scale-90" title="Добавить главную задачу">
+                                            <button @click="activateMainTask(task)" class="w-14 h-14 bg-[#0f0f11] hover:bg-[#18181b] border border-white/10 text-emerald-400 rounded-full flex items-center justify-center shadow-2xl transition active:scale-90" title="Добавить главную задачу">
                                                 <i data-lucide="plus" class="w-8 h-8 stroke-[3]"></i>
                                             </button>
                                             <!-- Меню три точки для удаления карточки целиком -->
@@ -24035,11 +24035,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                 <button @click.stop="openTaskMenu = !openTaskMenu" class="text-zinc-500 hover:text-white p-2">
                                                     <i data-lucide="more-horizontal" class="w-5 h-5"></i>
                                                 </button>
-                                                <div x-show="openTaskMenu" @click.away="openTaskMenu = false" class="absolute right-0 mt-2 w-44 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/50" x-cloak>
-                                                    <button @click.stop="toggleTaskWeekly(task); openTaskMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 hover:bg-[#21262d] transition">
+                                                <div x-show="openTaskMenu" @click.away="openTaskMenu = false" class="absolute right-0 mt-2 w-44 bg-[#18181b] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-white/10" x-cloak>
+                                                    <button @click.stop="toggleTaskWeekly(task); openTaskMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 hover:bg-[#27272a] transition">
                                                         <span x-text="task.isWeekly ? 'Снять с недели' : 'Назначить на неделю'"></span>
                                                     </button>
-                                                    <button @click.stop="ex.tasksList.splice(taskIndex, 1); openTaskMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
+                                                    <button @click.stop="ex.tasksList.splice(taskIndex, 1); openTaskMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#27272a] transition">
                                                         Удалить
                                                     </button>
                                                 </div>
@@ -24055,7 +24055,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                 <!-- Круговой индикатор прогресса -->
                                                 <div @click.stop="toggleTask(task)" class="relative flex items-center justify-center w-6 h-6 flex-shrink-0 mt-0.5 cursor-pointer active:scale-90 transition-transform" title="Переключить статус">
                                                     <svg class="w-6 h-6 -rotate-90" viewBox="0 0 36 36">
-                                                        <circle cx="18" cy="18" r="15.915" fill="none" stroke="#21262d" stroke-width="4"></circle>
+                                                        <circle cx="18" cy="18" r="15.915" fill="none" stroke="#27272a" stroke-width="4"></circle>
                                                         <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" stroke-width="4" 
                                                                 :stroke-dasharray="getTaskProgress(task) + ', 100'" stroke-dashoffset="0" 
                                                                 class="transition-all duration-300"></circle>
@@ -24075,17 +24075,17 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                 <button @click.stop="openTaskMenu = !openTaskMenu" class="text-zinc-500 hover:text-white p-1">
                                                     <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                                                 </button>
-                                                <div x-show="openTaskMenu" @click.away="openTaskMenu = false" class="absolute right-0 mt-2 w-48 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/50" x-cloak>
-                                                    <button @click.stop="toggleTaskReps(task); openTaskMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                <div x-show="openTaskMenu" @click.away="openTaskMenu = false" class="absolute right-0 mt-2 w-48 bg-[#18181b] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-white/10" x-cloak>
+                                                    <button @click.stop="toggleTaskReps(task); openTaskMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#27272a] transition">
                                                         <span x-text="hasItemReps(task) ? 'Удалить показатель' : 'Добавить показатель'"></span>
                                                     </button>
-                                                    <button x-show="hasItemReps(task)" @click.stop="editItemUnit(task); openTaskMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                    <button x-show="hasItemReps(task)" @click.stop="editItemUnit(task); openTaskMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#27272a] transition">
                                                         Изменить ед. (<span x-text="task.unit || activeHabitUnit"></span>)
                                                     </button>
-                                                    <button @click.stop="toggleTaskWeekly(task); openTaskMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 hover:bg-[#21262d] transition">
+                                                    <button @click.stop="toggleTaskWeekly(task); openTaskMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-emerald-400 hover:bg-[#27272a] transition">
                                                         <span x-text="task.isWeekly ? 'Снять с недели' : 'Назначить на неделю'"></span>
                                                     </button>
-                                                    <button @click.stop="ex.tasksList.splice(taskIndex, 1); openTaskMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
+                                                    <button @click.stop="ex.tasksList.splice(taskIndex, 1); openTaskMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#27272a] transition">
                                                         Удалить
                                                     </button>
                                                 </div>
@@ -24096,9 +24096,9 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                         <div class="space-y-1.5 pl-1">
                                             <div class="text-xs font-medium tracking-wide transition-colors" :class="(!task.subTasks || task.subTasks.length === 0) ? 'text-zinc-600' : 'text-zinc-400'">Шаги задачи</div>
                                             <template x-for="(subTask, subIndex) in task.subTasks" :key="'st'+subIndex">
-                                                <div class="flex items-start justify-between bg-[#161b22] px-3.5 py-2.5 rounded-2xl gap-2 ios-item-enter">
+                                                <div class="flex items-start justify-between bg-[#0f0f11] px-3.5 py-2.5 rounded-2xl gap-2 ios-item-enter">
                                                     <div class="flex items-start space-x-2 flex-1 min-w-0">
-                                                        <button @click.stop="toggleTask(subTask)" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition active:scale-90 flex-shrink-0 mt-0.5" :class="subTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0d1117]'">
+                                                        <button @click.stop="toggleTask(subTask)" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition active:scale-90 flex-shrink-0 mt-0.5" :class="subTask.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0f0f11]'">
                                                             <i data-lucide="check" class="w-2.5 h-2.5 text-white check-pop" x-show="subTask.completed"></i>
                                                         </button>
                                                         <textarea x-effect="autoResize($el)" x-model="subTask.name" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Шаг задачи..." class="bg-transparent text-sm focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="subTask.completed ? 'text-zinc-500' : 'text-zinc-100'"></textarea>
@@ -24111,14 +24111,14 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                         <button @click.stop="openSubMenu = !openSubMenu" class="text-zinc-500 hover:text-white p-0.5 ml-1">
                                                             <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
                                                         </button>
-                                                        <div x-show="openSubMenu" @click.away="openSubMenu = false" class="absolute right-0 mt-2 w-48 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-[#30363d]/50" x-cloak>
-                                                            <button @click.stop="toggleTaskReps(subTask); openSubMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                        <div x-show="openSubMenu" @click.away="openSubMenu = false" class="absolute right-0 mt-2 w-48 bg-[#18181b] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-white/10" x-cloak>
+                                                            <button @click.stop="toggleTaskReps(subTask); openSubMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#27272a] transition">
                                                                 <span x-text="hasItemReps(subTask) ? 'Удалить показатель' : 'Добавить показатель'"></span>
                                                             </button>
-                                                            <button x-show="hasItemReps(subTask)" @click.stop="editItemUnit(subTask); openSubMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#21262d] transition">
+                                                            <button x-show="hasItemReps(subTask)" @click.stop="editItemUnit(subTask); openSubMenu = false" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-[#27272a] transition">
                                                                 Изменить ед. (<span x-text="subTask.unit || activeHabitUnit"></span>)
                                                             </button>
-                                                            <button @click.stop="task.subTasks.splice(subIndex, 1); openSubMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
+                                                            <button @click.stop="task.subTasks.splice(subIndex, 1); openSubMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#27272a] transition">
                                                                 Удалить
                                                             </button>
                                                         </div>
@@ -24128,7 +24128,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                                             <!-- Кнопка добавления шага (прижата вправо) -->
                                             <div class="flex justify-end pt-1">
-                                                <button @click.stop="addSubTask(task, $event)" class="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-[#161b22] transition active:scale-90" title="Добавить шаг">
+                                                <button @click.stop="addSubTask(task, $event)" class="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-[#0f0f11] transition active:scale-90" title="Добавить шаг">
                                                     <i data-lucide="plus" class="w-5 h-5 stroke-[2.5]"></i>
                                                 </button>
                                             </div>
@@ -24148,18 +24148,18 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                             <!-- Иконки прижаты вправо: график, календарь без фона, галочка (шеврон) -->
                                             <div class="flex items-center space-x-1 flex-shrink-0">
                                                 <!-- Значок графика -->
-                                                <button @click.stop="openMetricsGraph(task)" class="p-1 rounded-xl transition hover:bg-[#161b22]" :class="(showMeasurement || hasMeasurementContent(task)) ? 'text-zinc-400 hover:text-emerald-400' : 'text-zinc-600 hover:text-zinc-400'" title="Открыть график показателей">
+                                                <button @click.stop="openMetricsGraph(task)" class="p-1 rounded-xl transition hover:bg-[#0f0f11]" :class="(showMeasurement || hasMeasurementContent(task)) ? 'text-zinc-400 hover:text-emerald-400' : 'text-zinc-600 hover:text-zinc-400'" title="Открыть график показателей">
                                                     <i data-lucide="trending-up" class="w-4 h-4"></i>
                                                 </button>
 
                                                 <!-- Значок календаря без фона и без дд мм гггг -->
-                                                <div class="relative p-1 rounded-xl transition cursor-pointer hover:bg-[#161b22]" :class="task.measurementBlock && task.measurementBlock.date ? 'text-emerald-400' : ((showMeasurement || hasMeasurementContent(task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400')" title="Дата замера">
+                                                <div class="relative p-1 rounded-xl transition cursor-pointer hover:bg-[#0f0f11]" :class="task.measurementBlock && task.measurementBlock.date ? 'text-emerald-400' : ((showMeasurement || hasMeasurementContent(task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400')" title="Дата замера">
                                                     <i data-lucide="calendar" class="w-4 h-4"></i>
                                                     <input type="date" x-model="task.measurementBlock.date" @change="saveDayData()" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
                                                 </div>
 
                                                 <!-- Галочка (шеврон) для сворачивания/разворачивания -->
-                                                <button @click="showMeasurement = !showMeasurement" class="p-1 rounded-xl transition hover:bg-[#161b22]" :class="(showMeasurement || hasMeasurementContent(task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400'" title="Развернуть/свернуть замер">
+                                                <button @click="showMeasurement = !showMeasurement" class="p-1 rounded-xl transition hover:bg-[#0f0f11]" :class="(showMeasurement || hasMeasurementContent(task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400'" title="Развернуть/свернуть замер">
                                                     <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200" :class="showMeasurement ? 'rotate-180' : ''"></i>
                                                 </button>
                                             </div>
@@ -24169,11 +24169,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                         <div class="accordion-grid" :class="showMeasurement ? 'expanded' : ''">
                                             <div class="accordion-inner space-y-2 pt-1">
                                                 <!-- Показатели замера -->
-                                                <div class="bg-[#161b22] rounded-2xl p-2.5 space-y-2">
+                                                <div class="bg-[#0f0f11] rounded-2xl p-2.5 space-y-2">
                                                     <div class="flex items-center justify-between">
                                                         <span class="text-xs font-medium text-zinc-400">Показатели замера</span>
                                                         <!-- Кнопка плюсик справа -->
-                                                        <button @click.stop="openMetricPickerModal(task)" class="p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-[#21262d] transition flex items-center space-x-1 text-xs" title="Добавить показатель">
+                                                        <button @click.stop="openMetricPickerModal(task)" class="p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-[#27272a] transition flex items-center space-x-1 text-xs" title="Добавить показатель">
                                                             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                                                         </button>
                                                     </div>
@@ -24182,7 +24182,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                     <template x-if="task.measurementBlock && task.measurementBlock.metrics && task.measurementBlock.metrics.length > 0">
                                                         <div class="flex flex-wrap gap-1.5 pt-0.5">
                                                             <template x-for="(m, mIdx) in task.measurementBlock.metrics" :key="mIdx">
-                                                                <div class="inline-flex items-center space-x-1.5 bg-[#0d1117] px-2.5 py-1 rounded-xl text-xs text-zinc-200 ios-item-enter">
+                                                                <div class="inline-flex items-center space-x-1.5 bg-[#18181b] px-2.5 py-1 rounded-xl text-xs text-zinc-200 ios-item-enter">
                                                                     <span class="w-2 h-2 rounded-full flex-shrink-0" :style="{ backgroundColor: m.color || '#10b981' }"></span>
                                                                     <span class="font-medium text-zinc-300" x-text="m.name + ':'"></span>
                                                                     <span @click.stop="editMetricValue(task, mIdx)" class="font-semibold text-emerald-400 cursor-pointer hover:underline" x-text="m.value !== null && m.value !== undefined ? (m.value + ' ' + (m.unit || '')) : '[План / —]'" title="Нажми, чтобы изменить"></span>
@@ -24193,7 +24193,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                     </template>
                                                 </div>
 
-                                                <textarea x-effect="autoResize($el)" x-model="task.measurementBlock.description" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Показатели замера..." class="bg-[#161b22] text-sm text-zinc-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-1 focus:ring-zinc-600 w-full resize-none leading-relaxed"></textarea>
+                                                <textarea x-effect="autoResize($el)" x-model="task.measurementBlock.description" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Показатели замера..." class="bg-[#0f0f11] text-sm text-zinc-200 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:ring-1 focus:ring-zinc-600 w-full resize-none leading-relaxed"></textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -24210,13 +24210,13 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                             <!-- Иконки прижаты вправо: календарь без фона, галочка (шеврон) -->
                                             <div class="flex items-center space-x-1 flex-shrink-0">
                                                 <!-- Значок календаря без фона и без дд мм гггг -->
-                                                <div class="relative p-1 rounded-xl transition cursor-pointer hover:bg-[#161b22]" :class="task.solutionBlock && task.solutionBlock.date ? 'text-emerald-400' : ((showSolution || hasSolutionContent(task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400')" title="Дата решения">
+                                                <div class="relative p-1 rounded-xl transition cursor-pointer hover:bg-[#0f0f11]" :class="task.solutionBlock && task.solutionBlock.date ? 'text-emerald-400' : ((showSolution || hasSolutionContent(task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400')" title="Дата решения">
                                                     <i data-lucide="calendar" class="w-4 h-4"></i>
                                                     <input type="date" x-model="task.solutionBlock.date" @change="saveDayData()" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
                                                 </div>
 
                                                 <!-- Галочка (шеврон) для сворачивания/разворачивания -->
-                                                <button @click="showSolution = !showSolution" class="p-1 rounded-xl transition hover:bg-[#161b22]" :class="(showSolution || hasSolutionContent(task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400'" title="Развернуть/свернуть решение">
+                                                <button @click="showSolution = !showSolution" class="p-1 rounded-xl transition hover:bg-[#0f0f11]" :class="(showSolution || hasSolutionContent(task)) ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-zinc-400'" title="Развернуть/свернуть решение">
                                                     <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200" :class="showSolution ? 'rotate-180' : ''"></i>
                                                 </button>
                                             </div>
@@ -24229,7 +24229,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                 <div class="flex items-start space-x-2 w-full pl-1">
                                                     <div class="relative flex items-center justify-center w-5 h-5 flex-shrink-0 mt-0.5">
                                                         <svg class="w-5 h-5 -rotate-90" viewBox="0 0 36 36">
-                                                            <circle cx="18" cy="18" r="15.915" fill="none" stroke="#21262d" stroke-width="4"></circle>
+                                                            <circle cx="18" cy="18" r="15.915" fill="none" stroke="#27272a" stroke-width="4"></circle>
                                                             <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" stroke-width="4" 
                                                                     :stroke-dasharray="getTaskProgress(task) + ', 100'" stroke-dashoffset="0" 
                                                                     class="transition-all duration-300"></circle>
@@ -24241,9 +24241,9 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                 <!-- Шаги решения -->
                                                 <div class="space-y-1.5 pt-1 pl-2">
                                                     <template x-for="(solStep, solIndex) in task.solutionBlock.steps" :key="'sol'+solIndex">
-                                                        <div class="flex items-start justify-between bg-[#161b22] px-3.5 py-2.5 rounded-2xl gap-2 ios-item-enter">
+                                                        <div class="flex items-start justify-between bg-[#0f0f11] px-3.5 py-2.5 rounded-2xl gap-2 ios-item-enter">
                                                             <div class="flex items-start space-x-2 flex-1 min-w-0">
-                                                                <button @click.stop="toggleTask(solStep)" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition active:scale-90 flex-shrink-0 mt-0.5" :class="solStep.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0d1117]'">
+                                                                <button @click.stop="toggleTask(solStep)" class="flex items-center justify-center w-4 h-4 rounded-full border-2 border-[#30363d] transition active:scale-90 flex-shrink-0 mt-0.5" :class="solStep.completed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#0f0f11]'">
                                                                     <i data-lucide="check" class="w-2.5 h-2.5 text-white check-pop" x-show="solStep.completed"></i>
                                                                 </button>
                                                                 <textarea x-effect="autoResize($el)" x-model="solStep.name" @input="autoResize($event.target)" @click.stop rows="1" placeholder="Шаг решения..." class="bg-transparent text-sm focus:outline-none w-full resize-none leading-relaxed py-0.5" :class="solStep.completed ? 'text-zinc-500' : 'text-zinc-100'"></textarea>
@@ -24256,8 +24256,8 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                                                 <button @click.stop="openSolMenu = !openSolMenu" class="text-zinc-500 hover:text-white p-0.5 ml-1">
                                                                     <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
                                                                 </button>
-                                                                <div x-show="openSolMenu" @click.away="openSolMenu = false" class="absolute right-0 mt-2 w-32 bg-[#161b22] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter" x-cloak>
-                                                                    <button @click.stop="task.solutionBlock.steps.splice(solIndex, 1); openSolMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#21262d] transition">
+                                                                <div x-show="openSolMenu" @click.away="openSolMenu = false" class="absolute right-0 mt-2 w-32 bg-[#18181b] rounded-2xl shadow-2xl p-1.5 z-50 modal-enter border border-white/10" x-cloak>
+                                                                    <button @click.stop="task.solutionBlock.steps.splice(solIndex, 1); openSolMenu = false; saveDayData()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-[#27272a] transition">
                                                                         Удалить
                                                                     </button>
                                                                 </div>
@@ -24267,7 +24267,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                                                     <!-- Кнопка добавления шага решения (прижата вправо) -->
                                                     <div class="flex justify-end pt-0.5">
-                                                        <button @click.stop="addSolutionStep(task, $event)" class="text-xs font-medium text-zinc-400 hover:text-white flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#161b22] transition">
+                                                        <button @click.stop="addSolutionStep(task, $event)" class="text-xs font-medium text-zinc-400 hover:text-white flex items-center space-x-1 py-1 px-2 rounded-xl hover:bg-[#0f0f11] transition">
                                                             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                                                             <span>Добавить шаг решения</span>
                                                         </button>
@@ -24282,7 +24282,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                             <!-- Add Set Button (aligned right, matching task step plus icon) -->
                             <div class="flex justify-end pt-1" x-show="ex.setsList && ex.setsList.length > 0">
-                                <button @click.stop="addSet(exIndex)" class="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-[#161b22] transition active:scale-90" title="Добавить подход">
+                                <button @click.stop="addSet(exIndex)" class="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-[#0f0f11] transition active:scale-90" title="Добавить подход">
                                     <i data-lucide="plus" class="w-5 h-5 stroke-[2.5]"></i>
                                 </button>
                             </div>
@@ -24291,16 +24291,16 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 </template>
             </div>
 
-            <!-- Single Action Button (+) with Floating Menu (Aligned right, no heavy border) -->
-            <div class="relative pt-1 flex-shrink-0" x-data="{ openAddMenu: false, showTemplatesSubmenu: false }" @click.away="openAddMenu = false; showTemplatesSubmenu = false">
+            <!-- Single Action Button (+) with Floating Menu (Floating overlay, 0px space eaten) -->
+            <div class="absolute bottom-2.5 left-2.5 right-2.5 sm:bottom-3.5 sm:left-4 sm:right-4 z-30 pointer-events-none" x-data="{ openAddMenu: false, showTemplatesSubmenu: false }" @click.away="openAddMenu = false; showTemplatesSubmenu = false">
                 <!-- Floating Popover Menu -->
                 <div x-show="openAddMenu" 
-                     class="absolute bottom-full mb-2 left-0 right-0 bg-[#161b22] rounded-[26px] shadow-2xl p-2 z-50 modal-enter border border-[#30363d]/60 backdrop-blur-xl" 
+                     class="pointer-events-auto mb-2 w-full bg-[#18181b] rounded-[26px] shadow-2xl p-2 modal-enter border border-white/10 backdrop-blur-xl" 
                      x-cloak>
                     
                     <!-- Main Menu Options -->
                     <div x-show="!showTemplatesSubmenu" class="space-y-1">
-                        <button @click="openTemplatesSlide(); openAddMenu = false" class="w-full text-left px-3.5 py-2.5 rounded-2xl text-zinc-200 hover:text-white hover:bg-[#21262d] transition flex items-center space-x-3 active:scale-[0.98]">
+                        <button @click="openTemplatesSlide(); openAddMenu = false" class="w-full text-left px-3.5 py-2.5 rounded-2xl text-zinc-200 hover:text-white hover:bg-[#27272a] transition flex items-center space-x-3 active:scale-[0.98]">
                             <div class="w-9 h-9 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center flex-shrink-0">
                                 <i data-lucide="bookmark" class="w-4 h-4"></i>
                             </div>
@@ -24311,7 +24311,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                             <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-600"></i>
                         </button>
 
-                        <button @click="addEmptyTaskRow(); openAddMenu = false" class="w-full text-left px-3.5 py-2.5 rounded-2xl text-zinc-200 hover:text-white hover:bg-[#21262d] transition flex items-center space-x-3 active:scale-[0.98]">
+                        <button @click="addEmptyTaskRow(); openAddMenu = false" class="w-full text-left px-3.5 py-2.5 rounded-2xl text-zinc-200 hover:text-white hover:bg-[#27272a] transition flex items-center space-x-3 active:scale-[0.98]">
                             <div class="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center flex-shrink-0">
                                 <i data-lucide="check-square" class="w-4 h-4"></i>
                             </div>
@@ -24321,7 +24321,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                             </div>
                         </button>
 
-                        <button @click="addExerciseRow(); openAddMenu = false" class="w-full text-left px-3.5 py-2.5 rounded-2xl text-zinc-200 hover:text-white hover:bg-[#21262d] transition flex items-center space-x-3 active:scale-[0.98]">
+                        <button @click="addExerciseRow(); openAddMenu = false" class="w-full text-left px-3.5 py-2.5 rounded-2xl text-zinc-200 hover:text-white hover:bg-[#27272a] transition flex items-center space-x-3 active:scale-[0.98]">
                             <div class="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center flex-shrink-0">
                                 <i data-lucide="plus" class="w-4 h-4"></i>
                             </div>
@@ -24331,7 +24331,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                             </div>
                         </button>
 
-                        <button @click="showTemplatesSubmenu = true; $nextTick(() => { if (window.lucide) lucide.createIcons(); })" class="w-full text-left px-3.5 py-2.5 rounded-2xl text-zinc-200 hover:text-white hover:bg-[#21262d] transition flex items-center space-x-3 active:scale-[0.98]">
+                        <button @click="showTemplatesSubmenu = true; $nextTick(() => { if (window.lucide) lucide.createIcons(); })" class="w-full text-left px-3.5 py-2.5 rounded-2xl text-zinc-200 hover:text-white hover:bg-[#27272a] transition flex items-center space-x-3 active:scale-[0.98]">
                             <div class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center flex-shrink-0">
                                 <i data-lucide="copy" class="w-4 h-4"></i>
                             </div>
@@ -24348,7 +24348,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                     <!-- Templates Submenu List -->
                     <div x-show="showTemplatesSubmenu" class="p-1 space-y-1">
-                        <div class="flex items-center justify-between px-2 py-1.5 border-b border-[#30363d]/50">
+                        <div class="flex items-center justify-between px-2 py-1.5 border-b border-white/10">
                             <button @click.stop="showTemplatesSubmenu = false" class="text-zinc-400 hover:text-white flex items-center space-x-1 text-xs">
                                 <i data-lucide="chevron-left" class="w-4 h-4"></i>
                                 <span>Назад</span>
@@ -24361,7 +24361,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                         <div class="max-h-52 overflow-y-auto space-y-1">
                             <template x-for="(t, tIdx) in activeHabitTemplates" :key="tIdx">
                                 <button @click="addExerciseFromTemplate(t); openAddMenu = false; showTemplatesSubmenu = false" 
-                                        class="w-full text-left px-3 py-2.5 rounded-xl text-xs text-zinc-200 hover:text-white hover:bg-[#21262d] transition flex items-center justify-between active:scale-[0.98]">
+                                        class="w-full text-left px-3 py-2.5 rounded-xl text-xs text-zinc-200 hover:text-white hover:bg-[#27272a] transition flex items-center justify-between active:scale-[0.98]">
                                     <span class="font-medium truncate mr-2 text-[13px]" x-text="t.name"></span>
                                     <span class="text-[11px] text-zinc-500 flex-shrink-0 font-mono" x-text="(t.defaultSets ? t.defaultSets.length : 1) + ' подх.'"></span>
                                 </button>
@@ -24370,10 +24370,10 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     </div>
                 </div>
 
-                <!-- Single Main Button (+) Aligned Right, No Border -->
+                <!-- Single Main Button (+) Floating in bottom-right corner -->
                 <div class="flex justify-end">
                     <button @click="openAddMenu = !openAddMenu; showTemplatesSubmenu = false; $nextTick(() => { if (window.lucide) lucide.createIcons(); })" 
-                            class="p-2.5 text-zinc-400 hover:text-white rounded-2xl hover:bg-[#21262d] transition active:scale-90" 
+                            class="pointer-events-auto w-12 h-12 flex items-center justify-center text-zinc-400 hover:text-white rounded-full bg-[#18181b]/95 hover:bg-[#222225] shadow-2xl backdrop-blur-md transition active:scale-90" 
                             title="Добавить">
                         <span class="inline-flex items-center justify-center transition-transform duration-200" :class="openAddMenu ? 'rotate-45 text-zinc-300' : 'text-zinc-400'">
                             <i data-lucide="plus" class="w-6 h-6 stroke-[2.5]"></i>
@@ -24400,7 +24400,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
         <!-- Done checkmark button in bottom-right corner -->
         <div class="absolute bottom-8 right-8 z-[70]">
-            <button @click.stop.prevent="closePicker()" class="w-16 h-16 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-zinc-400 hover:text-white rounded-full flex items-center justify-center shadow-2xl transition active:scale-90">
+            <button @click.stop.prevent="closePicker()" class="w-16 h-16 bg-[#18181b] hover:bg-[#27272a] border border-white/10 text-zinc-400 hover:text-white rounded-full flex items-center justify-center shadow-2xl transition active:scale-90">
                 <i data-lucide="check" class="w-8 h-8 stroke-[3]"></i>
             </button>
         </div>

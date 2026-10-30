@@ -123,31 +123,10 @@ Check your Browserslist config to be sure that your targets are set up correctly
         if (typeof window.lucide === 'undefined') {
             window.lucide = { createIcons: function() {} };
         }
-        var appErrorLogs = [];
-        var origConsoleWarn = console.warn;
-        console.warn = function() {
-            try {
-                var s = Array.from(arguments).map(function(a) {
-                    return typeof a === 'object' ? (a.message || a.outerHTML || JSON.stringify(a)) : String(a);
-                }).join(' ');
-                appErrorLogs.push('[WARN] ' + s);
-            } catch(e) {}
-            if (origConsoleWarn) origConsoleWarn.apply(console, arguments);
-        };
-        var origConsoleError = console.error;
-        console.error = function() {
-            try {
-                var s = Array.from(arguments).map(function(a) {
-                    return typeof a === 'object' ? (a.stack || a.message || a.outerHTML || JSON.stringify(a)) : String(a);
-                }).join(' ');
-                appErrorLogs.push('[ERROR] ' + s);
-            } catch(e) {}
-            if (origConsoleError) origConsoleError.apply(console, arguments);
-        };
         function showScreenError(text, details) {
             if (!text) return;
             var str = String(text);
-            if (str.indexOf('ResizeObserver') !== -1) return;
+            if (str.indexOf('ResizeObserver') !== -1 || str.indexOf('Gist') !== -1 || str.indexOf('fetch') !== -1) return;
             var box = document.getElementById('critical-error-banner');
             if (!box) {
                 box = document.createElement('div');
@@ -164,24 +143,18 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 (document.body || document.documentElement).prepend(box);
             }
             var content = document.getElementById('critical-error-content') || box;
-            var d = details || (appErrorLogs.length > 0 ? appErrorLogs.slice(-3).join('\n') : '');
-            content.textContent = text + (d ? '\n\nДетали:\n' + d : '');
+            content.textContent = text + (details ? '\n\nДетали:\n' + details : '');
         }
         window.onerror = function(msg, url, lineNo, colNo, error) {
+            // Ignore opaque non-error events without stack in Safari
+            if (!error && (!msg || msg === 'Script error.')) return;
             if (msg && String(msg).indexOf('ResizeObserver') !== -1) return;
-            var detail = '';
-            if (error) detail = error.stack || error.message || String(error);
-            if (!detail && appErrorLogs.length > 0) detail = appErrorLogs.slice(-3).join('\n');
+            var detail = error ? (error.stack || error.message || String(error)) : '';
             showScreenError('Ошибка приложения:\n' + msg + ' (строка ' + lineNo + ')', detail);
         };
-        window.addEventListener('error', function(e) {
-            if (e.message && String(e.message).indexOf('ResizeObserver') !== -1) return;
-            var detail = e.error ? (e.error.stack || e.error.message || String(e.error)) : '';
-            if (!detail && appErrorLogs.length > 0) detail = appErrorLogs.slice(-3).join('\n');
-            showScreenError('Ошибка приложения:\n' + (e.message || 'Script error.'), detail);
-        });
         window.addEventListener('unhandledrejection', function(e) {
             var reason = e.reason ? (e.reason.stack || e.reason.message || String(e.reason)) : String(e);
+            if (reason.indexOf('ResizeObserver') !== -1 || reason.indexOf('Gist') !== -1 || reason.indexOf('fetch') !== -1) return;
             showScreenError('Promise Error:\n' + reason);
         });
     </script>
@@ -23243,10 +23216,10 @@ Check your Browserslist config to be sure that your targets are set up correctly
          x-transition:leave="transition-opacity duration-150 ease-in"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         @click.self="saveAndCloseModal()" 
+         @click.self.stop.prevent="saveAndCloseModal()" 
          class="fixed inset-0 z-50 flex items-center justify-center p-1 sm:p-4 bg-black/70 backdrop-blur-sm overflow-x-hidden" 
          x-cloak>
-        <div x-show="openModal"
+        <div x-show="openModal" @click.stop
              x-transition:enter="transition-all duration-200 ease-out"
              x-transition:enter-start="opacity-0 scale-95 translate-y-3"
              x-transition:enter-end="opacity-100 scale-100 translate-y-0"
@@ -24940,47 +24913,63 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 pushToGist(immediate = false) {
                     if (!this.githubToken || !this.gistId) return;
                     if (this._gistTimer) clearTimeout(this._gistTimer);
-                    this.syncStatus = 'syncing';
 
-                    const doPush = async () => {
+                    const runPush = async () => {
+                        if (this._gistInProgress) {
+                            this._gistNeedRetry = true;
+                            return;
+                        }
+                        this._gistInProgress = true;
+                        this.syncStatus = 'syncing';
                         try {
+                            const payload = {
+                                files: {
+                                    'workouts.json': {
+                                        content: JSON.stringify({
+                                            habits: this.habits,
+                                            allData: this.allData,
+                                            weeklyPlans: this.weeklyPlans,
+                                            activeHabitId: this.activeHabitId,
+                                            updatedAt: Date.now()
+                                        })
+                                    }
+                                }
+                            };
                             let res = await fetch(`https://api.github.com/gists/${this.gistId}`, {
                                 method: 'PATCH',
                                 headers: {
                                     'Authorization': `token ${this.githubToken}`,
                                     'Content-Type': 'application/json'
                                 },
-                                body: JSON.stringify({
-                                    files: {
-                                        'workouts.json': {
-                                            content: JSON.stringify({
-                                                habits: this.habits,
-                                                allData: this.allData,
-                                                weeklyPlans: this.weeklyPlans,
-                                                activeHabitId: this.activeHabitId,
-                                                updatedAt: Date.now()
-                                            })
-                                        }
-                                    }
-                                })
+                                body: JSON.stringify(payload)
                             });
                             if (res.ok) {
                                 this.syncStatus = 'synced';
+                            } else if (res.status === 409) {
+                                console.warn('Gist 409 Conflict, scheduling retry...');
+                                this._gistNeedRetry = true;
+                                this.syncStatus = 'syncing';
                             } else {
                                 const errText = await res.text();
-                                console.error('Gist Error:', errText);
+                                console.warn('Gist Sync Error:', errText);
                                 this.syncStatus = 'error';
                             }
                         } catch (e) {
-                            console.error('Gist Exception:', e);
+                            console.warn('Gist Exception:', e);
                             this.syncStatus = 'error';
+                        } finally {
+                            this._gistInProgress = false;
+                            if (this._gistNeedRetry) {
+                                this._gistNeedRetry = false;
+                                this._gistTimer = setTimeout(() => this.pushToGist(true), 1200);
+                            }
                         }
                     };
 
                     if (immediate) {
-                        doPush();
+                        runPush();
                     } else {
-                        this._gistTimer = setTimeout(doPush, 1000);
+                        this._gistTimer = setTimeout(runPush, 800);
                     }
                 },
 
@@ -26244,6 +26233,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                 selectDay(dateStr) {
                     if (!dateStr) return;
+                    if (Date.now() - (this._lastModalCloseTime || 0) < 400) return;
                     this.selectedDate = dateStr;
                     this.modalHabitId = this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId;
                     
@@ -26706,10 +26696,10 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 },
 
                 saveAndCloseModal() {
+                    this._lastModalCloseTime = Date.now();
                     this.closeGraphView();
                     this.showTemplatesSlide = false;
                     this.saveDayData();
-                    this.pushToGist(true);
                     this.openModal = false;
                     document.body.style.overflow = '';
                 },

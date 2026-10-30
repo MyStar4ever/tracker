@@ -123,21 +123,66 @@ Check your Browserslist config to be sure that your targets are set up correctly
         if (typeof window.lucide === 'undefined') {
             window.lucide = { createIcons: function() {} };
         }
-        function showScreenError(text) {
+        var appErrorLogs = [];
+        var origConsoleWarn = console.warn;
+        console.warn = function() {
+            try {
+                var s = Array.from(arguments).map(function(a) {
+                    return typeof a === 'object' ? (a.message || a.outerHTML || JSON.stringify(a)) : String(a);
+                }).join(' ');
+                appErrorLogs.push('[WARN] ' + s);
+            } catch(e) {}
+            if (origConsoleWarn) origConsoleWarn.apply(console, arguments);
+        };
+        var origConsoleError = console.error;
+        console.error = function() {
+            try {
+                var s = Array.from(arguments).map(function(a) {
+                    return typeof a === 'object' ? (a.stack || a.message || a.outerHTML || JSON.stringify(a)) : String(a);
+                }).join(' ');
+                appErrorLogs.push('[ERROR] ' + s);
+            } catch(e) {}
+            if (origConsoleError) origConsoleError.apply(console, arguments);
+        };
+        function showScreenError(text, details) {
+            if (!text) return;
+            var str = String(text);
+            if (str.indexOf('ResizeObserver') !== -1) return;
             var box = document.getElementById('critical-error-banner');
             if (!box) {
                 box = document.createElement('div');
                 box.id = 'critical-error-banner';
-                box.style = 'position:fixed;top:0;left:0;right:0;background:#dc2626;color:white;padding:14px;z-index:999999;font-size:13px;font-family:monospace;white-space:pre-wrap;box-shadow:0 4px 20px rgba(0,0,0,0.8);';
+                box.style = 'position:fixed;top:0;left:0;right:0;background:#991b1b;color:white;padding:12px 14px;z-index:999999;font-size:12px;font-family:-apple-system,BlinkMacSystemFont,monospace;white-space:pre-wrap;word-break:break-word;box-shadow:0 4px 20px rgba(0,0,0,0.8);max-height:80vh;overflow-y:auto;';
+                var btn = document.createElement('button');
+                btn.textContent = '✕ Закрыть';
+                btn.style = 'float:right;background:#dc2626;border:none;color:white;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;margin-left:8px;';
+                btn.onclick = function() { box.remove(); };
+                box.appendChild(btn);
+                var contentDiv = document.createElement('div');
+                contentDiv.id = 'critical-error-content';
+                box.appendChild(contentDiv);
                 (document.body || document.documentElement).prepend(box);
             }
-            box.textContent = text;
+            var content = document.getElementById('critical-error-content') || box;
+            var d = details || (appErrorLogs.length > 0 ? appErrorLogs.slice(-3).join('\n') : '');
+            content.textContent = text + (d ? '\n\nДетали:\n' + d : '');
         }
-        window.onerror = function(msg, url, lineNo) {
-            showScreenError('Ошибка приложения:\n' + msg + ' (строка ' + lineNo + ')');
+        window.onerror = function(msg, url, lineNo, colNo, error) {
+            if (msg && String(msg).indexOf('ResizeObserver') !== -1) return;
+            var detail = '';
+            if (error) detail = error.stack || error.message || String(error);
+            if (!detail && appErrorLogs.length > 0) detail = appErrorLogs.slice(-3).join('\n');
+            showScreenError('Ошибка приложения:\n' + msg + ' (строка ' + lineNo + ')', detail);
         };
+        window.addEventListener('error', function(e) {
+            if (e.message && String(e.message).indexOf('ResizeObserver') !== -1) return;
+            var detail = e.error ? (e.error.stack || e.error.message || String(e.error)) : '';
+            if (!detail && appErrorLogs.length > 0) detail = appErrorLogs.slice(-3).join('\n');
+            showScreenError('Ошибка приложения:\n' + (e.message || 'Script error.'), detail);
+        });
         window.addEventListener('unhandledrejection', function(e) {
-            showScreenError('Promise Error:\n' + (e.reason ? (e.reason.stack || e.reason.message || e.reason) : e));
+            var reason = e.reason ? (e.reason.stack || e.reason.message || String(e.reason)) : String(e);
+            showScreenError('Promise Error:\n' + reason);
         });
     </script>
     
@@ -24667,45 +24712,58 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 pickerDragging: false,
                 animatingPop: false,
 
+                safeGetStorage(key) {
+                    try { return localStorage.getItem(key); } catch(e) { return null; }
+                },
+                safeSetStorage(key, val) {
+                    try { this.safeSetStorage(key, val); } catch(e) {}
+                },
+
                 initApp() {
-                    const savedCustom = localStorage.getItem('gym_custom_metrics_v1');
+                    const savedCustom = this.safeGetStorage('gym_custom_metrics_v1');
                     if (savedCustom) {
-                        try { this.customMetricsList = JSON.parse(savedCustom); } catch(e) {}
+                        try { this.customMetricsList = JSON.parse(savedCustom) || []; } catch(e) { this.customMetricsList = []; }
                     }
-                    const savedWeekly = localStorage.getItem('gym_weekly_plans_v1');
+                    const savedWeekly = this.safeGetStorage('gym_weekly_plans_v1');
                     if (savedWeekly) {
-                        try { this.weeklyPlans = JSON.parse(savedWeekly); } catch(e) {}
+                        try { this.weeklyPlans = JSON.parse(savedWeekly) || {}; } catch(e) { this.weeklyPlans = {}; }
                     }
-                    const savedAll = localStorage.getItem('gym_all_habits_data_v3');
+                    const savedAll = this.safeGetStorage('gym_all_habits_data_v3');
                     if (savedAll) {
-                        try { this.allData = JSON.parse(savedAll); } catch (e) {}
+                        try { this.allData = JSON.parse(savedAll) || {}; } catch (e) { this.allData = {}; }
                     } else {
                         // Migrate legacy single workout data
-                        const legacy = localStorage.getItem('gym_streak_data_v7');
+                        const legacy = this.safeGetStorage('gym_streak_data_v7');
                         if (legacy) {
-                            try { this.allData['workout_default'] = JSON.parse(legacy); } catch (e) {}
+                            try { this.allData['workout_default'] = JSON.parse(legacy) || {}; } catch (e) {}
                         }
                     }
+                    if (!this.allData || typeof this.allData !== 'object') this.allData = {};
+                    if (!this.weeklyPlans || typeof this.weeklyPlans !== 'object') this.weeklyPlans = {};
+                    if (!Array.isArray(this.customMetricsList)) this.customMetricsList = [];
 
-                    const savedHabits = localStorage.getItem('gym_habits_list_v3');
+                    const savedHabits = this.safeGetStorage('gym_habits_list_v3');
                     if (savedHabits) {
-                        try { this.habits = JSON.parse(savedHabits); } catch (e) {}
+                        try { this.habits = JSON.parse(savedHabits) || []; } catch (e) { this.habits = []; }
+                    }
+                    if (!Array.isArray(this.habits) || this.habits.length === 0) {
+                        this.habits = [{ id: 'workout_default', name: 'Тренировки', unit: 'пов.' }];
                     }
 
-                    const savedActive = localStorage.getItem('gym_active_habit_v3');
+                    const savedActive = this.safeGetStorage('gym_active_habit_v3');
                     if (savedActive && (savedActive === 'all' || this.habits.some(h => h.id === savedActive))) {
                         this.activeHabitId = savedActive;
                     } else if (this.habits.length > 0) {
                         this.activeHabitId = this.habits[0].id;
                     }
 
-                    const savedView = localStorage.getItem('gym_view_mode_v3');
+                    const savedView = this.safeGetStorage('gym_view_mode_v3');
                     if (savedView) {
                         this.viewMode = savedView;
                     }
 
-                    this.githubToken = localStorage.getItem('gym_github_token') || '';
-                    this.gistId = localStorage.getItem('gym_gist_id') || '';
+                    this.githubToken = this.safeGetStorage('gym_github_token') || '';
+                    this.gistId = this.safeGetStorage('gym_gist_id') || '';
 
                     const today = new Date();
                     this.todayStr = this.formatDateIso(today);
@@ -24759,7 +24817,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 },
 
                 saveGithubToken() {
-                    localStorage.setItem('gym_github_token', this.githubToken.trim());
+                    this.safeSetStorage('gym_github_token', this.githubToken.trim());
                     alert('Токен сохранен!');
                     this.syncWithGist();
                 },
@@ -24777,7 +24835,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                 let existing = gists.find(g => g.description === 'GymTrackerData');
                                 if (existing) {
                                     this.gistId = existing.id;
-                                    localStorage.setItem('gym_gist_id', this.gistId);
+                                    this.safeSetStorage('gym_gist_id', this.gistId);
                                 }
                             }
                         }
@@ -24869,7 +24927,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                             if (res.ok) {
                                 let data = await res.json();
                                 this.gistId = data.id;
-                                localStorage.setItem('gym_gist_id', this.gistId);
+                                this.safeSetStorage('gym_gist_id', this.gistId);
                             }
                         }
                         this.syncStatus = 'synced';
@@ -25012,11 +25070,11 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 },
 
                 saveToStorageLocally() {
-                    localStorage.setItem('gym_all_habits_data_v3', JSON.stringify(this.allData));
-                    localStorage.setItem('gym_habits_list_v3', JSON.stringify(this.habits));
-                    localStorage.setItem('gym_active_habit_v3', this.activeHabitId);
-                    localStorage.setItem('gym_view_mode_v3', this.viewMode);
-                    localStorage.setItem('gym_weekly_plans_v1', JSON.stringify(this.weeklyPlans));
+                    this.safeSetStorage('gym_all_habits_data_v3', JSON.stringify(this.allData));
+                    this.safeSetStorage('gym_habits_list_v3', JSON.stringify(this.habits));
+                    this.safeSetStorage('gym_active_habit_v3', this.activeHabitId);
+                    this.safeSetStorage('gym_view_mode_v3', this.viewMode);
+                    this.safeSetStorage('gym_weekly_plans_v1', JSON.stringify(this.weeklyPlans));
                 },
 
                 saveToStorage() {
@@ -25434,7 +25492,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     const months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
                     return `${mon.getDate()} ${months[mon.getMonth()]} — ${sun.getDate()} ${months[sun.getMonth()]}`;
                 },
-                get currentWeekDays() {
+                get currentPlanWeekDays() {
                     if (!this.currentWeekKey) return [];
                     const parts = this.currentWeekKey.split('-');
                     const mon = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
@@ -25845,7 +25903,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     }
                 },
                 saveWeeklyPlans() {
-                    localStorage.setItem('gym_weekly_plans_v1', JSON.stringify(this.weeklyPlans));
+                    this.safeSetStorage('gym_weekly_plans_v1', JSON.stringify(this.weeklyPlans));
                     this.saveToStorage();
                 },
 
@@ -26009,8 +26067,8 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 },
 
                 saveHabitsConfig() {
-                    localStorage.setItem('gym_habits_list_v3', JSON.stringify(this.habits));
-                    localStorage.setItem('gym_all_habits_data_v3', JSON.stringify(this.allData));
+                    this.safeSetStorage('gym_habits_list_v3', JSON.stringify(this.habits));
+                    this.safeSetStorage('gym_all_habits_data_v3', JSON.stringify(this.allData));
                 },
 
                 normalizeDayExercises(exercises) {
@@ -26463,7 +26521,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     this.openModal = false;
                     if (this.lastActiveHabitBeforeModal === 'all') {
                         this.activeHabitId = 'all';
-                        localStorage.setItem('gym_active_habit_v3', 'all');
+                        this.safeSetStorage('gym_active_habit_v3', 'all');
                         this.lastActiveHabitBeforeModal = null;
                     }
                 },
@@ -26705,7 +26763,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                             color: chosenColor
                         };
                         this.customMetricsList.push(metricObj);
-                        localStorage.setItem('gym_custom_metrics_v1', JSON.stringify(this.customMetricsList));
+                        this.safeSetStorage('gym_custom_metrics_v1', JSON.stringify(this.customMetricsList));
                     } else {
                         metricObj = this.fullMetricCatalog.find(m => m.key === this.selectedMetricKey);
                     }

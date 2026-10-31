@@ -26006,17 +26006,13 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     if (!cell) return '';
                     const intensity = Number(cell.intensity || 0);
                     if (cell.isNextMonth) {
-                        if (intensity >= 1) {
-                            return 'background-color: #1b6329 !important; opacity: 0.85 !important;';
-                        }
-                        if (intensity === 0.5) {
-                            return 'background-color: #30363d !important; opacity: 0.85 !important;';
-                        }
+                        if (intensity >= 4) return 'background-color: #39d353 !important; opacity: 0.85 !important;';
+                        if (intensity === 3) return 'background-color: #26a641 !important; opacity: 0.85 !important;';
+                        if (intensity === 2) return 'background-color: #006d32 !important; opacity: 0.85 !important;';
+                        if (intensity === 1) return 'background-color: #0e4429 !important; opacity: 0.85 !important;';
+                        if (intensity === 0.5) return 'background-color: #30363d !important; opacity: 0.85 !important;';
                         return 'background-color: #21262d !important; opacity: 0.45 !important;';
                     } else {
-                        if (intensity >= 1) {
-                            return 'background-color: #1b6329 !important; opacity: 1 !important;';
-                        }
                         if (intensity === 0.5) {
                             return 'background-color: #30363d !important; opacity: 1 !important;';
                         }

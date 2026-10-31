@@ -23028,6 +23028,58 @@ Check your Browserslist config to be sure that your targets are set up correctly
         .category-move-anim {
             transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease-in-out;
         }
+
+        /* Desktop Layout Optimizations (>= 860px) */
+        @media (min-width: 860px) {
+            .tracker-header {
+                padding-left: 2.5rem !important;
+                padding-right: 2.5rem !important;
+            }
+            .tracker-main {
+                max-width: 900px !important;
+                padding-left: 2rem !important;
+                padding-right: 2rem !important;
+            }
+            .habits-summary-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                column-gap: 3.5rem !important;
+                row-gap: 2rem !important;
+                align-items: start !important;
+            }
+            .habits-summary-grid > * + * {
+                margin-top: 0 !important;
+            }
+            .habit-card {
+                max-width: 340px !important;
+                width: 100% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            .single-habit-view {
+                max-width: 350px !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            /* Slightly smaller squares on desktop */
+            .habit-heatmap-grid {
+                max-width: 310px !important;
+                gap: 4px !important;
+            }
+        }
+
+        /* Next month preview squares */
+        .next-month-cell {
+            opacity: 0.55;
+        }
+        .next-month-cell.is-planned {
+            opacity: 1 !important;
+            background-color: #525a65 !important; /* Visible medium gray */
+        }
+        .next-month-cell.is-completed {
+            opacity: 1 !important;
+            background-color: #2ea043 !important; /* Visible bright green */
+        }
     </style>
 </head>
 <script>
@@ -23041,7 +23093,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 <body class="min-h-screen font-sans antialiased pb-24 bg-black" x-data="trackerApp()" x-init="initApp(); $nextTick(() => document.querySelectorAll('textarea').forEach(autoResize))">
 
     <!-- Minimal Header -->
-    <header class="fixed top-0 left-0 right-0 z-30 px-3 sm:px-4 py-2.5 max-w-md mx-auto flex items-center justify-between bg-black w-full select-none">
+    <header class="tracker-header fixed top-0 left-0 right-0 z-30 px-3 sm:px-6 lg:px-10 py-2.5 flex items-center justify-between bg-black w-full select-none">
         <div class="flex items-center space-x-1 min-w-0">
             <button @click="setViewMode('week')" :class="viewMode === 'week' ? 'bg-[#21262d] text-white' : 'text-zinc-500 hover:text-zinc-300'" class="px-2.5 py-1.5 rounded-lg text-xs font-medium transition active:scale-95">Week</button>
             <button @click="setViewMode('month')" :class="viewMode === 'month' ? 'bg-[#21262d] text-white' : 'text-zinc-500 hover:text-zinc-300'" class="px-2.5 py-1.5 rounded-lg text-xs font-medium transition active:scale-95">Month</button>
@@ -23089,10 +23141,10 @@ Check your Browserslist config to be sure that your targets are set up correctly
         </div>
     </header>
 
-    <main class="max-w-md mx-auto px-4 space-y-4 pt-14">
+    <main class="tracker-main max-w-md mx-auto px-4 space-y-4 pt-14">
 
         <!-- Date Navigation Bar -->
-        <div class="flex items-center justify-between px-2 py-1">
+        <div class="flex items-center justify-between px-2 py-1 max-w-xs mx-auto">
             <button @click="shiftDate(-1)" class="text-zinc-500 hover:text-white p-1 transition">
                 <i data-lucide="chevron-left" class="w-5 h-5"></i>
             </button>
@@ -23107,10 +23159,10 @@ Check your Browserslist config to be sure that your targets are set up correctly
             
             <!-- IF SINGLE HABIT -->
             <template x-if="activeHabitId !== 'all'">
-                <div class="space-y-3">
+                <div class="space-y-3 single-habit-view">
                     <!-- WEEK VIEW -->
                     <template x-if="viewMode === 'week'">
-                        <div class="grid grid-cols-12 gap-1.5">
+                        <div class="grid grid-cols-12 gap-1.5 habit-heatmap-grid">
                             <template x-for="day in currentWeekDays" :key="day.dateStr">
                                 <div @click="selectDay(day.dateStr)" 
                                      class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
@@ -23124,12 +23176,13 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                     <!-- MONTH VIEW -->
                     <template x-if="viewMode === 'month'">
-                        <div class="grid grid-cols-12 gap-1.5">
+                        <div class="grid grid-cols-12 gap-1.5 habit-heatmap-grid">
                             <template x-for="cell in currentMonthGrid" :key="cell.dateStr || Math.random()">
                                 <div @click="selectDay(cell.dateStr)"
                                      class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
                                      :id="isToday(cell.dateStr) ? 'today-square' : ''"
                                      :class="[getColorClass(cell.intensity), isToday(cell.dateStr) ? 'ring-1 ring-white' : '']"
+                                     :style="getCellStyle(cell)"
                                      :title="cell.dateStr">
                                 </div>
                             </template>
@@ -23138,7 +23191,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                     <!-- YEAR VIEW -->
                     <template x-if="viewMode === 'year'">
-                        <div class="grid grid-cols-12 gap-1.5">
+                        <div class="grid grid-cols-12 gap-1.5 habit-heatmap-grid">
                             <template x-for="day in yearDaysList" :key="day.dateStr">
                                 <div @click="selectDay(day.dateStr)"
                                      class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
@@ -23154,16 +23207,16 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
             <!-- IF ALL HABITS (SUMMARY VIEW) -->
             <template x-if="activeHabitId === 'all'">
-                <div class="space-y-6">
+                <div class="habits-summary-grid space-y-6">
                     <template x-for="h in habits" :key="h.id">
-                        <div class="space-y-2">
+                        <div class="space-y-2 habit-card">
                             <div class="flex items-center justify-between px-1">
                                 <span class="text-xs font-bold text-white" x-text="h.name"></span>
                             </div>
                             
                             <!-- WEEK VIEW FOR HABIT -->
                             <template x-if="viewMode === 'week'">
-                                <div class="grid grid-cols-12 gap-1.5">
+                                <div class="grid grid-cols-12 gap-1.5 habit-heatmap-grid">
                                     <template x-for="day in getHabitWeekDays(h.id)" :key="day.dateStr">
                                         <div @click="selectDayForHabit(h.id, day.dateStr)" 
                                              class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
@@ -23176,11 +23229,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                             <!-- MONTH VIEW FOR HABIT -->
                             <template x-if="viewMode === 'month'">
-                                <div class="grid grid-cols-12 gap-1.5">
+                                <div class="grid grid-cols-12 gap-1.5 habit-heatmap-grid">
                                     <template x-for="cell in getHabitMonthGrid(h.id)" :key="cell.dateStr || Math.random()">
                                         <div @click="selectDayForHabit(h.id, cell.dateStr)"
                                              class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
                                              :class="[getColorClass(cell.intensity), isToday(cell.dateStr) ? 'ring-1 ring-white' : '']"
+                                             :style="getCellStyle(cell)"
                                              :title="h.name + ': ' + cell.dateStr">
                                         </div>
                                     </template>
@@ -23189,7 +23243,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                             <!-- YEAR VIEW FOR HABIT -->
                             <template x-if="viewMode === 'year'">
-                                <div class="grid grid-cols-12 gap-1.5">
+                                <div class="grid grid-cols-12 gap-1.5 habit-heatmap-grid">
                                     <template x-for="day in getHabitYearDays(h.id)" :key="day.dateStr">
                                         <div @click="selectDayForHabit(h.id, day.dateStr)"
                                              class="aspect-square rounded-[3px] cursor-pointer transition active:scale-90"
@@ -23221,7 +23275,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
          style="touch-action: pan-y;" 
          x-cloak>
         <div @click.stop
-             :class="(showTemplatesSlide || showGraphView) ? 'h-[90vh] max-h-[92vh]' : 'max-h-[85vh] h-auto'"
+             :class="(showTemplatesSlide || showGraphView) ? 'h-[90vh] max-h-[92vh]' : 'min-h-[440px] max-h-[85vh] h-auto'"
              class="bg-[#0f0f11] w-full max-w-md rounded-[32px] sm:rounded-[38px] px-2.5 pt-3 pb-3.5 sm:px-5 sm:pt-3.5 sm:pb-5 space-y-3 shadow-2xl overflow-hidden overflow-x-hidden flex flex-col relative transition-all duration-300">
 
             <!-- TELEGRAM-STYLE SLIDE-OVER GRAPH SCREEN -->
@@ -23906,14 +23960,6 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     </div>
                 </template>
 
-                <!-- Empty state for day -->
-                <template x-if="activeDayExercises.length === 0 && plannedTasksForSelectedDate.length === 0">
-                    <div class="text-center py-10 px-4 space-y-1 modal-enter">
-                        <div class="text-xs font-medium text-zinc-400">На этот день пока ничего нет</div>
-                        <div class="text-[11px] text-zinc-600">Нажми на кнопку внизу, чтобы добавить упражнение или задачу</div>
-                    </div>
-                </template>
-
                 <template x-for="(ex, exIndex) in activeDayExercises" :key="exIndex">
                     <div :class="ex.setsList && ex.setsList.length > 0 ? 'bg-[#18181b] p-4 rounded-[26px] space-y-3 shadow-lg ios-item-enter' : 'space-y-3 ios-item-enter'">
                         
@@ -24296,7 +24342,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             <div class="absolute bottom-2.5 left-2.5 right-2.5 sm:bottom-3.5 sm:left-4 sm:right-4 z-30 pointer-events-none" x-data="{ openAddMenu: false, showTemplatesSubmenu: false }" @click.away="openAddMenu = false; showTemplatesSubmenu = false">
                 <!-- Floating Popover Menu -->
                 <div x-show="openAddMenu" 
-                     class="pointer-events-auto mb-2 w-full bg-[#18181b] rounded-[26px] shadow-2xl p-2 modal-enter border border-white/10 backdrop-blur-xl" 
+                     class="pointer-events-auto mb-2 w-full bg-[#18181b] rounded-[26px] shadow-2xl p-2 modal-enter border border-white/10 backdrop-blur-xl max-h-[calc(85vh-90px)] overflow-y-auto" 
                      x-cloak>
                     
                     <!-- Main Menu Options -->
@@ -25075,6 +25121,8 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                 saveToStorage() {
                     this.saveToStorageLocally();
+                    this._gridVersion++;
+                    this.allData = Object.assign({}, this.allData);
                     if (this.githubToken && this.gistId) {
                         this.pushToGist();
                     }
@@ -25112,11 +25160,14 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     let completedScore = 0;
 
                     const isBlankTask = (task) => {
-                        const hasName = !!(task.name && task.name.trim().length > 0 && task.name !== 'Новая задача');
+                        if (!task) return true;
+                        if (task.completed) return false;
+                        const hasName = !!(task.name && task.name.trim().length > 0);
                         const hasSubTasks = !!(task.subTasks && task.subTasks.length > 0);
                         const hasMeas = this.hasMeasurementContent ? this.hasMeasurementContent(task) : false;
                         const hasSol = this.hasSolutionContent ? this.hasSolutionContent(task) : false;
-                        return !hasName && !hasSubTasks && !hasMeas && !hasSol;
+                        const hasMain = task.hasMainTask === true;
+                        return !hasName && !hasSubTasks && !hasMeas && !hasSol && !hasMain;
                     };
 
                     const dayExs = habitWorkouts[dateStr];
@@ -25145,6 +25196,9 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                 if (ex.completed && !hasPositiveReps) {
                                     hasActivities = true;
                                     completedScore += 30;
+                                } else if (!hasPositiveReps && ex.setsList.length > 0) {
+                                    hasActivities = true;
+                                    hasUncompletedTasks = true;
                                 }
                             }
                             if (ex.tasksList && Array.isArray(ex.tasksList)) {
@@ -25297,6 +25351,27 @@ Check your Browserslist config to be sure that your targets are set up correctly
                         });
                     });
 
+                    // Учитываем задачи из планов недели, привязанные к этой дате
+                    if (this.weeklyPlans && this.weeklyPlans[habitId] && this.weeklyPlans[habitId].weeks) {
+                        const weeksObj = this.weeklyPlans[habitId].weeks;
+                        for (const wk in weeksObj) {
+                            const wList = weeksObj[wk];
+                            if (Array.isArray(wList)) {
+                                for (let wi = 0; wi < wList.length; wi++) {
+                                    const wt = wList[wi];
+                                    if (wt && wt.assignedDate === dateStr) {
+                                        hasActivities = true;
+                                        if (wt.completed) {
+                                            completedScore += 30;
+                                        } else {
+                                            hasUncompletedTasks = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     const totalScore = totalReps + completedScore;
                     if (totalScore > 0) {
                         if (totalScore <= 30) return 1;
@@ -25327,17 +25402,30 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 },
 
                 getHabitMonthGrid(habitId) {
+                    const _gv = this._gridVersion;
                     let y = this.currentDate.getFullYear();
                     let m = this.currentDate.getMonth();
                     let lastDayOfMonth = new Date(y, m + 1, 0);
+                    let daysCount = lastDayOfMonth.getDate();
                     
                     let list = [];
-                    for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
+                    for (let i = 1; i <= daysCount; i++) {
                         let dateObj = new Date(y, m, i);
                         let dateStr = this.formatDateIso(dateObj);
                         list.push({
                             dateStr: dateStr,
-                            intensity: this.getIntensityForHabit(habitId, dateStr)
+                            intensity: this.getIntensityForHabit(habitId, dateStr),
+                            isNextMonth: false
+                        });
+                    }
+                    let remaining = 36 - daysCount;
+                    for (let j = 1; j <= remaining; j++) {
+                        let nextDateObj = new Date(y, m + 1, j);
+                        let nextDateStr = this.formatDateIso(nextDateObj);
+                        list.push({
+                            dateStr: nextDateStr,
+                            intensity: this.getIntensityForHabit(habitId, nextDateStr),
+                            isNextMonth: true
                         });
                     }
                     return list;
@@ -25903,7 +25991,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     this.saveToStorage();
                 },
 
-                getColorClass(intensity) {
+                                getColorClass(intensity) {
                     switch (intensity) {
                         case 0.5: return 'bg-[#21262d]';
                         case 1: return 'bg-github-1';
@@ -25912,6 +26000,28 @@ Check your Browserslist config to be sure that your targets are set up correctly
                         case 4: return 'bg-github-4';
                         default: return 'bg-[#161b22]';
                     }
+                },
+
+                getCellStyle(cell) {
+                    if (!cell) return '';
+                    const intensity = Number(cell.intensity || 0);
+                    if (cell.isNextMonth) {
+                        if (intensity >= 1) {
+                            return 'background-color: #1b6329 !important; opacity: 0.85 !important;';
+                        }
+                        if (intensity === 0.5) {
+                            return 'background-color: #30363d !important; opacity: 0.85 !important;';
+                        }
+                        return 'background-color: #21262d !important; opacity: 0.45 !important;';
+                    } else {
+                        if (intensity >= 1) {
+                            return 'background-color: #1b6329 !important; opacity: 1 !important;';
+                        }
+                        if (intensity === 0.5) {
+                            return 'background-color: #30363d !important; opacity: 1 !important;';
+                        }
+                    }
+                    return '';
                 },
 
                 get dateRangeTitle() {
@@ -25952,17 +26062,30 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 },
 
                 get currentMonthGrid() {
+                    const _gv = this._gridVersion;
                     let y = this.currentDate.getFullYear();
                     let m = this.currentDate.getMonth();
                     let lastDayOfMonth = new Date(y, m + 1, 0);
+                    let daysCount = lastDayOfMonth.getDate();
                     
                     let list = [];
-                    for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
+                    for (let i = 1; i <= daysCount; i++) {
                         let dateObj = new Date(y, m, i);
                         let dateStr = this.formatDateIso(dateObj);
                         list.push({
                             dateStr: dateStr,
-                            intensity: this.getIntensity(dateStr)
+                            intensity: this.getIntensity(dateStr),
+                            isNextMonth: false
+                        });
+                    }
+                    let remaining = 36 - daysCount;
+                    for (let j = 1; j <= remaining; j++) {
+                        let nextDateObj = new Date(y, m + 1, j);
+                        let nextDateStr = this.formatDateIso(nextDateObj);
+                        list.push({
+                            dateStr: nextDateStr,
+                            intensity: this.getIntensity(nextDateStr),
+                            isNextMonth: true
                         });
                     }
                     return list;
@@ -26263,6 +26386,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
                 taskHasMain(task) {
                     if (!task) return false;
+                    if (task.name && task.name.trim().length > 0) return true;
                     if (task.hasMainTask === true) return true;
                     if (task.hasMainTask === false) return false;
                     return !!(task.name && task.name.trim().length > 0 && task.name !== 'Новая задача') || (task.subTasks && task.subTasks.length > 0);
@@ -26292,7 +26416,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                         tasksList: [{ 
                             name: '', 
                             weeklyTaskId: newTaskId,
-                            hasMainTask: false,
+                            hasMainTask: true,
                             completed: false, 
                             reps: 0,
                             hasReps: false,
@@ -26309,7 +26433,9 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 },
 
                 addExerciseRow() {
-                    const defaultName = this.activeHabitId === 'all' ? '' : this.activeHabitName;
+                    const defaultHabit = this.modalHabitId || (this.activeHabitId === 'all' ? (this.habits[0] ? this.habits[0].id : 'workout_default') : this.activeHabitId);
+                    const h = this.habits.find(item => item.id === defaultHabit);
+                    const defaultName = h ? h.name : (this.activeHabitName !== 'All' ? this.activeHabitName : 'Тренировка');
                     const newExId = 'wt_ex_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
                     this.activeDayExercises.push({ 
                         name: defaultName, 
@@ -26516,6 +26642,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     }
                     this.saveToStorage();
                     this.openModal = false;
+                    if (typeof this.unlockScroll === 'function') this.unlockScroll();
                     if (this.lastActiveHabitBeforeModal === 'all') {
                         this.activeHabitId = 'all';
                         this.safeSetStorage('gym_active_habit_v3', 'all');
@@ -26526,13 +26653,13 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 saveDayData() {
                     const validExercises = this.activeDayExercises.filter(ex => {
                         const hasName = !!(ex.name && ex.name.trim().length > 0);
-                        const hasSets = ex.setsList && (ex.setsList.some(s => Number(s.reps || 0) > 0) || (hasName && ex.setsList.length > 0));
+                        const hasSets = ex.setsList && (ex.setsList.some(s => Number(s.reps || 0) > 0) || (hasName && ex.setsList.length > 0) || ex.setsList.length > 0);
                         const hasTasks = ex.tasksList && ex.tasksList.some(task => {
                             const hasTaskName = !!(task.name && task.name.trim().length > 0);
                             const hasSubTasks = !!(task.subTasks && task.subTasks.length > 0);
                             const hasMeas = this.hasMeasurementContent(task);
                             const hasSol = this.hasSolutionContent(task);
-                            return hasTaskName || hasSubTasks || hasMeas || hasSol;
+                            return hasTaskName || hasSubTasks || hasMeas || hasSol || task.hasMainTask || task.completed;
                         });
                         const hasCheckbox = ex.isCheckbox && hasName;
                         return hasSets || hasTasks || hasCheckbox;
@@ -26548,6 +26675,8 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     }
 
                     this.saveToStorage();
+                    this._gridVersion++;
+                    this.allData = Object.assign({}, this.allData);
 
                     const wk = this.selectedDate ? this.getWeekStart(this.selectedDate) : this.currentWeekKey;
                     if (this.syncDayExercisesToWeekly && hid && wk) {
@@ -26708,7 +26837,18 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     this.showTemplatesSlide = false;
                     this.saveDayData();
                     this.openModal = false;
-                    this.unlockScroll();
+                    if (typeof this.unlockScroll === 'function') {
+                        this.unlockScroll();
+                    } else if (document.body.style.position === 'fixed') {
+                        const top = Math.abs(parseInt(document.body.style.top || '0', 10)) || 0;
+                        document.body.style.position = '';
+                        document.body.style.top = '';
+                        document.body.style.left = '';
+                        document.body.style.right = '';
+                        document.body.style.width = '';
+                        document.body.style.overflow = '';
+                        window.scrollTo(0, top);
+                    }
                 },
 
                 openMetricPickerModal(task) {
